@@ -2,6 +2,7 @@ import { App as AntdApp } from "antd";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppRouter } from "./routes";
 import { lazy } from "react";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,11 +21,13 @@ const ReactQueryDevtools = lazy(() =>
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AntdApp>
-        <AppRouter />
-      </AntdApp>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <QueryClientProvider client={queryClient}>
+        <AntdApp>
+          <AppRouter />
+        </AntdApp>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
   );
 }

@@ -228,7 +228,12 @@ public class AuthService : IAuthService
 
     private string CreateRefreshToken(Guid userId, string deviceFingerprint)
     {
-        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        var randomBytes = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+
+        var token = Convert.ToBase64String(randomBytes);
+
         _context.RefreshTokens.Add(
             new RefreshToken
             {

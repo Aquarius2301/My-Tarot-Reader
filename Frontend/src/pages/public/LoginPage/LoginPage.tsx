@@ -1,4 +1,4 @@
-import { Card, Row, theme } from "antd";
+import { App, Card, Row, Spin, theme } from "antd";
 import {
   CompassOutlined, // Replaces SparklesOutlined
   StarOutlined,
@@ -21,9 +21,10 @@ export interface BenefitItem {
 
 export default function LoginPage() {
   const { t } = useTranslation();
-  const { mutate } = useLogin();
+  const { mutate, isPending } = useLogin();
   const navigate = useNavigate();
   const { token } = theme.useToken();
+  const { message } = App.useApp();
 
   const handleGoogleLogin = (credential: string) => {
     mutate(
@@ -31,6 +32,9 @@ export default function LoginPage() {
       {
         onSuccess: () => {
           navigate(WEB_URL.AUTH_HOME, { replace: true });
+        },
+        onError: () => {
+          message.error(t("page.login.googleLoginError"));
         },
       },
     );
@@ -89,6 +93,8 @@ export default function LoginPage() {
           />
         </Row>
       </Card>
+
+      {isPending && <Spin fullscreen />}
     </div>
   );
 }

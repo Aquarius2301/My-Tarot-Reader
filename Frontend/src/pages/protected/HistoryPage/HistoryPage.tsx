@@ -14,7 +14,7 @@ export default function HistoryPage() {
   const { token } = theme.useToken();
 
   if (isLoading) {
-    return <Spin fullscreen size="large" />;
+    return <Spin fullscreen />;
   }
 
   return (

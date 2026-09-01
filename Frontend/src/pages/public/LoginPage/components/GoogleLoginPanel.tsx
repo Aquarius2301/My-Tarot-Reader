@@ -1,4 +1,4 @@
-import { App, Col, Typography, theme } from "antd";
+import { App, Col, Flex, Typography, theme } from "antd";
 import { GoogleLogin } from "@react-oauth/google";
 import { useTranslation } from "react-i18next";
 
@@ -40,20 +40,22 @@ export default function GoogleLoginPanel({
           {welcomeSubtitle}
         </Paragraph>
 
-        <GoogleLogin
-          onSuccess={(response) => {
-            if (response.credential) {
-              onLogin(response.credential);
-            }
-          }}
-          onError={() => message.error(t("page.login.googleLoginError"))}
-          theme="outline"
-          size="large"
-          shape="pill"
-          text="continue_with"
-          width="100%"
-          useOneTap={false}
-        />
+        <Flex justify="center" style={{ width: "100%" }}>
+          <GoogleLogin
+            text="signin_with"
+            onSuccess={(response) => {
+              if (response.credential) {
+                onLogin(response.credential);
+              }
+            }}
+            onError={() => message.error(t("page.login.googleLoginError"))}
+            theme="outline"
+            size="large"
+            shape="pill"
+            width="100%"
+            useOneTap={false}
+          />
+        </Flex>
       </div>
     </Col>
   );
