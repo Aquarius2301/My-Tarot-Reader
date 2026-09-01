@@ -1,0 +1,121 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  NODE_VERSION: "24"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Detect Changed Files
+  # ---------------------------------------------------------------------------
+  changes:
+    name: Detect Changed Files
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'Backend/**'
+            frontend:
+              - 'Frontend/**'
+  # ---------------------------------------------------------------------------
+  # Build
+  # ---------------------------------------------------------------------------
+  backend-build:
+    name: Build Backend (.NET 8)
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore
+        run: dotnet restore MyTarotReader.sln
+      - name: Build (Release, warnings-as-errors)
+        run: dotnet build MyTarotReader.sln -c Release --no-restore
+
+  frontend-build:
+    name: Build Frontend (Vite)
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: Frontend/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+
+  # ---------------------------------------------------------------------------
+  # Deploy — runs only on push to main, after the builds pass
+  # ---------------------------------------------------------------------------
+  deploy-backend:
+    name: Deploy Backend → Render
+    needs: [backend-build, frontend-build]
+    if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.backend == 'true' && needs.backend-build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Render builds the image from Backend/dockerfile via its own build
+      # pipeline. CI just fires the Deploy Hook to trigger a rebuild+deploy.
+      # Create a Deploy Hook in the Render dashboard (the service must have
+      # Runtime = Docker, Root Directory = Backend) and store the URL below.
+      - name: Trigger Render Deploy Hook
+        run: curl -X POST "$RENDER_DEPLOY_HOOK_URL"
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+  deploy-frontend:
+    name: Deploy Frontend → Vercel
+    needs: [backend-build, frontend-build]
+    if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.frontend == 'true' && needs.frontend-build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Vercel builds the app from the repo itself via its own pipeline. CI
+      # just fires the Deploy Hook to trigger a production build+deploy.
+      # Create a Deploy Hook in the Vercel dashboard (Project → Settings →
+      # Git → Deploy Hooks) and store the URL below.
+      # NOTE: VITE_API_URL is baked at build time, so set it as an Environment
+      # Variable in the Vercel project (not the GitHub repo Variable).
+      - name: Trigger Vercel Deploy Hook
+        run: curl -X POST "$VERCEL_DEPLOY_HOOK_URL"
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}

@@ -1,0 +1,36 @@
+# ---------- Plans or AI  ------------------
+Plans/
+
+# ---------- .NET / Backend ----------
+bin/
+obj/
+*.user
+*.suo
+.vs/
+Migrations/
+*.Development.json
+
+# EF Core
+*.db
+*.mdf
+*.ldf
+
+# ---------- Node / Frontend ----------
+node_modules/
+dist/
+*.local
+
+# ---------- Secrets / Env ----------
+.env.*
+!.env.example
+
+# ---------- Logs ----------
+*.log
+logs/
+
+# ---------- OS / Editor ----------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
