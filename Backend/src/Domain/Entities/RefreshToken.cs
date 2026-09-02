@@ -18,7 +18,7 @@ public class RefreshToken : BaseEntity
     public Guid UserId { get; set; }
 
     /// <summary>The UTC instant after which this token can no longer be used.</summary>
-    public DateTime ExpiresAt { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
 
     /// <summary>Stable per-device id (frontend FingerprintJS visitorId) used to reject tokens
     /// reused on a different device. Bound at issuance and checked on refresh.</summary>

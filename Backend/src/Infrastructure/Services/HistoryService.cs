@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MyTarotReader.Application.Contracts.Persistence;
 using MyTarotReader.Application.Contracts.Services;
 using MyTarotReader.Application.Dtos;
+using MyTarotReader.Application.Exceptions;
 
 namespace MyTarotReader.Infrastructure.Services;
 
@@ -34,15 +35,13 @@ public class HistoryService : IHistoryService
         CancellationToken cancellationToken = default
     )
     {
-        var record = await _context.ReadHistories.FirstOrDefaultAsync(
-            r => r.Id == historyId && r.UserId == userId && r.DeletedAt == null,
-            cancellationToken
-        );
+        var record =
+            await _context.ReadHistories.FirstOrDefaultAsync(
+                r => r.Id == historyId && r.UserId == userId && r.DeletedAt == null,
+                cancellationToken
+            ) ?? throw new NotFoundException(ErrorMessageCode.History.NotFound);
 
-        if (record is null)
-            return;
-
-        record.DeletedAt = DateTime.UtcNow;
+        record.DeletedAt = DateTimeOffset.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
     }
 }

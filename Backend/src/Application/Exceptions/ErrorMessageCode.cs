@@ -59,4 +59,10 @@ public static class ErrorMessageCode
         /// <summary>The request is not authenticated, or the user identity is missing/invalid.</summary>
         public const string Unauthorized = "error.auth.unauthorized";
     }
+
+    public static class History
+    {
+        /// <summary>The history record was not found.</summary>
+        public const string NotFound = "error.history.notFound";
+    }
 }
