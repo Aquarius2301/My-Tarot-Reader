@@ -62,7 +62,7 @@ public sealed class TokenCleanupBackgroundService : BackgroundService
         await using var scope = _scopeFactory.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<IAppDbContext>();
 
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         return await db
             .RefreshTokens.Where(r =>
                 r.DeletedAt != null || (r.DeletedAt == null && r.ExpiresAt < now)

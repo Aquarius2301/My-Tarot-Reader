@@ -96,12 +96,10 @@ public class AuthService : IAuthService
                 && r.DeviceFingerprint == deviceFingerprint
                 && r.DeletedAt == null
             )
-            .ToListAsync(cancellationToken);
-
-        foreach (var token in activeSameDevice)
-        {
-            token.DeletedAt = DateTime.UtcNow;
-        }
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(b => b.DeletedAt, DateTimeOffset.UtcNow),
+                cancellationToken
+            );
 
         var accessToken = GenerateJwtToken(userEntity.Id.ToString(), payload.Email);
         var refreshToken = CreateRefreshToken(userEntity.Id, deviceFingerprint);
@@ -128,53 +126,76 @@ public class AuthService : IAuthService
         CancellationToken cancellationToken = default
     )
     {
-        var stored =
-            await _context.RefreshTokens.FirstOrDefaultAsync(
-                r => r.Token == refreshToken,
-                cancellationToken
-            ) ?? throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenInvalid);
-
-        // Reuse detection: a consumed token being replayed means it was likely stolen.
-        // Revoke the whole active token family for the user and reject.
-        if (stored.DeletedAt is not null)
-        {
-            var family = await _context
-                .RefreshTokens.Where(r => r.UserId == stored.UserId && r.DeletedAt == null)
-                .ToListAsync(cancellationToken);
-            foreach (var token in family)
-            {
-                token.DeletedAt = DateTime.UtcNow;
-            }
-
-            await _context.SaveChangesAsync(cancellationToken);
-            throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenInvalid);
-        }
-
-        // a token copied to a different machine yields a different
-        // visitorId, so reject instead of rotating it.
-        if (stored.DeviceFingerprint != deviceFingerprint)
-        {
-            throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenInvalid);
-        }
-
-        if (stored.ExpiresAt < DateTime.UtcNow)
-        {
-            stored.DeletedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync(cancellationToken);
-            throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenExpired);
-        }
-
-        // Rotate: revoke the presented token and issue a fresh pair (same device).
-        stored.DeletedAt = DateTime.UtcNow;
-
-        var dbUser =
+        // get the token from the database, including the deleted token.
+        var existedToken =
             await _context
-                .Users.AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == stored.UserId, cancellationToken)
+                .RefreshTokens.Include(x => x.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Token == refreshToken, cancellationToken)
             ?? throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenInvalid);
 
-        var newAccessToken = GenerateJwtToken(dbUser.Id.ToString(), dbUser.Email);
-        var newRefreshToken = CreateRefreshToken(dbUser.Id, deviceFingerprint);
+        // if the token has been soft-deleted, the token may be stole and reused.
+        if (existedToken.DeletedAt != null)
+        {
+            // Revoke all active tokens for the user to prevent further abuse.
+            await RevokeAllActiveTokensAsync(existedToken.UserId, cancellationToken);
+
+            throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenInvalid);
+        }
+
+        // if the user has been soft-deleted, the token may be stole and reused.
+        if (existedToken.User is null || existedToken.User.DeletedAt != null)
+        {
+            await RevokeAllActiveTokensAsync(existedToken.UserId, cancellationToken);
+
+            throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenInvalid);
+        }
+
+        // if the device fingerprint does not match, revoke all active tokens for the user to prevent further abuse.
+        if (existedToken.DeviceFingerprint != deviceFingerprint)
+        {
+            await RevokeAllActiveTokensAsync(existedToken.UserId, cancellationToken);
+
+            throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenInvalid);
+        }
+
+        // if the token has expired, soft-delete it to avoid reuse.
+        if (existedToken.ExpiresAt < DateTimeOffset.UtcNow)
+        {
+            await _context
+                .RefreshTokens.Where(x => x.Id == existedToken.Id && x.DeletedAt == null)
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(b => b.DeletedAt, DateTimeOffset.UtcNow),
+                    cancellationToken
+                );
+
+            throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenInvalid);
+        }
+
+        // Atomically soft-delete this token ONLY if it's still active (DeletedAt == null).
+        // If another concurrent request already rotated this token, rowsAffected == 0,
+        // meaning this request is a replay/race — treat it as reuse.
+        var rowsAffected = await _context
+            .RefreshTokens.Where(x => x.Id == existedToken.Id && x.DeletedAt == null)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(b => b.DeletedAt, DateTimeOffset.UtcNow),
+                cancellationToken
+            );
+
+        if (rowsAffected == 0)
+        {
+            // Lost the race — someone else already consumed this token.
+            // This is a genuine reuse signal, revoke everything.
+            await RevokeAllActiveTokensAsync(existedToken.UserId, cancellationToken);
+            throw new UnauthorizedException(ErrorMessageCode.Auth.RefreshTokenInvalid);
+        }
+
+        var newAccessToken = GenerateJwtToken(
+            existedToken.UserId.ToString(),
+            existedToken.User.Email
+        );
+
+        var newRefreshToken = CreateRefreshToken(existedToken.UserId, deviceFingerprint);
 
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -192,7 +213,7 @@ public class AuthService : IAuthService
         );
         if (stored is not null && stored.DeletedAt is null)
         {
-            stored.DeletedAt = DateTime.UtcNow;
+            stored.DeletedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
         }
     }
@@ -240,10 +261,23 @@ public class AuthService : IAuthService
                 Token = token,
                 UserId = userId,
                 DeviceFingerprint = deviceFingerprint,
-                ExpiresAt = DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenDurationDays),
+                ExpiresAt = DateTimeOffset.UtcNow.AddDays(_jwtSetting.RefreshTokenDurationDays),
             }
         );
         return token;
+    }
+
+    private async Task RevokeAllActiveTokensAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await _context
+            .RefreshTokens.Where(x => x.UserId == userId && x.DeletedAt == null)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(b => b.DeletedAt, DateTimeOffset.UtcNow),
+                cancellationToken
+            );
     }
 
     private string GenerateJwtToken(string userId, string email)
