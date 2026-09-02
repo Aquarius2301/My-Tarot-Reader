@@ -1,5 +1,12 @@
 import { useState, type ReactNode } from "react";
-import { ConfigProvider, Layout, Typography, Grid, type MenuProps } from "antd";
+import {
+  ConfigProvider,
+  Layout,
+  Typography,
+  Grid,
+  type MenuProps,
+  Spin,
+} from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import {
@@ -54,7 +61,7 @@ export default function MainLayout({
   const palette: Palette = getPaletteByRole(role, themeMode);
 
   const navigate = useNavigate();
-  const { mutate } = useLogout();
+  const { mutate, isPending } = useLogout();
   const isMobile = !screens.md;
 
   const toggleTheme = () => {
@@ -176,6 +183,8 @@ export default function MainLayout({
   return (
     <ConfigProvider theme={themeConfig}>
       <Layout style={{ minHeight: "100vh", backgroundColor: palette.bgLight }}>
+        {isPending && <Spin fullscreen />}
+
         {/* HEADER */}
         <LayoutHeader
           isMobile={isMobile}

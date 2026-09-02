@@ -8,7 +8,7 @@ export const enTarot = {
       advice: "Advice",
     },
     placeholder: {
-      general: "Detailed meaning for this card will be added soon.",
+      energy: "Explore this card's general meaning (coming soon).",
       career: "Explore this card's career meaning (coming soon).",
       money: "Explore this card's money meaning (coming soon).",
       love: "Explore this card's love meaning (coming soon).",

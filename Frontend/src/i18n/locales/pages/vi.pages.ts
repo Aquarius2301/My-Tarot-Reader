@@ -46,6 +46,11 @@ export const viPages = {
       empty: "Chưa có lịch sử trải bài",
       reversed: "Ngược",
       upright: "Xuôi",
+      deleteAria: "Xóa lượt trải bài {{card}}",
+      deleteConfirmTitle: "Xóa lượt trải bài này?",
+      deleteOk: "Xóa",
+      deleteCancel: "Hủy",
+      deleteSuccess: "Đã xóa lượt trải bài",
     },
   },
   nav: {

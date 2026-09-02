@@ -46,6 +46,11 @@ export const enPages = {
       empty: "No readings found yet",
       reversed: "Reversed",
       upright: "Upright",
+      deleteAria: "Delete {{card}} reading",
+      deleteConfirmTitle: "Delete this reading?",
+      deleteOk: "Delete",
+      deleteCancel: "Cancel",
+      deleteSuccess: "Reading deleted",
     },
   },
   nav: {
