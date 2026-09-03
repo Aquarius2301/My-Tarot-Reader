@@ -11,8 +11,8 @@ public class AIReadHistoryConfiguration : IEntityTypeConfiguration<AIReadHistory
     {
         builder.Property(x => x.CardCount).IsRequired().HasConversion<string>().HasMaxLength(10);
         builder.Property(x => x.QuestionType).IsRequired().HasConversion<string>().HasMaxLength(10);
-        builder.Property(x => x.Question).HasMaxLength(1000);
         builder.Property(x => x.Answer).IsRequired().HasMaxLength(5000);
+        builder.Property(x => x.Cards).IsRequired().HasMaxLength(2000);
 
         builder
             .HasOne(a => a.User)

@@ -5,8 +5,8 @@ namespace MyTarotReader.Domain.Entities;
 
 /// <summary>
 /// Represents a record of a user performing an AI-powered tarot reading. Each record stores the
-/// identifier of the user who performed the reading, the question asked, the type of question,
-/// the number of cards drawn, and the AI-generated answer. The entity inherits from
+/// identifier of the user who performed the reading, the type of question, the number of cards
+/// drawn, and the AI-generated answer. The entity inherits from
 /// <see cref="BaseEntity"/> to get the standard audit fields (Id, CreatedAt, DeletedAt).
 /// </summary>
 public class AIReadHistory : BaseEntity
@@ -22,20 +22,21 @@ public class AIReadHistory : BaseEntity
     public CardCount CardCount { get; set; }
 
     /// <summary>
-    /// The category of the user's question (e.g., Energy, Love, Career, Money, Custom).
+    /// The category of the user's question (e.g., Energy, Love, Career, Money).
     /// </summary>
     public QuestionType QuestionType { get; set; }
-
-    /// <summary>
-    /// The optional question text provided by the user for the AI reading. May be null for
-    /// predefined question types that do not require free-text input.
-    /// </summary>
-    public string? Question { get; set; }
 
     /// <summary>
     /// The AI-generated answer or interpretation based on the drawn cards and the user's question.
     /// </summary>
     public string Answer { get; set; } = string.Empty;
+
+    /// <summary>
+    /// JSON array string of the cards drawn for this reading, each entry containing
+    /// the card's code, its English name, and whether it was reversed
+    /// (e.g. <c>[{"code":"maj-00","name":"The Fool","isReversed":true}]</c>).
+    /// </summary>
+    public string Cards { get; set; } = string.Empty;
 
     #region Navigation Properties
 

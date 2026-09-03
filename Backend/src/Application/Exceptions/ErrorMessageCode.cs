@@ -65,4 +65,20 @@ public static class ErrorMessageCode
         /// <summary>The history record was not found.</summary>
         public const string NotFound = "error.history.notFound";
     }
+
+    /// <summary>AI tarot feature codes.</summary>
+    public static class AiTarot
+    {
+        /// <summary>The number of cards does not match the requested card count.</summary>
+        public const string InvalidCardCount = "error.aiTarot.invalidCardCount";
+
+        /// <summary>One of the supplied card codes is invalid.</summary>
+        public const string InvalidCard = "error.aiTarot.invalidCard";
+
+        /// <summary>Gemini rejected the key or the model name is invalid.</summary>
+        public const string InvalidConfig = "error.aiTarot.invalidConfig";
+
+        /// <summary>Gemini returned no readable answer.</summary>
+        public const string EmptyAnswer = "error.aiTarot.emptyAnswer";
+    }
 }
