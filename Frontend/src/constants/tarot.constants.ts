@@ -127,3 +127,31 @@ export const TAROT_SECTIONS = [
  * It is derived from the `TAROT_SECTIONS` constant and can be used for type checking and ensuring that only valid sections are assigned to tarot readings.
  */
 export type TarotSections = (typeof TAROT_SECTIONS)[number];
+
+/**
+ * The available question types for tarot card readings, which can be used to categorize and interpret the user's questions during a reading.
+ */
+export const QUESTION_TYPES = ["energy", "career", "money", "love"] as const;
+
+/**
+ * The type representing the question types for tarot card readings, which can be used to categorize and interpret the user's questions during a reading.
+ */
+export type QuestionType = (typeof QUESTION_TYPES)[number];
+
+/**
+ * The available card counts for tarot card readings, which can be used to determine the number of cards drawn during a reading.
+ */
+export const CARD_COUNT_OPTIONS = ["three", "five", "seven", "ten"] as const;
+
+/**
+ * The type representing the card counts for tarot card readings, which can be used to determine the number of cards drawn during a reading.
+ */
+export type CardCount = (typeof CARD_COUNT_OPTIONS)[number];
+
+/** Numeric limit of cards drawn per card count (drives the TarotDeck limit). */
+export const CARD_COUNT_LIMIT: Record<CardCount, number> = {
+  three: 3,
+  five: 5,
+  seven: 7,
+  ten: 10,
+};

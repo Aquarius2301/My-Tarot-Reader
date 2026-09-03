@@ -52,6 +52,31 @@ export const enPages = {
       deleteCancel: "Cancel",
       deleteSuccess: "Reading deleted",
     },
+    aiDraw: {
+      title: "AI Tarot Reading",
+      intro:
+        "Choose the number of cards, question type and language, then draw to receive a deep AI interpretation.",
+      cardPositionsLabel: "Card positions",
+      cardPositions: {
+        three: "Core energy, Challenges / obstacles, Outcome / advice",
+        five: "Core energy, Challenges / obstacles, Your strength, Future, Outcome / advice",
+        seven:
+          "Core energy, Challenges / obstacles, Your strength, Hidden influences, The way to face it, Future, Outcome / advice",
+        ten: "Core energy, Challenges / obstacles, What to focus on, Past, Your strength, Near future, Suggested approach, What you need to know, Hopes / fears, Outcome / advice",
+      },
+
+      languageLabel: "Interpretation language",
+      language: {
+        vi: "Tiếng Việt",
+        en: "English",
+      },
+      confirmButton: "Get Reading",
+      saving: "Interpreting...",
+      resultTitle: "Reading Result",
+      yourCards: "Your Cards",
+      drawAgain: "Draw Again",
+      invalidSelection: "Please select all the required cards before reading.",
+    },
   },
   nav: {
     login: "Sign in",
@@ -63,5 +88,21 @@ export const enPages = {
     guest: "Guest",
     vietnamese: "Vietnamese",
     english: "English",
+  },
+  select: {
+    questionTypeLabel: "Question type",
+    questionType: {
+      energy: "Energy",
+      love: "Love",
+      career: "Career",
+      money: "Money",
+    },
+    cardCountLabel: "Number of cards",
+    cardCount: {
+      three: "3 cards",
+      five: "5 cards",
+      seven: "7 cards",
+      ten: "10 cards",
+    },
   },
 } as const;

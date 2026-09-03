@@ -87,7 +87,12 @@ export default function MainLayout({
           label: t("page.draw.oneCard.title"),
           href: user ? WEB_URL.DRAW : WEB_URL.DRAW_GUEST,
         },
-      ],
+        user && {
+          key: "aiDraw",
+          label: t("page.aiDraw.title"),
+          href: WEB_URL.AI_DRAW,
+        },
+      ].filter(Boolean) as NavItem[],
     },
     user && {
       key: "history",

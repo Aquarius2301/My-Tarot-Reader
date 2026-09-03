@@ -10,6 +10,7 @@ export const WEB_URL = {
   DRAW: "/draw",
   DRAW_GUEST: "/guest/draw",
   HISTORY: "/history",
+  AI_DRAW: "/draw/ai",
 } as const;
 
 /**
@@ -28,5 +29,8 @@ export const API_URL = {
   },
   HISTORY: {
     GET_ALL: "api/v1/history",
+  },
+  AITAROT: {
+    READING: "api/v1/ai-tarot/reading",
   },
 } as const;
