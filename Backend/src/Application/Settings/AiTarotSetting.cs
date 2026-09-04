@@ -14,4 +14,10 @@ public class AiTarotSetting
     /// Bound from the <c>AiTarot:Model</c> appsettings section.
     /// </summary>
     public string Model { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Maximum number of tokens Gemini may generate per response.
+    /// Bound from the <c>AiTarot:MaxOutputTokens</c> appsettings section.
+    /// </summary>
+    public int MaxOutputTokens { get; set; } = 16384;
 }

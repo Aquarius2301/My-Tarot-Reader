@@ -80,5 +80,20 @@ public static class ErrorMessageCode
 
         /// <summary>Gemini returned no readable answer.</summary>
         public const string EmptyAnswer = "error.aiTarot.emptyAnswer";
+
+        /// <summary>The session was not found or does not belong to this user.</summary>
+        public const string SessionNotFound = "error.aiTarot.sessionNotFound";
+
+        /// <summary>The session is not in the correct phase for this operation.</summary>
+        public const string InvalidSessionPhase = "error.aiTarot.invalidSessionPhase";
+
+        /// <summary>The card count is out of the allowed range (1-15).</summary>
+        public const string InvalidCustomCardCount = "error.aiTarot.invalidCustomCardCount";
+
+        /// <summary>The conversation history is empty.</summary>
+        public const string EmptyConversation = "error.aiTarot.emptyConversation";
+
+        /// <summary>The conversation history exceeds the maximum allowed messages.</summary>
+        public const string ConversationTooLong = "error.aiTarot.conversationTooLong";
     }
 }

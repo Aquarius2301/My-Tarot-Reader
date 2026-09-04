@@ -76,6 +76,22 @@ export const viPages = {
       drawAgain: "Rút lại",
       invalidSelection: "Vui lòng chọn đủ số lá bài trước khi xem bài.",
     },
+    aiChat: {
+      title: "Trò chuyện AI Tarot",
+      subtitle:
+        "Hỏi bất cứ điều gì và để AI hướng dẫn trải bài Tarot của bạn",
+      inputPlaceholder: "Nhập câu hỏi Tarot của bạn...",
+      send: "Gửi",
+      thinking: "AI đang suy nghĩ...",
+      spreadProposalTitle: "Spread được đề xuất",
+      spreadProposalDescription:
+        "Dựa trên câu hỏi của bạn, tôi đề xuất spread sau:",
+      drawCardsButton: "Rút bài",
+      drawCardsHint: "Chọn {{count}} lá bài từ bộ bài bên dưới",
+      readingTitle: "Kết quả trải bài",
+      readingYourCards: "Các lá bài của bạn",
+      newChat: "Bắt đầu trò chuyện mới",
+    },
   },
   nav: {
     login: "Đăng nhập",

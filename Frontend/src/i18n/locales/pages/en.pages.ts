@@ -77,6 +77,22 @@ export const enPages = {
       drawAgain: "Draw Again",
       invalidSelection: "Please select all the required cards before reading.",
     },
+    aiChat: {
+      title: "AI Tarot Chat",
+      subtitle:
+        "Ask anything and let AI guide your tarot reading",
+      inputPlaceholder: "Type your tarot question...",
+      send: "Send",
+      thinking: "AI is thinking...",
+      spreadProposalTitle: "Spread Recommended",
+      spreadProposalDescription:
+        "Based on your question, I recommend the following spread:",
+      drawCardsButton: "Draw Cards",
+      drawCardsHint: "Select {{count}} cards from the deck below",
+      readingTitle: "Your Reading",
+      readingYourCards: "Your Cards",
+      newChat: "Start New Chat",
+    },
   },
   nav: {
     login: "Sign in",

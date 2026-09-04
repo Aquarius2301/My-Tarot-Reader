@@ -92,6 +92,11 @@ export default function MainLayout({
           label: t("page.aiDraw.title"),
           href: WEB_URL.AI_DRAW,
         },
+        user && {
+          key: "aiChat",
+          label: t("page.aiChat.title"),
+          href: WEB_URL.AI_CHAT,
+        },
       ].filter(Boolean) as NavItem[],
     },
     user && {

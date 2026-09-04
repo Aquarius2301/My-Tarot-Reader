@@ -127,6 +127,7 @@ public class AiTarotService : IAiTarotService
             new
             {
                 contents = new[] { new { role = "user", parts = new[] { new { text = prompt } } } },
+                generationConfig = new { maxOutputTokens = _settings.MaxOutputTokens },
             }
         );
 
