@@ -1,5 +1,12 @@
 import { useState, type ReactNode } from "react";
-import { ConfigProvider, Layout, Typography, Grid, type MenuProps } from "antd";
+import {
+  ConfigProvider,
+  Layout,
+  Typography,
+  Grid,
+  type MenuProps,
+  Spin,
+} from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import {
@@ -54,7 +61,7 @@ export default function MainLayout({
   const palette: Palette = getPaletteByRole(role, themeMode);
 
   const navigate = useNavigate();
-  const { mutate } = useLogout();
+  const { mutate, isPending } = useLogout();
   const isMobile = !screens.md;
 
   const toggleTheme = () => {
@@ -80,7 +87,17 @@ export default function MainLayout({
           label: t("page.draw.oneCard.title"),
           href: user ? WEB_URL.DRAW : WEB_URL.DRAW_GUEST,
         },
-      ],
+        user && {
+          key: "aiDraw",
+          label: t("page.aiDraw.title"),
+          href: WEB_URL.AI_DRAW,
+        },
+        user && {
+          key: "aiChat",
+          label: t("page.aiChat.title"),
+          href: WEB_URL.AI_CHAT,
+        },
+      ].filter(Boolean) as NavItem[],
     },
     user && {
       key: "history",
@@ -176,6 +193,8 @@ export default function MainLayout({
   return (
     <ConfigProvider theme={themeConfig}>
       <Layout style={{ minHeight: "100vh", backgroundColor: palette.bgLight }}>
+        {isPending && <Spin fullscreen />}
+
         {/* HEADER */}
         <LayoutHeader
           isMobile={isMobile}

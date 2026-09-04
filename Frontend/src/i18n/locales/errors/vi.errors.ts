@@ -12,5 +12,11 @@ export const viErrors = {
       drawnAlready:
         "Bạn đã rút một lá bài hôm nay. Vui lòng quay lại lúc 0 giờ",
     },
+    aiTarot: {
+      invalidCardCount: "Số lá bài không khớp với mức đã chọn.",
+      invalidCard: "Một trong các lá bài không hợp lệ.",
+      invalidConfig: "Không thể kết nối dịch vụ luận giải AI.",
+      emptyAnswer: "AI không thể tạo câu trả lời. Vui lòng thử lại.",
+    },
   },
 };

@@ -15,6 +15,12 @@ const LazyGuestDrawTarotPage = lazy(
   () => import("@/pages/public/GuestDrawTarotPage"),
 );
 const LazyHistoryPage = lazy(() => import("@/pages/protected/HistoryPage"));
+const LazyAIDrawTarotPage = lazy(
+  () => import("@/pages/protected/AIDrawTarotPage"),
+);
+const LazyAiTarotChatPage = lazy(
+  () => import("@/pages/protected/AiTarotChatPage"),
+);
 
 interface AppRoute {
   titleKey: string;
@@ -54,6 +60,16 @@ const protectedRoutes: AppRoute[] = [
     titleKey: "page.history.title",
     path: WEB_URL.HISTORY,
     component: LazyHistoryPage,
+  },
+  {
+    titleKey: "page.aiDraw.title",
+    path: WEB_URL.AI_DRAW,
+    component: LazyAIDrawTarotPage,
+  },
+  {
+    titleKey: "page.aiChat.title",
+    path: WEB_URL.AI_CHAT,
+    component: LazyAiTarotChatPage,
   },
 ];
 

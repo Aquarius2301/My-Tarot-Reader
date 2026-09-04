@@ -4,3 +4,4 @@ export * from "./route.constants";
 export * from "./enum.constants";
 export * from "./language.constants";
 export * from "./tarot.constants";
+export * from "./queryKey.constants";

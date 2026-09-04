@@ -33,6 +33,7 @@ public static class AllExtension
         services.AddRedis(configuration);
         services.AddCorsPolicy(configuration);
         services.AddDIExtensions();
+        services.AddHttpClients();
         services.AddSettings(configuration);
         services.AddJwtAuthentication(configuration);
         services.AddHostedService<TokenCleanupBackgroundService>();

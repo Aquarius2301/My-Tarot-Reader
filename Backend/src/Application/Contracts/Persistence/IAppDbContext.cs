@@ -10,6 +10,8 @@ public interface IAppDbContext
     DbSet<RefreshToken> RefreshTokens { get; set; }
     DbSet<Wallet> Wallets { get; set; }
     DbSet<ReadHistory> ReadHistories { get; set; }
+    DbSet<AIReadHistory> AIReadHistories { get; set; }
+    DbSet<ChatMessage> ChatMessages { get; set; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

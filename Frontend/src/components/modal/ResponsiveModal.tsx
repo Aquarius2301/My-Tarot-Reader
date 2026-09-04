@@ -45,20 +45,35 @@ export default function ResponsiveModal({
     .some((bp) => screens[bp]);
 
   if (isMobile) {
+    // `drawerProps.styles` may be a plain object OR a render function; resolve
+    // the function form so caller styles are preserved on mobile too. We add a
+    // height cap so tall content (e.g. a card meaning list) stays inside the
+    // viewport and the drawer section/body scroll instead of overflowing past
+    // the top on mobile.
+    const callerStyles =
+      typeof drawerProps?.styles === "function"
+        ? drawerProps.styles({ props: drawerProps as DrawerProps })
+        : drawerProps?.styles;
+    const isVertical =
+      drawerPlacement === "bottom" || drawerPlacement === "top";
+
     return (
       <Drawer
         open={open}
         onClose={onClose}
         title={title}
         placement={drawerPlacement}
-        size={
-          drawerPlacement === "bottom" || drawerPlacement === "top"
-            ? "auto"
-            : undefined
-        }
+        size={isVertical ? "auto" : undefined}
         footer={footer}
         destroyOnHidden
         {...drawerProps}
+        styles={{
+          ...callerStyles,
+          section: {
+            maxHeight: isVertical ? "85vh" : undefined,
+            ...callerStyles?.section,
+          },
+        }}
       >
         {children}
       </Drawer>

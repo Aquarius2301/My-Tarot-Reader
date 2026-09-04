@@ -12,5 +12,11 @@ export const enErrors = {
       drawnAlready:
         "You have already drawn a card today. Please come back at 0:00 local time.",
     },
+    aiTarot: {
+      invalidCardCount: "The number of cards does not match the selected card count.",
+      invalidCard: "One of the drawn cards is invalid.",
+      invalidConfig: "Unable to reach the AI reading service.",
+      emptyAnswer: "The AI could not produce an answer. Please try again.",
+    },
   },
 };

@@ -46,6 +46,51 @@ export const viPages = {
       empty: "Chưa có lịch sử trải bài",
       reversed: "Ngược",
       upright: "Xuôi",
+      deleteAria: "Xóa lượt trải bài {{card}}",
+      deleteConfirmTitle: "Xóa lượt trải bài này?",
+      deleteOk: "Xóa",
+      deleteCancel: "Hủy",
+      deleteSuccess: "Đã xóa lượt trải bài",
+    },
+    aiDraw: {
+      title: "Xem bài cùng AI",
+      intro:
+        "Chọn số lá, loại câu hỏi và ngôn ngữ, sau đó rút bài để nhận luận giải chuyên sâu từ AI.",
+      languageLabel: "Ngôn ngữ luận giải",
+      language: {
+        vi: "Tiếng Việt",
+        en: "English",
+      },
+      cardPositionsLabel: "Vị trí của các lá",
+      cardPositions: {
+        three: "Năng lượng cốt lõi, Thử thách / vật cản, Kết quả / lời khuyên",
+        five: "Năng lượng cốt lõi, Thử thách / vật cản, Điểm mạnh của bạn, Tương lai, Kết quả / lời khuyên",
+        seven:
+          "Năng lượng cốt lõi, Thử thách / vật cản, Điểm mạnh của bạn, Ảnh hưởng tiềm ẩn, Cách đối mặt, Tương lai, Kết quả / lời khuyên",
+        ten: "Năng lượng cốt lõi, Thử thách / vật cản, Điều cần tập trung, Quá khứ, Điểm mạnh của bạn, Tương lai gần, Cách tiếp cận đề xuất, Điều bạn cần biết, Hy vọng / nỗi sợ, Kết quả / lời khuyên",
+      },
+      confirmButton: "Xem bài",
+      saving: "Đang luận giải...",
+      resultTitle: "Kết quả luận giải",
+      yourCards: "Các lá bài của bạn",
+      drawAgain: "Rút lại",
+      invalidSelection: "Vui lòng chọn đủ số lá bài trước khi xem bài.",
+    },
+    aiChat: {
+      title: "Trò chuyện AI Tarot",
+      subtitle:
+        "Hỏi bất cứ điều gì và để AI hướng dẫn trải bài Tarot của bạn",
+      inputPlaceholder: "Nhập câu hỏi Tarot của bạn...",
+      send: "Gửi",
+      thinking: "AI đang suy nghĩ...",
+      spreadProposalTitle: "Spread được đề xuất",
+      spreadProposalDescription:
+        "Dựa trên câu hỏi của bạn, tôi đề xuất spread sau:",
+      drawCardsButton: "Rút bài",
+      drawCardsHint: "Chọn {{count}} lá bài từ bộ bài bên dưới",
+      readingTitle: "Kết quả trải bài",
+      readingYourCards: "Các lá bài của bạn",
+      newChat: "Bắt đầu trò chuyện mới",
     },
   },
   nav: {
@@ -58,5 +103,21 @@ export const viPages = {
     guest: "Khách",
     vietnamese: "Tiếng Việt",
     english: "English",
+  },
+  select: {
+    questionTypeLabel: "Loại câu hỏi",
+    questionType: {
+      energy: "Năng lượng",
+      love: "Tình yêu",
+      career: "Sự nghiệp",
+      money: "Tiền bạc",
+    },
+    cardCountLabel: "Số lá bài",
+    cardCount: {
+      three: "3 lá",
+      five: "5 lá",
+      seven: "7 lá",
+      ten: "10 lá",
+    },
   },
 } as const;

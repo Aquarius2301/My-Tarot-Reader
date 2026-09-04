@@ -10,6 +10,8 @@ export const WEB_URL = {
   DRAW: "/draw",
   DRAW_GUEST: "/guest/draw",
   HISTORY: "/history",
+  AI_DRAW: "/draw/ai",
+  AI_CHAT: "/draw/ai-chat",
 } as const;
 
 /**
@@ -28,5 +30,13 @@ export const API_URL = {
   },
   HISTORY: {
     GET_ALL: "api/v1/history",
+  },
+  AITAROT: {
+    READING: "api/v1/ai-tarot/reading",
+  },
+  AI_CHAT: {
+    SESSION: "api/v1/ai-chat/session",
+    CHAT: "api/v1/ai-chat/chat",
+    READING: "api/v1/ai-chat/reading",
   },
 } as const;

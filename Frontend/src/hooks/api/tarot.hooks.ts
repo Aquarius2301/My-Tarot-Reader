@@ -1,18 +1,11 @@
 import { tarotApi } from "@/api";
+import {
+  AVAILABLE_TIME_QUERY_KEY,
+  GET_HISTORY_READINGS_KEY,
+  LAST_DRAWN_CARD_QUERY_KEY,
+} from "@/constants";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getVisitorId } from "@/utils/fingerprint.utils";
-
-const TAROT_QUERY_KEY = ["tarot"] as const;
-
-const AVAILABLE_TIME_QUERY_KEY = [
-  ...TAROT_QUERY_KEY,
-  "availableTimeForGuest",
-] as const;
-
-const LAST_DRAWN_CARD_QUERY_KEY = [
-  ...TAROT_QUERY_KEY,
-  "lastDrawnCardForAuth",
-] as const;
 
 export const useGetAvailableTimeForGuest = (enabled: boolean = true) => {
   return useQuery({
@@ -51,6 +44,7 @@ export const useCreateDrawForAuth = () => {
       tarotApi.createDrawForAuthHistory(card),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: LAST_DRAWN_CARD_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: GET_HISTORY_READINGS_KEY });
     },
   });
 };

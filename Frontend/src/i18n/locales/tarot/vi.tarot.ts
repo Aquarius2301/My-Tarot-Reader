@@ -8,7 +8,7 @@ export const viTarot = {
       advice: "Lời khuyên",
     },
     placeholder: {
-      general: "Giải nghĩa chi tiết cho lá bài này sẽ sớm ra mắt.",
+      energy: "Khám phá ý nghĩa tổng quan của lá bài này (sắp ra mắt).",
       career: "Khám phá ý nghĩa sự nghiệp của lá bài này (sắp ra mắt).",
       money: "Khám phá ý nghĩa tài chính của lá bài này (sắp ra mắt).",
       love: "Khám phá ý nghĩa tình cảm của lá bài này (sắp ra mắt).",
