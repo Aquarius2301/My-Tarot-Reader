@@ -40,6 +40,8 @@ export default function AiTarotChatPage() {
   const [phase, setPhase] = useState<PagePhase>("idle");
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
+  const [question, setQuestion] = useState(""); // idle-phase draft
+  const [draft, setDraft] = useState(""); // chatting-phase draft
   const [spreadRecommendation, setSpreadRecommendation] =
     useState<SpreadRecommendation | null>(null);
   const [showSpread, setShowSpread] = useState(true);
@@ -62,6 +64,7 @@ export default function AiTarotChatPage() {
               { role: "model", text: data.answer },
             ]);
             setPhase("chatting");
+            setQuestion(""); // idle input unmounts on phase change; hygiene
           },
           onError: (error) => {
             messageApi.error(getErrorMessage(error));
@@ -77,6 +80,8 @@ export default function AiTarotChatPage() {
       if (!historyId) return;
 
       setSpreadRecommendation(null);
+
+      const optimisticIndex = messages.length; // pre-append index
       setMessages((prev) => [...prev, { role: "user", text }]);
 
       sendMessage.mutate(
@@ -92,14 +97,18 @@ export default function AiTarotChatPage() {
               setSpreadRecommendation(data.spreadRecommendation);
               setShowSpread(true);
             }
+            setDraft(""); // clear only on success
           },
           onError: (error) => {
+            // Roll back the optimistic user message so it isn't duplicated;
+            // the typed text stays in the input (draft is never cleared).
+            setMessages((prev) => prev.slice(0, optimisticIndex));
             messageApi.error(getErrorMessage(error));
           },
         },
       );
     },
-    [historyId, sendMessage, language, messageApi],
+    [historyId, sendMessage, language, messageApi, messages],
   );
 
   const handleConfirmDraw = useCallback(
@@ -139,6 +148,8 @@ export default function AiTarotChatPage() {
     setSpreadRecommendation(null);
     setSelectedCards([]);
     setReadingAnswer(null);
+    setQuestion("");
+    setDraft("");
     setDeckKey((k) => k + 1);
   }, []);
 
@@ -183,6 +194,8 @@ export default function AiTarotChatPage() {
 
         <Card style={{ width: "100%" }}>
           <AiChatInput
+            value={question}
+            onChange={setQuestion}
             onSend={handleSendQuestion}
             disabled={isLoading}
           />
@@ -236,6 +249,8 @@ export default function AiTarotChatPage() {
       {phase === "chatting" && (
         <div style={{ paddingTop: 12, borderTop: "1px solid var(--ai-chat-divider, #303030)" }}>
           <AiChatInput
+            value={draft}
+            onChange={setDraft}
             onSend={handleSendFollowUp}
             disabled={isLoading}
           />
