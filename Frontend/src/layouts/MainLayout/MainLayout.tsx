@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import {
+  App as AntdApp,
   ConfigProvider,
   Layout,
   Typography,
@@ -192,56 +193,58 @@ export default function MainLayout({
 
   return (
     <ConfigProvider theme={themeConfig}>
-      <Layout style={{ minHeight: "100vh", backgroundColor: palette.bgLight }}>
-        {isPending && <Spin fullscreen />}
+      <AntdApp>
+        <Layout style={{ minHeight: "100vh", backgroundColor: palette.bgLight }}>
+          {isPending && <Spin fullscreen />}
 
-        {/* HEADER */}
-        <LayoutHeader
-          isMobile={isMobile}
-          user={user}
-          palette={palette}
-          themeMode={themeMode}
-          langMode={langMode}
-          currentPath={currentPath}
-          menuItems={menuItems}
-          userDropdownItems={userDropdownItems}
-          onToggleTheme={toggleTheme}
-          onToggleLanguage={toggleLanguage}
-          onOpenMobileMenu={() => setMobileMenuOpen(true)}
-          onLogin={handleLogin}
-        />
-
-        {/* CONTENT */}
-        <Content
-          style={{
-            padding: isMobile ? "16px" : "24px 48px",
-            color: palette.text,
-          }}
-        >
-          {children}
-        </Content>
-
-        {/* FOOTER */}
-        <LayoutFooter palette={palette} />
-
-        {/* MOBILE DRAWER */}
-        {isMobile && (
-          <MobileDrawer
-            open={mobileMenuOpen}
-            onClose={() => setMobileMenuOpen(false)}
+          {/* HEADER */}
+          <LayoutHeader
+            isMobile={isMobile}
             user={user}
             palette={palette}
             themeMode={themeMode}
             langMode={langMode}
             currentPath={currentPath}
             menuItems={menuItems}
+            userDropdownItems={userDropdownItems}
             onToggleTheme={toggleTheme}
             onToggleLanguage={toggleLanguage}
-            onLogout={handleDrawerLogout}
+            onOpenMobileMenu={() => setMobileMenuOpen(true)}
             onLogin={handleLogin}
           />
-        )}
-      </Layout>
+
+          {/* CONTENT */}
+          <Content
+            style={{
+              padding: isMobile ? "16px" : "24px 48px",
+              color: palette.text,
+            }}
+          >
+            {children}
+          </Content>
+
+          {/* FOOTER */}
+          <LayoutFooter palette={palette} />
+
+          {/* MOBILE DRAWER */}
+          {isMobile && (
+            <MobileDrawer
+              open={mobileMenuOpen}
+              onClose={() => setMobileMenuOpen(false)}
+              user={user}
+              palette={palette}
+              themeMode={themeMode}
+              langMode={langMode}
+              currentPath={currentPath}
+              menuItems={menuItems}
+              onToggleTheme={toggleTheme}
+              onToggleLanguage={toggleLanguage}
+              onLogout={handleDrawerLogout}
+              onLogin={handleLogin}
+            />
+          )}
+        </Layout>
+      </AntdApp>
     </ConfigProvider>
   );
 }
