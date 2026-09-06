@@ -22,9 +22,10 @@ public abstract class BaseException : Exception
         int statusCode,
         string errorCode,
         string? message = null,
-        IReadOnlyList<FieldError>? fieldErrors = null
+        IReadOnlyList<FieldError>? fieldErrors = null,
+        Exception? innerException = null
     )
-        : base(message ?? errorCode)
+        : base(message ?? errorCode, innerException)
     {
         StatusCode = statusCode;
         ErrorCode = errorCode;
@@ -94,10 +95,11 @@ public class TooManyRequestsException : BaseException
 /// <summary>500 - an unexpected server-side error occurred.</summary>
 public class InternalServerException : BaseException
 {
-    /// <summary>Constructs an internal-server exception.</summary>
+    /// <summary>Constructs an internal-server exception with an optional inner exception for diagnostics.</summary>
     public InternalServerException(
         string code = ErrorMessageCode.Server.InternalServerError,
-        string? message = null
+        string? message = null,
+        Exception? innerException = null
     )
-        : base(500, code, message) { }
+        : base(500, code, message, null, innerException) { }
 }

@@ -1,4 +1,3 @@
-using System.Reflection;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
@@ -97,9 +96,12 @@ public class EmailService(IOptions<EmailSetting> emailSetting) : IEmailService
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new InternalServerException(ErrorMessageCode.Email.SendFailed);
+            throw new InternalServerException(
+                ErrorMessageCode.Email.SendFailed,
+                innerException: ex
+            );
         }
     }
 
