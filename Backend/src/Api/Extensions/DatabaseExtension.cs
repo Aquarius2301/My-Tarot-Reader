@@ -5,14 +5,14 @@ using MyTarotReader.Infrastructure.Persistence;
 namespace MyTarotReader.Api.Extensions;
 
 /// <summary>
-/// Registers the application's EF Core DbContext with SQL Server.
+/// Registers the application's EF Core DbContext with PostgreSQL.
 /// </summary>
 public static class DatabaseExtension
 {
     /// <summary>
     /// Adds the <see cref="AppDbContext"/> to the service collection using the
     /// <c>DefaultConnection</c> connection string. Pooled registration reuses
-    /// context instances to reduce per-request allocation once SQL reads exist.
+    /// context instances to reduce per-request allocation once PostgreSQL reads exist.
     /// </summary>
     /// <param name="services">The service collection to extend.</param>
     /// <param name="configuration">Configuration providing the DefaultConnection string.</param>
@@ -22,6 +22,6 @@ public static class DatabaseExtension
             configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("DefaultConnection is not configured.");
 
-        services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
     }
 }
