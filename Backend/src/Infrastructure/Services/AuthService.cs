@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MyTarotReader.Application.Contracts.Persistence;
@@ -21,23 +22,30 @@ public class AuthService : IAuthService
     private readonly JwtSetting _jwtSetting;
     private readonly WalletSetting _walletSetting;
     private readonly IAppDbContext _context;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         IOptions<GoogleSetting> googleSetting,
         IOptions<JwtSetting> jwtSetting,
         IOptions<WalletSetting> walletSetting,
-        IAppDbContext context
+        IAppDbContext context,
+        IEmailService emailService,
+        ILogger<AuthService> logger
     )
     {
         _googleSetting = googleSetting.Value;
         _jwtSetting = jwtSetting.Value;
         _walletSetting = walletSetting.Value;
         _context = context;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<GoogleLoginResult> GoogleLoginAsync(
         string credential,
         string deviceFingerprint,
+        string? locale,
         CancellationToken cancellationToken = default
     )
     {
@@ -78,6 +86,22 @@ public class AuthService : IAuthService
             };
             _context.Users.Add(userEntity);
             CreateWalletForUser(userEntity.Id);
+
+            // First-time sign-up: send a welcome email. A failure (e.g. SMTP down) must
+            // never block the login, so it is logged and swallowed.
+            try
+            {
+                await _emailService.SendWelcomeEmailAsync(
+                    payload.Email,
+                    payload.Name,
+                    locale,
+                    cancellationToken
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send welcome email to {Email}", payload.Email);
+            }
         }
         else
         {

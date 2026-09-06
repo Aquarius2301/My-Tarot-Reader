@@ -96,4 +96,27 @@ public static class ErrorMessageCode
         /// <summary>The conversation history exceeds the maximum allowed messages.</summary>
         public const string ConversationTooLong = "error.aiTarot.conversationTooLong";
     }
+
+    /// <summary>Wallet feature codes.</summary>
+    public static class Wallet
+    {
+        /// <summary>The user does not have enough coins for the requested deduction.</summary>
+        public const string InsufficientBalance = "error.wallet.insufficientBalance";
+
+        /// <summary>No wallet was found for the specified user.</summary>
+        public const string WalletNotFound = "error.wallet.walletNotFound";
+
+        /// <summary>The requested coin amount must be a positive integer.</summary>
+        public const string InvalidAmount = "error.wallet.invalidAmount";
+    }
+
+    /// <summary>Email feature codes.</summary>
+    public static class Email
+    {
+        /// <summary>The recipient email address is malformed.</summary>
+        public const string InvalidAddress = "error.email.invalidAddress";
+
+        /// <summary>The email could not be sent (SMTP/connection failure).</summary>
+        public const string SendFailed = "error.email.sendFailed";
+    }
 }

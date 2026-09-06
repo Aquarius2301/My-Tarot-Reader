@@ -11,12 +11,14 @@ public interface IAuthService
     /// </summary>
     /// <param name="credential">The Google ID token received from the client.</param>
     /// <param name="deviceFingerprint">The stable device fingerprint used for token binding.</param>
+    /// <param name="locale">The user's UI locale ("vi" or "en"); used to localize the welcome email on first-time sign-up.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The issued token pair.</returns>
     /// <exception cref="BadRequestException">Thrown when the Google credential is invalid.</exception>
     Task<GoogleLoginResult> GoogleLoginAsync(
         string credential,
         string deviceFingerprint,
+        string? locale,
         CancellationToken cancellationToken = default
     );
 
