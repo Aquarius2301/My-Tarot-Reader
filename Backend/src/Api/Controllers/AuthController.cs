@@ -43,6 +43,7 @@ public class AuthController : ControllerBase
         var response = await _service.GoogleLoginAsync(
             request.Credential,
             deviceId,
+            request.Locale,
             cancellationToken
         );
 

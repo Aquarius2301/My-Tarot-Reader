@@ -19,5 +19,6 @@ public static class SettingExtension
         services.Configure<AiTarotSetting>(configuration.GetSection("AiTarot"));
         services.Configure<TokenCleanupSetting>(configuration.GetSection("TokenCleanup"));
         services.Configure<WalletSetting>(configuration.GetSection("Wallet"));
+        services.Configure<EmailSetting>(configuration.GetSection("Email"));
     }
 }

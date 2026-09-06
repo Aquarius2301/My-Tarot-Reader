@@ -9,7 +9,7 @@ namespace MyTarotReader.Api.Extensions;
 public static class HttpExtension
 {
     /// <summary>
-    /// Registers the typed HttpClient used by the AI tarot service and wires up
+    /// Registers the typed HttpClient used by the AI tarot/chat services and wires up
     /// <see cref="IAiTarotService"/> to its <see cref="AiTarotService"/> implementation,
     /// and <see cref="IAiChatService"/> to its <see cref="AiChatService"/> implementation.
     /// </summary>

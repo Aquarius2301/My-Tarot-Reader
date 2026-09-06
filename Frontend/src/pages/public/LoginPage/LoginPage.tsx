@@ -20,7 +20,7 @@ export interface BenefitItem {
 }
 
 export default function LoginPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { mutate, isPending } = useLogin();
   const navigate = useNavigate();
   const { token } = theme.useToken();
@@ -28,7 +28,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = (credential: string) => {
     mutate(
-      { credential },
+      { credential, locale: i18n.language },
       {
         onSuccess: () => {
           navigate(WEB_URL.AUTH_HOME, { replace: true });

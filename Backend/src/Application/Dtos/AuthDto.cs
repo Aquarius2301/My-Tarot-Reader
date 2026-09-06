@@ -6,7 +6,8 @@ namespace MyTarotReader.Application.Dtos;
 /// Request for Google authentication.
 /// </summary>
 /// <param name="Credential">The Google authentication credential</param>
-public record GoogleLoginRequest(string Credential);
+/// <param name="Locale">The user's UI locale ("vi" or "en"); used to localize the welcome email.</param>
+public record GoogleLoginRequest(string Credential, string? Locale);
 
 /// <summary>
 /// Response for successful authentication. Carries both tokens for the controller to write into

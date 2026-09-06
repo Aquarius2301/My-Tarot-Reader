@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="StackExchange.Redis" Version="2.8.0" />
+    <PackageReference Include="MailKit" Version="4.17.0" />
 
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
@@ -24,6 +25,11 @@
 
   <ItemGroup>
     <Folder Include="Persistence/Configurations/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Templates/Welcome/*.html" />
+    <EmbeddedResource Include="Templates/Welcome/*.html" />
   </ItemGroup>
 
 </Project>
