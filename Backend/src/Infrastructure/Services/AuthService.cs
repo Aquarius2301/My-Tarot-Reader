@@ -87,21 +87,9 @@ public class AuthService : IAuthService
             _context.Users.Add(userEntity);
             CreateWalletForUser(userEntity.Id);
 
-            // First-time sign-up: send a welcome email. A failure (e.g. SMTP down) must
-            // never block the login, so it is logged and swallowed.
-            try
-            {
-                await _emailService.SendWelcomeEmailAsync(
-                    payload.Email,
-                    payload.Name,
-                    locale,
-                    cancellationToken
-                );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send welcome email to {Email}", payload.Email);
-            }
+            // First-time sign-up: queue the welcome email in the background so login never
+            // blocks on SMTP. Best-effort only — any failure is logged and swallowed inside.
+            _ = SendWelcomeEmailInBackgroundAsync(payload.Email, payload.Name, locale);
         }
         else
         {
@@ -302,6 +290,32 @@ public class AuthService : IAuthService
                 s => s.SetProperty(b => b.DeletedAt, DateTimeOffset.UtcNow),
                 cancellationToken
             );
+    }
+
+    /// <summary>
+    /// Sends the first-time-sign-up welcome email without blocking the login request.
+    /// Fire-and-forget: the returned task is intentionally not awaited so the HTTP
+    /// response completes immediately; successes are silent and failures only logged.
+    /// </summary>
+    /// <param name="toEmail">Recipient email address.</param>
+    /// <param name="toName">Recipient display name.</param>
+    /// <param name="locale">Preferred language (vi/en), used to select the template.</param>
+    /// <returns>An unobserved background task.</returns>
+    private async Task SendWelcomeEmailInBackgroundAsync(
+        string toEmail,
+        string toName,
+        string? locale
+    )
+    {
+        try
+        {
+            // No request cancellation token here: the send may outlive the HTTP request.
+            await _emailService.SendWelcomeEmailAsync(toEmail, toName, locale);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send welcome email to {Email}", toEmail);
+        }
     }
 
     private string GenerateJwtToken(string userId, string email)
