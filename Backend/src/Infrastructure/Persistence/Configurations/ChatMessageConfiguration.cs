@@ -20,5 +20,7 @@ public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(m => new { m.HistoryId, m.Sequence });
+
+        builder.HasQueryFilter(u => u.DeletedAt == null);
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Contracts.Services;
@@ -32,7 +33,7 @@ public class AITarotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    // [Authorize]
+    [Authorize]
     public async Task<IActionResult> CreateAiTarotReadingAsync(
         [FromBody] CreateAiTarotReadingRequest request,
         CancellationToken cancellationToken

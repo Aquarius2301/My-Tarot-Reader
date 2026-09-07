@@ -10,8 +10,16 @@ public class AIReadHistoryConfiguration : IEntityTypeConfiguration<AIReadHistory
     public void Configure(EntityTypeBuilder<AIReadHistory> builder)
     {
         builder.Property(x => x.Status).IsRequired().HasConversion<string>().HasMaxLength(10);
-        builder.Property(x => x.CardCount).IsRequired(false).HasConversion<string>().HasMaxLength(10);
-        builder.Property(x => x.QuestionType).IsRequired(false).HasConversion<string>().HasMaxLength(10);
+        builder
+            .Property(x => x.CardCount)
+            .IsRequired(false)
+            .HasConversion<string>()
+            .HasMaxLength(10);
+        builder
+            .Property(x => x.QuestionType)
+            .IsRequired(false)
+            .HasConversion<string>()
+            .HasMaxLength(10);
         builder.Property(x => x.Question).IsRequired().HasMaxLength(2000);
         builder.Property(x => x.Answer).HasMaxLength(5000);
         builder.Property(x => x.Cards).HasMaxLength(2000);
@@ -29,5 +37,7 @@ public class AIReadHistoryConfiguration : IEntityTypeConfiguration<AIReadHistory
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(a => a.UserId);
+
+        builder.HasQueryFilter(u => u.DeletedAt == null);
     }
 }

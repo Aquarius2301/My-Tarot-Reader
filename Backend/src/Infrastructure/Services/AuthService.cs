@@ -106,8 +106,7 @@ public class AuthService : IAuthService
             .RefreshTokens.Where(r =>
                 r.UserId == userEntity.Id
                 && r.DeviceFingerprint == deviceFingerprint
-                && r.DeletedAt == null
-            )
+                            )
             .ExecuteUpdateAsync(
                 s => s.SetProperty(b => b.DeletedAt, DateTimeOffset.UtcNow),
                 cancellationToken

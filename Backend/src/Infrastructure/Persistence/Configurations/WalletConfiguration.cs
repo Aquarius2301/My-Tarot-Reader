@@ -15,5 +15,7 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
         // The one-to-one relationship with User is configured on UserConfiguration;
         // the UserId FK must be unique so each user owns exactly one wallet.
         builder.HasIndex(w => w.UserId).IsUnique();
+
+        builder.HasQueryFilter(u => u.DeletedAt == null);
     }
 }

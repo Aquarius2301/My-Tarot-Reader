@@ -19,5 +19,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(w => w.User)
             .HasForeignKey<Wallet>(w => w.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(u => u.DeletedAt == null);
     }
 }

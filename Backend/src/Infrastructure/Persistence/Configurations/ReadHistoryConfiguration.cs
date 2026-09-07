@@ -15,5 +15,7 @@ public class ReadHistoryConfiguration : IEntityTypeConfiguration<ReadHistory>
             .WithMany()
             .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(u => u.DeletedAt == null);
     }
 }

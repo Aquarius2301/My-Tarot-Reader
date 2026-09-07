@@ -21,7 +21,7 @@ public class HistoryService : IHistoryService
     )
     {
         var history = await _context
-            .ReadHistories.Where(r => r.UserId == userId && r.DeletedAt == null)
+            .ReadHistories.Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
             .Select(r => new HistoryResult(r.Id, r.CardCode, r.IsReversed, r.CreatedAt))
             .ToListAsync(cancellationToken);
@@ -37,7 +37,7 @@ public class HistoryService : IHistoryService
     {
         var record =
             await _context.ReadHistories.FirstOrDefaultAsync(
-                r => r.Id == historyId && r.UserId == userId && r.DeletedAt == null,
+                r => r.Id == historyId && r.UserId == userId,
                 cancellationToken
             ) ?? throw new NotFoundException(ErrorMessageCode.History.NotFound);
 

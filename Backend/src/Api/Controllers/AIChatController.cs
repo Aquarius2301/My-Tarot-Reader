@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Contracts.Services;
@@ -7,11 +8,11 @@ namespace MyTarotReader.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/ai-chat")]
-public class AiChatController : ControllerBase
+public class AIChatController : ControllerBase
 {
     private readonly IAiChatService _service;
 
-    public AiChatController(IAiChatService service)
+    public AIChatController(IAiChatService service)
     {
         _service = service;
     }
@@ -32,7 +33,7 @@ public class AiChatController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    // [Authorize]
+    [Authorize]
     public async Task<IActionResult> CreateChatSessionAsync(
         [FromBody] CreateChatSessionRequest request,
         CancellationToken cancellationToken
@@ -61,7 +62,7 @@ public class AiChatController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    // [Authorize]
+    [Authorize]
     public async Task<IActionResult> SendChatMessageAsync(
         [FromBody] SendChatMessageRequest request,
         CancellationToken cancellationToken
@@ -90,7 +91,7 @@ public class AiChatController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    // [Authorize]
+    [Authorize]
     public async Task<IActionResult> CreateCustomReadingAsync(
         [FromBody] CreateCustomReadingRequest request,
         CancellationToken cancellationToken

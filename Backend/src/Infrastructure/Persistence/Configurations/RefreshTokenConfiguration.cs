@@ -17,5 +17,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 
         builder.HasIndex(rt => rt.UserId);
         builder.HasIndex(rt => rt.DeviceFingerprint);
+
+        builder.HasQueryFilter(u => u.DeletedAt == null);
     }
 }

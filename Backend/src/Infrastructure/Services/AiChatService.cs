@@ -241,7 +241,7 @@ public class AiChatService : IAiChatService
     )
     {
         return await _context.AIReadHistories.FirstOrDefaultAsync(
-                h => h.Id == historyId && h.UserId == userId && h.DeletedAt == null,
+                h => h.Id == historyId && h.UserId == userId,
                 cancellationToken
             ) ?? throw new NotFoundException(ErrorMessageCode.AiTarot.SessionNotFound);
     }
