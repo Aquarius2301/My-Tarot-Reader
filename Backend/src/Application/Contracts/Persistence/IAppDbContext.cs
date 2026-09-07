@@ -1,4 +1,5 @@
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MyTarotReader.Domain.Entities;
 
@@ -11,7 +12,8 @@ public interface IAppDbContext
     DbSet<Wallet> Wallets { get; set; }
     DbSet<ReadHistory> ReadHistories { get; set; }
     DbSet<AIReadHistory> AIReadHistories { get; set; }
-    DbSet<ChatMessage> ChatMessages { get; set; }
 
+    DbSet<ChatMessage> ChatMessages { get; set; }
+    DbSet<AIChatHistory> AIChatHistories { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

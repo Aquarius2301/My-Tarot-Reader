@@ -6,6 +6,5 @@ namespace MyTarotReader.Domain.Enums
         Love,
         Career,
         Money,
-        Custom,
     }
 }

@@ -72,34 +72,27 @@ public class AiChatService : IAiChatService
         var systemInstruction = BuildChatSystemInstruction(request.Language);
         var answer = await CallGeminiAsync(
             systemInstruction,
-            new[] { ("user", request.Question) },
+            [(ChatRole.User, request.Question)],
             cancellationToken
         );
 
-        var history = new AIReadHistory
-        {
-            UserId = userId,
-            Question = request.Question,
-            Status = ChatSessionStatus.Chat,
-        };
+        var history = new AIChatHistory { UserId = userId, Status = ChatSessionStatus.Chatting };
 
-        _context.AIReadHistories.Add(history);
+        _context.AIChatHistories.Add(history);
         await _context.SaveChangesAsync(cancellationToken);
 
         _context.ChatMessages.AddRange(
             new ChatMessage
             {
-                HistoryId = history.Id,
-                Role = "user",
+                ChatId = history.Id,
+                Role = ChatRole.User,
                 Text = request.Question,
-                Sequence = 0,
             },
             new ChatMessage
             {
-                HistoryId = history.Id,
-                Role = "model",
+                ChatId = history.Id,
+                Role = ChatRole.Model,
                 Text = answer,
-                Sequence = 1,
             }
         );
         await _context.SaveChangesAsync(cancellationToken);
@@ -127,12 +120,12 @@ public class AiChatService : IAiChatService
 
         var history = await LoadHistoryAsync(request.HistoryId, userId, cancellationToken);
 
-        if (history.Status == ChatSessionStatus.Reading)
+        if (history.Status == ChatSessionStatus.Finished)
             throw new BadRequestException(ErrorMessageCode.AiTarot.InvalidSessionPhase);
 
         var messages = await _context
-            .ChatMessages.Where(m => m.HistoryId == history.Id)
-            .OrderBy(m => m.Sequence)
+            .ChatMessages.Where(m => m.ChatId == history.Id)
+            .OrderByDescending(m => m.CreatedAt)
             .ToListAsync(cancellationToken);
 
         if (messages.Count > MaxConversationMessages)
@@ -140,7 +133,7 @@ public class AiChatService : IAiChatService
 
         var geminiMessages = messages
             .Select(m => (m.Role, m.Text))
-            .Concat(new[] { ("user", request.Message) })
+            .Concat([(ChatRole.User, request.Message)])
             .ToList();
 
         var systemInstruction = BuildChatSystemInstruction(request.Language);
@@ -150,17 +143,15 @@ public class AiChatService : IAiChatService
         _context.ChatMessages.AddRange(
             new ChatMessage
             {
-                HistoryId = history.Id,
-                Role = "user",
+                ChatId = history.Id,
+                Role = ChatRole.User,
                 Text = request.Message,
-                Sequence = nextSeq,
             },
             new ChatMessage
             {
-                HistoryId = history.Id,
-                Role = "model",
+                ChatId = history.Id,
+                Role = ChatRole.Model,
                 Text = answer,
-                Sequence = nextSeq + 1,
             }
         );
         await _context.SaveChangesAsync(cancellationToken);
@@ -199,12 +190,14 @@ public class AiChatService : IAiChatService
 
         var history = await LoadHistoryAsync(request.HistoryId, userId, cancellationToken);
 
-        if (history.Status == ChatSessionStatus.Reading)
+        if (history.Status == ChatSessionStatus.Finished)
             throw new BadRequestException(ErrorMessageCode.AiTarot.InvalidSessionPhase);
 
-        var conversationLines = await _context
-            .ChatMessages.Where(m => m.HistoryId == history.Id)
-            .OrderBy(m => m.Sequence)
+        var conversations = _context
+            .ChatMessages.Where(m => m.ChatId == history.Id)
+            .OrderByDescending(m => m.CreatedAt);
+
+        var conversationLines = await conversations
             .Select(m => $"{m.Role}: {m.Text}")
             .ToListAsync(cancellationToken);
 
@@ -216,17 +209,23 @@ public class AiChatService : IAiChatService
         );
         var answer = await CallGeminiAsync(
             BuildChatSystemInstruction(request.Language),
-            new[] { ("user", prompt) },
+            [(ChatRole.User, prompt)],
             cancellationToken
         );
 
         var truncatedAnswer = answer.Length > AnswerMaxLength ? answer[..AnswerMaxLength] : answer;
 
-        history.Status = ChatSessionStatus.Reading;
-        history.CardCount = null; // Not applicable for custom readings
-        history.QuestionType = QuestionType.Custom;
-        history.Answer = truncatedAnswer;
-        history.Cards = JsonSerializer.Serialize(request.Cards);
+        history.Status = ChatSessionStatus.Finished;
+
+        _context.ChatMessages.Add(
+            new ChatMessage
+            {
+                Cards = JsonSerializer.Serialize(request.Cards),
+                ChatId = history.Id,
+                Role = ChatRole.Model,
+                Text = truncatedAnswer,
+            }
+        );
 
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -234,13 +233,13 @@ public class AiChatService : IAiChatService
     }
 
     /// <summary>Loads a reading history record and validates ownership.</summary>
-    private async Task<AIReadHistory> LoadHistoryAsync(
+    private async Task<AIChatHistory> LoadHistoryAsync(
         Guid historyId,
         Guid userId,
         CancellationToken cancellationToken
     )
     {
-        return await _context.AIReadHistories.FirstOrDefaultAsync(
+        return await _context.AIChatHistories.FirstOrDefaultAsync(
                 h => h.Id == historyId && h.UserId == userId,
                 cancellationToken
             ) ?? throw new NotFoundException(ErrorMessageCode.AiTarot.SessionNotFound);
@@ -261,13 +260,17 @@ public class AiChatService : IAiChatService
             + "\nAfter you have sufficient understanding (usually 2-6 exchanges), propose a specific spread layout:"
             + "\n- State the number of cards (1 to 15)"
             + "\n- Name each position with a specific meaning"
-            + "\n- A position name can be used multiple positions if the same meaning applies to multiple cards"
+            + "\n- A position name can be used for multiple positions if the same meaning applies"
             + "\n- Use this EXACT format when recommending a spread:"
             + "\n\n**Proposed Spread: {Spread Name}** ({N} cards)"
             + "\n\nPosition 1: {position name}"
             + "\nPosition 2: {position name}"
             + "\n..."
             + "\nPosition N: {position name}"
+            + "\n ### ANTI-BYPASS & SECURITY RULES (CRITICAL)"
+            + "\n- STRICTLY FORBIDDEN: Do NOT perform any tarot reading or interpretation if the user types card names, lists drawn cards, or asks you to interpret cards they drew outside the app."
+            + "\n- If the user provides their own cards in text (e.g., 'I drew The Fool...'), politely refuse to interpret them. Explain in a warm, mystical tone that to ensure true spiritual connection and energetic alignment, the cards MUST be drawn interactively through the app's sacred deck interface."
+            + "\n- Immediately follow up by proposing a spread layout using the exact format above so they can proceed to draw cards properly on the screen."
             + "\n\n### RULES"
             + "\n- Language: MUST respond in natural, warm, and accessible "
             + languageName
@@ -279,7 +282,7 @@ public class AiChatService : IAiChatService
 
     /// <summary>Builds the reading prompt for custom sessions with chat context.</summary>
     private static string BuildCustomReadingPrompt(
-        AIReadHistory history,
+        AIChatHistory history,
         List<string> conversationLines,
         List<AiTarotCardRequest> cards,
         Language language
@@ -290,7 +293,7 @@ public class AiChatService : IAiChatService
             "You are now performing a tarot reading based on the following consultation:"
         );
         lines.AppendLine();
-        lines.AppendLine($"User's original question: {history.Question}");
+        lines.AppendLine($"User's original question: {history.Messages}");
         lines.AppendLine();
         lines.AppendLine("Here is a summary of the conversation context from the consultation:");
         lines.AppendLine(string.Join("\n", conversationLines));
@@ -316,14 +319,14 @@ public class AiChatService : IAiChatService
     /// <summary>Sends a request to Gemini with conversation history and returns the extracted answer text.</summary>
     private async Task<string> CallGeminiAsync(
         string systemInstruction,
-        IReadOnlyList<(string Role, string Text)> messages,
+        IReadOnlyList<(ChatRole Role, string Text)> messages,
         CancellationToken cancellationToken
     )
     {
         var url = string.Format(GeminiEndpoint, _settings.Model, _settings.ApiKey);
 
         var contents = messages
-            .Select(m => new { role = m.Role, parts = new[] { new { text = m.Text } } })
+            .Select(m => new { role = m.Role.ToString(), parts = new[] { new { text = m.Text } } })
             .ToArray();
 
         var payload = JsonSerializer.Serialize(

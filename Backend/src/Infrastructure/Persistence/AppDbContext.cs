@@ -12,10 +12,13 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Wallet> Wallets { get; set; } = null!;
     public DbSet<ReadHistory> ReadHistories { get; set; } = null!;
     public DbSet<AIReadHistory> AIReadHistories { get; set; } = null!;
+
     public DbSet<ChatMessage> ChatMessages { get; set; } = null!;
+    public DbSet<AIChatHistory> AIChatHistories { get; set; } = null!;
 
     // Generic Set implementation required by IAppDbContext
-    public new DbSet<T> Set<T>() where T : class => base.Set<T>();
+    public new DbSet<T> Set<T>()
+        where T : class => base.Set<T>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
@@ -29,6 +32,7 @@ public class AppDbContext : DbContext, IAppDbContext
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
         modelBuilder.ApplyConfiguration(new ReadHistoryConfiguration());
         modelBuilder.ApplyConfiguration(new AIReadHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new AIChatHistoryConfiguration());
         modelBuilder.ApplyConfiguration(new ChatMessageConfiguration());
     }
 }

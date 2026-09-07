@@ -6,8 +6,8 @@ namespace MyTarotReader.Domain.Enums;
 public enum ChatSessionStatus
 {
     /// <summary>The session is still in active conversation.</summary>
-    Chat,
+    Chatting,
 
-    /// <summary>The reading has been completed and persisted.</summary>
-    Reading,
+    /// <summary>The session has been completed and persisted.</summary>
+    Finished,
 }

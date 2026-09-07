@@ -9,17 +9,16 @@ public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
 {
     public void Configure(EntityTypeBuilder<ChatMessage> builder)
     {
-        builder.Property(x => x.Role).IsRequired().HasMaxLength(10);
+        builder.Property(x => x.Role).IsRequired().HasConversion<string>().HasMaxLength(10);
         builder.Property(x => x.Text).IsRequired();
-        builder.Property(x => x.Sequence).IsRequired();
 
         builder
-            .HasOne(m => m.History)
+            .HasOne(m => m.ChatHistory)
             .WithMany(h => h.Messages)
-            .HasForeignKey(m => m.HistoryId)
+            .HasForeignKey(m => m.ChatId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(m => new { m.HistoryId, m.Sequence });
+        builder.HasIndex(m => m.ChatId);
 
         builder.HasQueryFilter(u => u.DeletedAt == null);
     }
