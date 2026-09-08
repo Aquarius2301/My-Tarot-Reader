@@ -44,4 +44,41 @@ public class HistoryService : IHistoryService
         record.DeletedAt = DateTimeOffset.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<List<AIReadHistoryResult>> GetAllAiReadHistoryAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await _context
+            .AIReadHistories.Where(h => h.UserId == userId && h.DeletedAt == null)
+            .OrderByDescending(h => h.CreatedAt)
+            .Select(h => new AIReadHistoryResult(
+                h.Id,
+                h.CardCount,
+                h.QuestionType,
+                h.Answer,
+                h.Cards,
+                h.CreatedAt
+            ))
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteAiReadHistoryAsync(
+        Guid userId,
+        Guid historyId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var entity =
+            await _context.AIReadHistories.FirstOrDefaultAsync(
+                h => h.Id == historyId && h.UserId == userId,
+                cancellationToken
+            ) ?? throw new NotFoundException(ErrorMessageCode.History.NotFound);
+
+        entity.DeletedAt = DateTimeOffset.UtcNow;
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

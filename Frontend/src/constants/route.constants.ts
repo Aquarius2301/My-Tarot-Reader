@@ -30,6 +30,7 @@ export const API_URL = {
   },
   HISTORY: {
     GET_ALL: "api/v1/history",
+    GET_AI: "api/v1/history/ai",
   },
   AITAROT: {
     READING: "api/v1/ai-tarot/reading",

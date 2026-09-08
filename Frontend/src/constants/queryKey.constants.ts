@@ -7,6 +7,10 @@ export const GET_HISTORY_READINGS_KEY = [
   ...HISTORY_QUERY_KEY,
   "getHistoryReadings",
 ] as const;
+export const GET_AI_HISTORY_READINGS_KEY = [
+  ...HISTORY_QUERY_KEY,
+  "getAiHistoryReadings",
+] as const;
 
 // tarot.hooks.ts
 export const TAROT_QUERY_KEY = ["tarot"] as const;

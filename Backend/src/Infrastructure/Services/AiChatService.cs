@@ -69,7 +69,13 @@ public class AiChatService : IAiChatService
         if (string.IsNullOrWhiteSpace(request.Question))
             throw new BadRequestException(ErrorMessageCode.AiTarot.EmptyConversation);
 
-        var systemInstruction = BuildChatSystemInstruction(request.Language);
+        var username = await _context
+            .Users.AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(x => x.FullName)
+            .FirstAsync(cancellationToken);
+
+        var systemInstruction = BuildChatSystemInstruction(request.Language, username);
         var answer = await CallGeminiAsync(
             systemInstruction,
             [(ChatRole.User, request.Question)],
@@ -246,11 +252,15 @@ public class AiChatService : IAiChatService
     }
 
     /// <summary>Builds the system instruction for the chatbot role.</summary>
-    private static string BuildChatSystemInstruction(Language language)
+    private static string BuildChatSystemInstruction(Language language, string? username = null)
     {
         var languageName = language == Language.En ? "English" : "Vietnamese";
 
-        return "You are a professional, empathetic, and intuitive Tarot reader. You guide the user through a deeply personal consultation."
+        var usernameSection = username != null ? $" {username}" : "";
+
+        return "You are a professional, empathetic, and intuitive Tarot reader for"
+            + usernameSection
+            + " You guide the user through a deeply personal consultation."
             + "\n\n### YOUR ROLE"
             + "\n- Listen carefully to the user's question and situation"
             + "\n- Ask follow-up questions one at a time to understand their situation, emotions, and what they seek clarity on"

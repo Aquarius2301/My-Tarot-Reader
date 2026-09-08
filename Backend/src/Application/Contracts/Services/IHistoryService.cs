@@ -26,4 +26,28 @@ public interface IHistoryService
         Guid historyId,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Retrieves all active AI read-history items for a specific user, ordered by creation date descending.
+    /// </summary>
+    /// <param name="userId">The ID of the user whose AI read-history to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of <see cref="AIReadHistoryResult"/> objects.</returns>
+    Task<List<AIReadHistoryResult>> GetAllAiReadHistoryAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Soft-deletes an AI read-history record by setting DeletedAt to the current UTC time.
+    /// </summary>
+    /// <param name="userId">The ID of the user who owns the record.</param>
+    /// <param name="historyId">The ID of the AI read-history record to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task DeleteAiReadHistoryAsync(
+        Guid userId,
+        Guid historyId,
+        CancellationToken cancellationToken = default
+    );
 }
