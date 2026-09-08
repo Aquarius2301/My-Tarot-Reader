@@ -13,7 +13,10 @@ public class Wallet : BaseEntity
     /// </summary>
     public Guid UserId { get; set; }
 
-    public int WhiteCoin => WhiteCoinBatches.Sum(x => x.RemainingAmount);
+    public int WhiteCoin =>
+        WhiteCoinBatches
+            .Where(x => x.ExpiredAt >= DateTimeOffset.UtcNow)
+            .Sum(x => x.RemainingAmount);
 
     /// <summary>
     /// The user's red coin balance (no expiration date).

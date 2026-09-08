@@ -64,9 +64,8 @@ public sealed class TokenCleanupBackgroundService : BackgroundService
 
         var now = DateTimeOffset.UtcNow;
         return await db
-            .RefreshTokens.Where(r =>
-                r.DeletedAt != null || (r.DeletedAt == null && r.ExpiresAt < now)
-            )
+            .RefreshTokens.IgnoreQueryFilters()
+            .Where(r => r.DeletedAt != null || r.ExpiresAt < now)
             .ExecuteDeleteAsync(cancellationToken);
     }
 }

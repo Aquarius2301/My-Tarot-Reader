@@ -238,28 +238,24 @@ public class AuthService : IAuthService
         CancellationToken cancellationToken = default
     )
     {
-        var userEntity = await _context
-            .Users.Include(u => u.Wallet)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        var userEntity =
+            await _context
+                .Users.AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(x => new GetCurrentUserResponse(
+                    x.Id,
+                    x.Email,
+                    x.FullName,
+                    x.Picture,
+                    x.Wallet.WhiteCoinBatches.Where(b => b.ExpiredAt >= DateTimeOffset.UtcNow)
+                        .Sum(b => b.RemainingAmount),
+                    x.Wallet.RedCoin,
+                    x.Role
+                ))
+                .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new UnauthorizedException(ErrorMessageCode.Auth.Unauthorized);
 
-        // Treat a missing or soft-deleted account as an unauthenticated request.
-        if (userEntity is null || userEntity.DeletedAt is not null)
-        {
-            throw new UnauthorizedException(ErrorMessageCode.Auth.Unauthorized);
-        }
-
-        var wallet = userEntity.Wallet;
-
-        return new GetCurrentUserResponse(
-            userEntity.Id,
-            userEntity.Email,
-            userEntity.FullName,
-            userEntity.Picture,
-            wallet.WhiteCoin,
-            wallet.RedCoin,
-            userEntity.Role
-        );
+        return userEntity;
     }
 
     private string CreateRefreshToken(Guid userId, string deviceFingerprint)

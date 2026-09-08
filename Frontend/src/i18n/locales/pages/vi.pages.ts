@@ -126,6 +126,8 @@ export const viPages = {
     guest: "Khách",
     vietnamese: "Tiếng Việt",
     english: "English",
+    whiteCoin: "Xu trắng",
+    redCoin: "Xu đỏ",
   },
   select: {
     questionTypeLabel: "Loại câu hỏi",

@@ -19,6 +19,7 @@ import { APP_NAME, type LanguageMode } from "@/constants";
 import type { UserResponse } from "@/types";
 import type { Palette } from "./LayoutFooter";
 import UserDropdown from "./UserDropdown";
+import CoinBadge from "./CoinBadge";
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -100,6 +101,16 @@ export default function LayoutHeader({
 
           {/* Actions Right */}
           <Space size="middle">
+            {user && (
+              <CoinBadge
+                whiteCoin={user.whiteCoin}
+                redCoin={user.redCoin}
+                palette={palette}
+                isMobile={false}
+                themeMode={themeMode}
+              />
+            )}
+
             <Button
               type="text"
               icon={themeMode === "dark" ? <SunOutlined /> : <MoonOutlined />}
@@ -135,12 +146,21 @@ export default function LayoutHeader({
       {isMobile && (
         <Space size="small">
           {user ? (
-            <Avatar
-              src={user?.picture}
-              icon={<UserOutlined />}
-              size="small"
-              style={{ backgroundColor: palette.primary }}
-            />
+            <>
+              <CoinBadge
+                whiteCoin={user.whiteCoin}
+                redCoin={user.redCoin}
+                palette={palette}
+                isMobile
+                themeMode={themeMode}
+              />
+              <Avatar
+                src={user?.picture}
+                icon={<UserOutlined />}
+                size="small"
+                style={{ backgroundColor: palette.primary }}
+              />
+            </>
           ) : (
             <Button type="primary" size="small" onClick={onLogin}>
               {t("nav.login")}

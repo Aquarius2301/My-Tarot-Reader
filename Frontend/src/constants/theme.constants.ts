@@ -78,6 +78,19 @@ const BASE_SURFACE: Record<
   },
 };
 
+/**
+ * The display colors for the coin badges (white coin and red coin) shown in
+ * the header for authenticated users. These tint the coin icons so the two
+ * wallet balances are visually distinct in both light and dark mode.
+ */
+export const COIN_COLORS = {
+  /** White coin on dark surfaces: bright, near-white. */
+  white: "#F2EFFF",
+  /** White coin on light surfaces: silver-grey so it stays visible against a light header. */
+  whiteLight: "#6E6A85",
+  red: "#E5484D",
+} as const;
+
 /** Body font */
 const FONT_BODY = "'Cormorant Garamond', 'EB Garamond', Georgia, serif";
 

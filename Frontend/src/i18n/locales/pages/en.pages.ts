@@ -128,6 +128,8 @@ export const enPages = {
     guest: "Guest",
     vietnamese: "Vietnamese",
     english: "English",
+    whiteCoin: "White coins",
+    redCoin: "Red coins",
   },
   select: {
     questionTypeLabel: "Question type",
