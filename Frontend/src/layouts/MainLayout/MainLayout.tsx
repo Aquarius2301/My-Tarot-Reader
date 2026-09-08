@@ -105,6 +105,11 @@ export default function MainLayout({
       label: t("page.history.title"),
       href: WEB_URL.HISTORY,
     },
+    user && {
+      key: "library",
+      label: t("page.library.title"),
+      href: WEB_URL.LIBRARY,
+    },
   ].filter(Boolean) as NavItem[];
 
   // Dropdown for user info and logout

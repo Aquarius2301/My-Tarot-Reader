@@ -10,6 +10,7 @@ export const WEB_URL = {
   DRAW: "/draw",
   DRAW_GUEST: "/guest/draw",
   HISTORY: "/history",
+  LIBRARY: "/library",
   AI_DRAW: "/draw/ai",
   AI_CHAT: "/draw/ai-chat",
 } as const;

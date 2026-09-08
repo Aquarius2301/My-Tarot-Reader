@@ -89,8 +89,7 @@ export const viPages = {
     },
     aiChat: {
       title: "Trò chuyện AI Tarot",
-      subtitle:
-        "Hỏi bất cứ điều gì và để AI hướng dẫn trải bài Tarot của bạn",
+      subtitle: "Hỏi bất cứ điều gì và để AI hướng dẫn trải bài Tarot của bạn",
       inputPlaceholder: "Nhập câu hỏi Tarot của bạn...",
       send: "Gửi",
       thinking: "AI đang suy nghĩ...",
@@ -102,6 +101,19 @@ export const viPages = {
       readingTitle: "Kết quả trải bài",
       readingYourCards: "Các lá bài của bạn",
       newChat: "Bắt đầu trò chuyện mới",
+    },
+    library: {
+      title: "Kho bài Tarot",
+      subtitle: "Tất cả 78 lá bài cùng ý nghĩa xuôi & ngược",
+      tabMajor: "Bộ Ẩn Chính",
+      tabMinor: "Bộ Ẩn Phụ",
+      tabWands: "Gậy",
+      tabCups: "Cốc",
+      tabSwords: "Kiếm",
+      tabPentacles: "Tiền",
+      upright: "Xuôi",
+      reversed: "Ngược",
+      viewCardAria: "Xem ý nghĩa của {{card}}",
     },
   },
   nav: {

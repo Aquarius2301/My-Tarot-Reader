@@ -90,6 +90,16 @@ export const MINOR_ARCANA = [
   `min-pentacles-14`,
 ] as const;
 
+/**
+ * The four suits of the minor arcana, used to group minor arcana cards (e.g. in the card library page).
+ */
+export const MINOR_SUITS = ["wands", "cups", "swords", "pentacles"] as const;
+
+/**
+ * The type representing a minor arcana suit, derived from `MINOR_SUITS`.
+ */
+export type MinorSuit = (typeof MINOR_SUITS)[number];
+
 export const TAROT_CARDS = [...MAJOR_ARCANA, ...MINOR_ARCANA] as const;
 
 /**
