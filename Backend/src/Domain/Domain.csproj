@@ -8,9 +8,4 @@
     <RootNamespace>MyTarotReader.Domain</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Common/" />
-    <Folder Include="Enums/" />
-  </ItemGroup>
-
 </Project>

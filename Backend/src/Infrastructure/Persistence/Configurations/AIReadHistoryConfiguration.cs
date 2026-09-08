@@ -16,11 +16,9 @@ public class AIReadHistoryConfiguration : IEntityTypeConfiguration<AIReadHistory
 
         builder
             .HasOne(a => a.User)
-            .WithMany()
+            .WithMany(u => u.AIReadHistories)
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasIndex(a => a.UserId);
 
         builder.HasQueryFilter(u => u.DeletedAt == null);
     }

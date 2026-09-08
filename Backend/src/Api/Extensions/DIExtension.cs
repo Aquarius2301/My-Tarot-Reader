@@ -23,6 +23,7 @@ public static class DIExtension
         services.AddScoped<ITarotService, TarotService>();
         services.AddScoped<IHistoryService, HistoryService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IWalletService, WalletService>();
 
         return services;
     }

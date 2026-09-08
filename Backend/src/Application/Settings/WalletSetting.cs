@@ -8,4 +8,6 @@ public class WalletSetting
     /// Bound from the <c>Wallet:InitialWhiteCoins</c> appsettings section.
     /// </summary>
     public int InitialWhiteCoins { get; set; } = 5;
+
+    public int ExpireDays { get; set; } = 30;
 }

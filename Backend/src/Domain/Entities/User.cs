@@ -32,7 +32,7 @@ public class User : BaseEntity
     /// <summary>
     /// The user's role.
     /// </summary>
-    public Role Role { get; set; } = Role.Registered;
+    public UserRole Role { get; set; } = UserRole.Registered;
 
     #region Navigation Properties
 
@@ -45,5 +45,25 @@ public class User : BaseEntity
     /// Wallet associated with this user (one-to-one).
     /// </summary>
     public Wallet Wallet { get; set; } = null!;
+
+    /// <summary>
+    /// Read histories associated with this user (one-to-many).
+    /// </summary>
+    public List<ReadHistory> ReadHistories { get; set; } = [];
+
+    /// <summary>
+    /// AI read histories associated with this user (one-to-many).
+    /// </summary>
+    public List<AIReadHistory> AIReadHistories { get; set; } = [];
+
+    /// <summary>
+    /// AI chat histories associated with this user (one-to-many).
+    /// </summary>
+    public List<AIChatHistory> AIChatHistories { get; set; } = [];
+
+    /// <summary>
+    /// Transactions associated with this user (one-to-many).
+    /// </summary>
+    public List<Transaction> Transactions { get; set; } = [];
     #endregion
 }

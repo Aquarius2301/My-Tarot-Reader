@@ -13,15 +13,14 @@ public class Wallet : BaseEntity
     /// </summary>
     public Guid UserId { get; set; }
 
-    /// <summary>
-    /// The user's white coin balance.
-    /// </summary>
-    public int WhiteCoin { get; set; } = 0;
+    public int WhiteCoin => WhiteCoinBatches.Sum(x => x.RemainingAmount);
 
     /// <summary>
-    /// The user's red coin balance.
+    /// The user's red coin balance (no expiration date).
     /// </summary>
     public int RedCoin { get; set; } = 0;
+
+    public DateTimeOffset UpdatedAt { get; set; }
 
     #region Navigation Properties
 
@@ -29,5 +28,7 @@ public class Wallet : BaseEntity
     /// The owning user.
     /// </summary>
     public User User { get; set; } = null!;
+
+    public List<WhiteCoinBatch> WhiteCoinBatches { get; set; } = [];
     #endregion
 }

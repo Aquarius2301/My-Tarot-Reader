@@ -1,6 +1,6 @@
 namespace MyTarotReader.Domain.Enums;
 
-public enum Role
+public enum UserRole
 {
     Registered,
     Pro,

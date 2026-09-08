@@ -9,13 +9,28 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
 {
     public void Configure(EntityTypeBuilder<Wallet> builder)
     {
-        builder.Property(w => w.WhiteCoin).HasDefaultValue(0);
-        builder.Property(w => w.RedCoin).HasDefaultValue(0);
+        builder.HasKey(x => x.Id);
 
-        // The one-to-one relationship with User is configured on UserConfiguration;
-        // the UserId FK must be unique so each user owns exactly one wallet.
-        builder.HasIndex(w => w.UserId).IsUnique();
+        builder.Property(x => x.RedCoin).IsRequired().HasDefaultValue(0);
+        builder.Property(x => x.UpdatedAt).IsRequired();
 
-        builder.HasQueryFilter(u => u.DeletedAt == null);
+        builder.HasIndex(x => x.UserId).IsUnique();
+
+        // One-to-one with User (User is the dependent, keyed by UserId).
+        builder
+            .HasOne(x => x.User)
+            .WithOne(u => u.Wallet)
+            .HasForeignKey<Wallet>(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Wallet → WhiteCoinBatch uses Restrict to avoid multiple-cascade-path
+        // (TransactionDetail → WhiteCoinBatch also targets WhiteCoinBatch).
+        builder
+            .HasMany(x => x.WhiteCoinBatches)
+            .WithOne()
+            .HasForeignKey(x => x.WalletId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasQueryFilter(x => x.DeletedAt == null);
     }
 }

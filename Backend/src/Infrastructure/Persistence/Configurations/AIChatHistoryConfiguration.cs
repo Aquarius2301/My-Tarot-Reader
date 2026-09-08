@@ -13,7 +13,7 @@ public class AIChatHistoryConfiguration : IEntityTypeConfiguration<AIChatHistory
 
         builder
             .HasOne(a => a.User)
-            .WithMany()
+            .WithMany(u => u.AIChatHistories)
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 

@@ -8,11 +8,10 @@ public class ReadHistoryConfiguration : IEntityTypeConfiguration<ReadHistory>
 {
     public void Configure(EntityTypeBuilder<ReadHistory> builder)
     {
-        builder.HasKey(r => r.Id);
         builder.Property(r => r.CardCode).IsRequired().HasMaxLength(12);
         builder
             .HasOne(r => r.User)
-            .WithMany()
+            .WithMany(r => r.ReadHistories)
             .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 

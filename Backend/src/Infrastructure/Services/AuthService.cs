@@ -104,9 +104,8 @@ public class AuthService : IAuthService
         // machine don't pile up active rows. Other devices' sessions are preserved.
         var activeSameDevice = await _context
             .RefreshTokens.Where(r =>
-                r.UserId == userEntity.Id
-                && r.DeviceFingerprint == deviceFingerprint
-                            )
+                r.UserId == userEntity.Id && r.DeviceFingerprint == deviceFingerprint
+            )
             .ExecuteUpdateAsync(
                 s => s.SetProperty(b => b.DeletedAt, DateTimeOffset.UtcNow),
                 cancellationToken
@@ -122,12 +121,17 @@ public class AuthService : IAuthService
 
     private void CreateWalletForUser(Guid userId)
     {
-        var wallet = new Wallet
+        var wallet = new Wallet { UserId = userId, RedCoin = 0 };
+
+        var whiteCount = new WhiteCoinBatch
         {
-            UserId = userId,
-            WhiteCoin = _walletSetting.InitialWhiteCoins,
-            RedCoin = 0,
+            WalletId = wallet.Id,
+            Amount = _walletSetting.InitialWhiteCoins,
+            RemainingAmount = _walletSetting.InitialWhiteCoins,
+            ExpiredAt = DateTimeOffset.UtcNow.AddDays(_walletSetting.ExpireDays),
         };
+
+        _context.WhiteCoinBatches.Add(whiteCount);
         _context.Wallets.Add(wallet);
     }
 

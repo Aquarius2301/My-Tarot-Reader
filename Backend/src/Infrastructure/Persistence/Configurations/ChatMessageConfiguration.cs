@@ -18,8 +18,6 @@ public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
             .HasForeignKey(m => m.ChatId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(m => m.ChatId);
-
         builder.HasQueryFilter(u => u.DeletedAt == null);
     }
 }

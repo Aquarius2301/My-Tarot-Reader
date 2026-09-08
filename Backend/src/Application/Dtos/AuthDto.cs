@@ -34,5 +34,5 @@ public record GetCurrentUserResponse(
     string Picture,
     int WhiteCoin,
     int RedCoin,
-    Role Role
+    UserRole Role
 );
