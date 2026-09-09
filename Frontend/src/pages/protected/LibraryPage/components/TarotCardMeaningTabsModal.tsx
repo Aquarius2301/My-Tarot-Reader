@@ -1,50 +1,18 @@
 import { useState } from "react";
-import { Card, Tabs, Typography, theme } from "antd";
+import { Tabs, theme } from "antd";
 import { useTranslation } from "react-i18next";
-import { ResponsiveModal, TarotCard } from "@/components";
-import { TAROT_SECTIONS, type TarotCardCode } from "@/constants";
-
-type Orientation = "upright" | "reversed";
+import {
+  CardMeaningSections,
+  ResponsiveModal,
+  TarotCard,
+  type MeaningOrientation,
+} from "@/components";
+import type { TarotCardCode } from "@/constants";
 
 export interface TarotCardMeaningTabsModalProps {
   open: boolean;
   onClose: () => void;
   cardCode?: TarotCardCode;
-}
-
-/** The five meaning sections for one card in one orientation, scrollable so
- * the card face and orientation tabs above stay fixed. */
-function MeaningPanel({
-  cardCode,
-  orientation,
-}: {
-  cardCode: TarotCardCode;
-  orientation: Orientation;
-}) {
-  const { t } = useTranslation();
-  const { token } = theme.useToken();
-
-  return (
-    <div style={{ overflow: "auto", maxHeight: "45vh" }}>
-      <Card style={{ textAlign: "left" }}>
-        {TAROT_SECTIONS.map((section) => {
-          const key = `tarot.meaning.${cardCode}.${orientation}.${section}`;
-          return (
-            <div key={section} style={{ marginBottom: token.marginMD }}>
-              <Typography.Text strong>
-                {t(`tarot.section.${section}`)}
-              </Typography.Text>
-              <Typography.Paragraph style={{ marginTop: token.marginXS }}>
-                {t(key, {
-                  defaultValue: t(`tarot.placeholder.${section}`),
-                })}
-              </Typography.Paragraph>
-            </div>
-          );
-        })}
-      </Card>
-    </div>
-  );
 }
 
 /**
@@ -60,7 +28,8 @@ export default function TarotCardMeaningTabsModal({
 }: TarotCardMeaningTabsModalProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
-  const [orientation, setOrientation] = useState<Orientation>("upright");
+  const [orientation, setOrientation] =
+    useState<MeaningOrientation>("upright");
 
   if (!open || !cardCode) {
     return null;
@@ -87,20 +56,28 @@ export default function TarotCardMeaningTabsModal({
         <Tabs
           centered
           activeKey={orientation}
-          onChange={(key) => setOrientation(key as Orientation)}
+          onChange={(key) => setOrientation(key as MeaningOrientation)}
           items={[
             {
               key: "upright" as const,
               label: t("page.library.upright"),
               children: (
-                <MeaningPanel cardCode={cardCode} orientation="upright" />
+                <CardMeaningSections
+                  cardCode={cardCode}
+                  orientation="upright"
+                  scrollable
+                />
               ),
             },
             {
               key: "reversed" as const,
               label: t("page.library.reversed"),
               children: (
-                <MeaningPanel cardCode={cardCode} orientation="reversed" />
+                <CardMeaningSections
+                  cardCode={cardCode}
+                  orientation="reversed"
+                  scrollable
+                />
               ),
             },
           ]}

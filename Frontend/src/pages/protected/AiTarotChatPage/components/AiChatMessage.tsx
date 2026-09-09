@@ -1,5 +1,5 @@
 import { Typography } from "antd";
-import ReactMarkdown from "react-markdown";
+import { AiMarkdown } from "@/components";
 import type { AiChatMessage as AiChatMessageType } from "@/types";
 
 const { Text } = Typography;
@@ -38,42 +38,7 @@ export default function AiChatMessage({ message }: AiChatMessageProps) {
             {message.text}
           </Text>
         ) : (
-          <ReactMarkdown
-            components={{
-              h1: ({ children }) => (
-                <Typography.Title level={4} style={{ color: "inherit", marginBottom: 8 }}>
-                  {children}
-                </Typography.Title>
-              ),
-              h2: ({ children }) => (
-                <Typography.Title level={5} style={{ color: "inherit", marginBottom: 6 }}>
-                  {children}
-                </Typography.Title>
-              ),
-              h3: ({ children }) => (
-                <Typography.Title level={5} style={{ color: "inherit", marginBottom: 4 }}>
-                  {children}
-                </Typography.Title>
-              ),
-              p: ({ children }) => (
-                <Typography.Paragraph
-                  style={{ color: "inherit", marginBottom: 8, fontSize: 15, lineHeight: 1.7 }}
-                >
-                  {children}
-                </Typography.Paragraph>
-              ),
-              strong: ({ children }) => (
-                <Text strong style={{ color: "inherit" }}>
-                  {children}
-                </Text>
-              ),
-              li: ({ children }) => (
-                <li style={{ marginBottom: 4, color: "inherit" }}>{children}</li>
-              ),
-            }}
-          >
-            {message.text}
-          </ReactMarkdown>
+          <AiMarkdown content={message.text} compact />
         )}
       </div>
     </div>

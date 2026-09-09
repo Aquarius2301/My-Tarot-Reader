@@ -6,7 +6,6 @@ import {
   Flex,
   Popconfirm,
   Spin,
-  Tag,
   Typography,
   theme,
 } from "antd";
@@ -17,7 +16,7 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TarotCard } from "@/components";
+import { OrientationTag, TarotCard } from "@/components";
 import {
   useDeleteHistoryReading,
   useGetHistoryReadings,
@@ -137,20 +136,18 @@ export default function TarotHistoryTab() {
               </div>
 
               {/* Status Badge */}
-              <Tag
-                color={item.isReversed ? "volcano" : "purple"}
+              <OrientationTag
+                isReversed={item.isReversed}
                 style={{
-                  borderRadius: token.borderRadiusSM,
                   padding: "2px 10px",
                   marginBottom: token.marginSM,
-                  border: "none",
                   fontWeight: 500,
                 }}
               >
                 {item.isReversed
                   ? t("page.history.reversed")
                   : t("page.history.upright")}
-              </Tag>
+              </OrientationTag>
 
               {/* Date & Time Footer */}
               <Flex
