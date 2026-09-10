@@ -17,6 +17,13 @@ public class WhiteCoinBatchConfiguration : IEntityTypeConfiguration<WhiteCoinBat
 
         builder.HasIndex(x => x.WalletId);
 
+        builder.ToTable(t =>
+            t.HasCheckConstraint(
+                name: "CK_WhiteCoinBatches_RemainingAmount_NonNegative",
+                sql: "RemainingAmount >= 0"
+            )
+        );
+
         // Wallet → WhiteCoinBatch uses Restrict to avoid multiple-cascade-path from Wallet→WhiteCoinBatch
         // and TransactionDetail→WhiteCoinBatch both targeting WhiteCoinBatch.
         builder

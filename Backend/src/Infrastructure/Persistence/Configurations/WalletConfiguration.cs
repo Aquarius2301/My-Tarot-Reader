@@ -16,6 +16,10 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
 
         builder.HasIndex(x => x.UserId).IsUnique();
 
+        builder.ToTable(t =>
+            t.HasCheckConstraint(name: "CK_Wallets_RedCoin_NonNegative", sql: "RedCoin >= 0")
+        );
+
         // One-to-one with User (User is the dependent, keyed by UserId).
         builder
             .HasOne(x => x.User)

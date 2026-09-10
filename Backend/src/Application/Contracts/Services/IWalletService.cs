@@ -9,57 +9,34 @@ namespace MyTarotReader.Application.Contracts.Services;
 public interface IWalletService
 {
     /// <summary>
-    /// Retrieves the current WhiteCoin and RedCoin balances for the specified user.
+    /// Ensures the user's combined coin balance (WhiteCoin + RedCoin) is at least
+    /// <paramref name="amount"/>. Used to fail fast before an expensive external call,
+    /// without holding a database transaction open across it.
     /// </summary>
-    /// <param name="userId">The identifier of the user whose wallet to retrieve.</param>
+    /// <param name="userId">The identifier of the user whose wallet to check.</param>
+    /// <param name="amount">The minimum required coin amount. Must be positive.</param>
     /// <param name="cancellationToken">Token to observe for task cancellation.</param>
-    /// <returns>A <see cref="GetWalletResponse"/> containing both coin balances.</returns>
-    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
-    Task<GetWalletResponse> GetWalletAsync(
-        Guid userId,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Increases the user's WhiteCoin balance by the specified amount.
-    /// </summary>
-    /// <param name="userId">The identifier of the user whose wallet to modify.</param>
-    /// <param name="amount">The number of white coins to add. Must be positive.</param>
-    /// <param name="cancellationToken">Token to observe for task cancellation.</param>
-    /// <returns>An <see cref="AddWhiteCoinResponse"/> with the updated balances.</returns>
-    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
-    /// <exception cref="BadRequestException">Thrown when the amount is not a positive integer.</exception>
-    Task<AddWhiteCoinResponse> AddWhiteCoinAsync(
-        Guid userId,
-        int amount,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Increases the user's RedCoin balance by the specified amount.
-    /// </summary>
-    /// <param name="userId">The identifier of the user whose wallet to modify.</param>
-    /// <param name="amount">The number of red coins to add. Must be positive.</param>
-    /// <param name="cancellationToken">Token to observe for task cancellation.</param>
-    /// <returns>An <see cref="AddRedCoinResponse"/> with the updated balances.</returns>
-    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
-    /// <exception cref="BadRequestException">Thrown when the amount is not a positive integer.</exception>
-    Task<AddRedCoinResponse> AddRedCoinAsync(
-        Guid userId,
-        int amount,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Decreases the user's total coin balance by the specified amount.
-    /// Coins are consumed from WhiteCoin first; any remainder is taken from RedCoin.
-    /// Throws when the combined balance is less than the requested amount.
-    /// </summary>
-    /// <param name="userId">The identifier of the user whose wallet to modify.</param>
-    /// <param name="amount">The total number of coins to deduct. Must be positive.</param>
-    /// <param name="cancellationToken">Token to observe for task cancellation.</param>
-    /// <returns>A <see cref="DeductCoinResponse"/> with the updated balances.</returns>
+    /// <returns>Throw exception if the balance is insufficient.</returns>
     /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
     /// <exception cref="BadRequestException">Thrown when the amount is not positive or the balance is insufficient.</exception>
-    Task<DeductCoinResponse> DeductCoinAsync(
+    Task EnsureSufficientBalanceAsync(
         Guid userId,
         int amount,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Deducts the specified <paramref name="cost"/> from the user's wallet, prioritizing WhiteCoin over RedCoin. Throws if the user has insufficient balance.
+    /// </summary>
+    /// <param name="userId">The identifier of the user whose wallet to deduct from.</param>
+    /// <param name="cost">The amount to deduct. Must be positive.</param>
+    /// <param name="cancellationToken">Token to observe for task cancellation.</param>
+    /// <returns>Throws exception if the balance is insufficient.</returns>
+    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
+    /// <exception cref="BadRequestException">Thrown when the cost is not positive or the balance is insufficient.</exception>
+    Task DeductAITarotCostAsync(
+        Guid userId,
+        int cost,
+        CancellationToken cancellationToken = default
+    );
 }

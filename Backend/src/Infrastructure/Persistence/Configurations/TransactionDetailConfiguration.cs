@@ -27,8 +27,8 @@ public class TransactionDetailConfiguration : IEntityTypeConfiguration<Transacti
         // (Wallet → WhiteCoinBatch also targets WhiteCoinBatch).
         builder
             .HasOne(x => x.WhiteCoinBatch)
-            .WithOne()
-            .HasForeignKey<TransactionDetail>(x => x.WhiteCoinBatchId)
+            .WithMany()
+            .HasForeignKey(x => x.WhiteCoinBatchId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasQueryFilter(x => x.DeletedAt == null);

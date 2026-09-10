@@ -26,6 +26,7 @@ public class AiTarotService : IAiTarotService
     private readonly IAppDbContext _context;
     private readonly AiTarotSetting _settings;
     private readonly ILogger<AiTarotService> _logger;
+    private readonly IWalletService _walletService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AiTarotService"/> class.
@@ -33,17 +34,20 @@ public class AiTarotService : IAiTarotService
     /// <param name="httpClient">The typed HttpClient used to call Gemini.</param>
     /// <param name="context">The application DbContext for persisting readings.</param>
     /// <param name="settings">The AI tarot settings (API key and model).</param>
+    /// <param name="walletService">Service used to deduct coins for the reading.</param>
     /// <param name="logger">Logger for diagnostics.</param>
     public AiTarotService(
         HttpClient httpClient,
         IAppDbContext context,
         IOptions<AiTarotSetting> settings,
+        IWalletService walletService,
         ILogger<AiTarotService> logger
     )
     {
         _httpClient = httpClient;
         _context = context;
         _settings = settings.Value;
+        _walletService = walletService;
         _logger = logger;
     }
 
@@ -56,6 +60,14 @@ public class AiTarotService : IAiTarotService
     {
         Validate(request);
 
+        var cost = GetCoinCost(request.CardCount);
+
+        // Fail fast if the user cannot afford the reading, before paying for Gemini.
+        await _walletService.EnsureSufficientBalanceAsync(userId, cost, cancellationToken);
+
+        // Call Gemini WITHOUT holding a database transaction/connection open (the call
+        // can take several seconds). The wallet is only locked afterwards, inside the
+        // short transaction below.
         var prompt = BuildPrompt(request);
         var answer = await CallGeminiAsync(prompt, cancellationToken);
 
@@ -68,8 +80,17 @@ public class AiTarotService : IAiTarotService
             Cards = JsonSerializer.Serialize(request.Cards),
         };
 
+        // Short transaction: deduct coins and persist the reading together. If either
+        // fails, the transaction rolls back and the coins are restored.
+        await using var transaction = await _context.Database.BeginTransactionAsync(
+            cancellationToken
+        );
+        await _walletService.DeductAITarotCostAsync(userId, cost, cancellationToken);
+
         _context.AIReadHistories.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
 
         return new CreateAiTarotReadingResponse(answer);
     }
@@ -84,21 +105,39 @@ public class AiTarotService : IAiTarotService
             throw new BadRequestException(ErrorMessageCode.AiTarot.InvalidCard);
     }
 
+    /// <summary>Returns the coin cost of a reading for the given card count.</summary>
+    private static int GetCoinCost(CardCount cardCount) =>
+        cardCount switch
+        {
+            CardCount.Three => 1,
+            CardCount.Five => 2,
+            CardCount.Seven => 3,
+            CardCount.Ten => 4,
+            _ => throw new BadRequestException(ErrorMessageCode.AiTarot.InvalidCardCount),
+        };
+
     /// <summary>Builds the Gemini prompt describing the drawn cards and question.</summary>
     private static string BuildPrompt(CreateAiTarotReadingRequest request)
     {
         var lines = new StringBuilder();
+        var languageName = request.Language == Language.En ? "English" : "Vietnamese";
+
         lines.AppendLine(
             "You are a professional, empathetic, and intuitive Tarot reader. Interpret the tarot reading for the user based on the provided cards, spread type, topic, and question."
                 + "### RULE 1: POSITIONAL INTERPRETATION"
                 + "The card meaning depends heavily on its spread position:"
-                + "- 3 cards: Core energy | Challenges/obstacles | Outcome/advice"
-                + "- 5 cards: Core energy | Challenges/obstacles | Your strength | Future | Outcome/advice"
-                + "- 7 cards: Core energy | Challenges/obstacles | Your strength | Hidden influences | The way to face it | Future | Outcome/advice"
-                + "- 10 cards: Core energy | Challenges/obstacles | What to focus on | Past | Your strength | Near future | Suggested approach | What you need to know | Hopes/fears | Outcome/advice"
+                + "- 3 cards: Core energy | Challenges/obstacles | Outcome/advice (Overall response ~300-400 words)"
+                + "- 5 cards: Core energy | Challenges/obstacles | Your strength | Future | Outcome/advice (Overall response ~450-600 words)"
+                + "- 7 cards: Core energy | Challenges/obstacles | Your strength | Hidden influences | The way to face it | Future | Outcome/advice (Overall response ~650-800 words)"
+                + "- 10 cards: Core energy | Challenges/obstacles | What to focus on | Past | Your strength | Near future | Suggested approach | What you need to know | Hopes/fears | Outcome/advice (Overall response ~800-1000 words)"
                 + "### RULE 2: TONE & LANGUAGE"
-                + "- Language: MUST respond in natural, warm, insightful, and accessible Vietnamese (Văn phong tinh tế, chữa lành, dễ hiểu)."
+                + $"- Language: MUST respond in natural, warm, insightful, and accessible in {languageName}."
                 + "- Style: WEAVE the positional meanings naturally into a cohesive narrative. DO NOT mention rule names, positional definitions, or internal prompt mechanics (e.g., do not say 'According to Rule 2...' or 'In position 1 which means core energy...'). Speak directly to the user's heart."
+                + "- Quality: Ensure EVERY card is given thorough analysis according to its position. Do not rush or skim through cards near the end."
+                + "- Structure: "
+                + "+ Introduction: Hello and introduce the reading, acknowledge the user's question, and set a warm tone. (~50-100 words)"
+                + "+ Main Analysis: Position name - Card name (upright/reversed): meaning and interpretation. (~100-150 words per card)"
+                + "+ Conclusion: Summarize the key insights and provide a final takeaway. (~50-100 words)"
         );
         lines.AppendLine($"Cards drawn: {request.Cards.Count}");
         lines.AppendLine("Cards:");
@@ -108,12 +147,6 @@ public class AiTarotService : IAiTarotService
             lines.AppendLine($"  - {TarotConstants.GetCardName(card.Code)} ({orientation})");
         }
         lines.AppendLine($"Question type: {request.QuestionType}");
-        lines.AppendLine();
-        var languageName = request.Language == Language.En ? "English" : "Vietnamese";
-        lines.AppendLine(
-            $"Provide a warm, structured interpretation in {languageName}. Address each card and its "
-                + "reversed meaning if applicable, then give a final takeaway."
-        );
 
         return lines.ToString();
     }
