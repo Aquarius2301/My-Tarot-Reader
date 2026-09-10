@@ -87,6 +87,7 @@ export const enPages = {
       yourCards: "Your Cards",
       drawAgain: "Draw Again",
       invalidSelection: "Please select all the required cards before reading.",
+      coinCost: "Cost: {{cost}} coins",
     },
     aiChat: {
       title: "AI Tarot Chat",

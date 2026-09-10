@@ -20,6 +20,7 @@ export const viTarot = {
       confirm: "Xác nhận",
       selected: "Đã chọn {{count}}/{{limit}}",
       limitReached: "Bạn chỉ được chọn tối đa {{n}} lá",
+      noEnoughCoin: "Bạn không có đủ xu để rút bài này",
     },
     draw: {
       intro:

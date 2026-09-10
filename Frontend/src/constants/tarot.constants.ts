@@ -165,3 +165,11 @@ export const CARD_COUNT_LIMIT: Record<CardCount, number> = {
   seven: 7,
   ten: 10,
 };
+
+/** Coin cost of an AI tarot reading per card count (mirrors the backend mapping). */
+export const AI_TAROT_COIN_COST: Record<CardCount, number> = {
+  three: 1,
+  five: 2,
+  seven: 3,
+  ten: 4,
+};

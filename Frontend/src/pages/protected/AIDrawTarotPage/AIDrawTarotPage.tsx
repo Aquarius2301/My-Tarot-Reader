@@ -1,5 +1,5 @@
 import { TarotDeck, type SpreadResultItem } from "@/components";
-import { useCreateAiTarotReading } from "@/hooks/api";
+import { useCreateAiTarotReading, useGetMe } from "@/hooks/api";
 import { useLanguageStore } from "@/hooks/store";
 import { getErrorMessage } from "@/utils";
 import { App, Grid, Spin, Typography } from "antd";
@@ -12,7 +12,11 @@ import type {
   CreateAiTarotReadingResponse,
 } from "@/types";
 import { AIDrawTarotConfig, AIDrawTarotResult } from "./components";
-import { CARD_COUNT_LIMIT, type LanguageMode } from "@/constants";
+import {
+  AI_TAROT_COIN_COST,
+  CARD_COUNT_LIMIT,
+  type LanguageMode,
+} from "@/constants";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -31,6 +35,7 @@ export default function AIDrawTarotPage() {
 
   const language = useLanguageStore((s) => s.mode);
   const { mutate, isPending } = useCreateAiTarotReading();
+  const { data } = useGetMe();
 
   const [cardCount, setCardCount] = useState<AiTarotCardCount>("three");
   const [questionType, setQuestionType] =
@@ -70,6 +75,8 @@ export default function AIDrawTarotPage() {
     return <AIDrawTarotResult result={result} onDrawAgain={handleDrawAgain} />;
   }
 
+  // console.log(data, AI_TAROT_COIN_COST[cardCount]);
+
   return (
     <div style={{ maxWidth: 960, margin: "0 auto" }}>
       <Title level={3} style={{ textAlign: "center" }}>
@@ -94,6 +101,9 @@ export default function AIDrawTarotPage() {
         limit={CARD_COUNT_LIMIT[cardCount]}
         cardSize={isMobile ? "sm" : "md"}
         onConfirm={handleGetReading}
+        disabledConfirm={
+          data && data.redCoin + data.whiteCoin < AI_TAROT_COIN_COST[cardCount]
+        }
       />
 
       {isPending && <Spin fullscreen description={t("page.aiDraw.saving")} />}

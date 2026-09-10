@@ -1,7 +1,14 @@
 import { useMemo, useState } from "react";
 import { Grid } from "antd";
 import { useTarotSpread } from "./useTarotSpread";
-import { useElementWidth, cardSizeToPx, computeFanLayout, DEAL_STAGGER_MS, RAISE_SELECTED_PX, RAISE_HOVER_PX } from "./TarotDeck.utils";
+import {
+  useElementWidth,
+  cardSizeToPx,
+  computeFanLayout,
+  DEAL_STAGGER_MS,
+  RAISE_SELECTED_PX,
+  RAISE_HOVER_PX,
+} from "./TarotDeck.utils";
 import TarotCardSlot from "./TarotCardSlot";
 import TarotSpreadControls from "./TarotSpreadControls";
 import type { TarotDeckProps } from "./types";
@@ -9,11 +16,17 @@ import type { TarotDeckProps } from "./types";
 const { useBreakpoint } = Grid;
 
 /** Renders a face-down fan of 78 tarot cards the user can select and reshuffle. */
-export default function TarotDeck({ limit, onConfirm, cardSize = "sm" }: TarotDeckProps) {
+export default function TarotDeck({
+  limit,
+  onConfirm,
+  cardSize = "sm",
+  disabledConfirm,
+}: TarotDeckProps) {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
 
-  const { ref: containerRef, width: containerWidth } = useElementWidth<HTMLDivElement>();
+  const { ref: containerRef, width: containerWidth } =
+    useElementWidth<HTMLDivElement>();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const {
@@ -108,6 +121,7 @@ export default function TarotDeck({ limit, onConfirm, cardSize = "sm" }: TarotDe
         isFull={isFull}
         onReshuffle={reshuffle}
         onConfirm={handleConfirm}
+        disabledConfirm={disabledConfirm}
       />
     </div>
   );

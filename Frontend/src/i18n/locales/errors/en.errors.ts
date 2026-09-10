@@ -18,5 +18,9 @@ export const enErrors = {
       invalidConfig: "Unable to reach the AI reading service.",
       emptyAnswer: "The AI could not produce an answer. Please try again.",
     },
+    wallet: {
+      insufficientBalance:
+        "Not enough coins. Please top up your balance and try again.",
+    },
   },
 };

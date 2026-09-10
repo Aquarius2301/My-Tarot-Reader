@@ -1,4 +1,5 @@
 import { Button, Space, Typography } from "antd";
+import Text from "antd/es/typography/Text";
 import { useTranslation } from "react-i18next";
 
 export interface TarotSpreadControlsProps {
@@ -8,6 +9,7 @@ export interface TarotSpreadControlsProps {
   isFull: boolean;
   onReshuffle: () => void;
   onConfirm: () => void;
+  disabledConfirm?: boolean;
 }
 
 /** Action row below the spread: selection count, reshuffle, and confirm. */
@@ -18,6 +20,7 @@ export default function TarotSpreadControls({
   isFull,
   onReshuffle,
   onConfirm,
+  disabledConfirm,
 }: TarotSpreadControlsProps) {
   const { t } = useTranslation();
 
@@ -29,9 +32,20 @@ export default function TarotSpreadControls({
       <Button onClick={onReshuffle} disabled={busy}>
         {t("tarot.deck.reshuffle")}
       </Button>
-      <Button type="primary" disabled={!isFull || busy} onClick={onConfirm}>
+
+      <Button
+        type="primary"
+        disabled={!isFull || busy || disabledConfirm}
+        onClick={onConfirm}
+      >
         {t("tarot.deck.confirm")}
       </Button>
+
+      {disabledConfirm && (
+        <Text type="danger" style={{ marginLeft: 12 }}>
+          {t("tarot.deck.noEnoughCoin")}
+        </Text>
+      )}
     </Space>
   );
 }

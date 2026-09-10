@@ -18,5 +18,8 @@ export const viErrors = {
       invalidConfig: "Không thể kết nối dịch vụ luận giải AI.",
       emptyAnswer: "AI không thể tạo câu trả lời. Vui lòng thử lại.",
     },
+    wallet: {
+      insufficientBalance: "Không đủ xu. Vui lòng nạp thêm xu và thử lại.",
+    },
   },
 };

@@ -20,6 +20,7 @@ export const enTarot = {
       confirm: "Confirm",
       selected: "Selected {{count}}/{{limit}}",
       limitReached: "You can select at most {{n}} cards",
+      noEnoughCoin: "You don't have enough coins to draw this spread",
     },
     draw: {
       intro:

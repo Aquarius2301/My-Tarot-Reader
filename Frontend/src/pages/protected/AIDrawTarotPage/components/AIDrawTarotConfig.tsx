@@ -3,6 +3,7 @@ import { Card, Flex, Grid, Tag, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { AiTarotCardCount, AiTarotQuestionType } from "@/types";
 import { CardCountSelect, QuestionTypeSelect } from "@/components/select/";
+import { AI_TAROT_COIN_COST } from "@/constants";
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -55,6 +56,11 @@ export default function AIDrawTarotConfig({
           </Text>
         </Flex>
       </Flex>
+
+      {/* The coin cost for the currently selected card count. */}
+      <Text type="secondary" style={{ display: "block", marginTop: 12 }}>
+        {t("page.aiDraw.coinCost", { cost: AI_TAROT_COIN_COST[cardCount] })}
+      </Text>
 
       {/* Describe the spread positions for the currently selected card count. */}
       <div style={{ marginTop: 16 }}>

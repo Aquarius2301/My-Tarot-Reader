@@ -19,4 +19,5 @@ export interface TarotDeckProps {
   limit: number;
   onConfirm: (result: SpreadResultItem[]) => void;
   cardSize?: TarotCardSize;
+  disabledConfirm?: boolean;
 }

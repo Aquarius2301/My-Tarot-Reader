@@ -86,6 +86,7 @@ export const viPages = {
       yourCards: "Các lá bài của bạn",
       drawAgain: "Rút lại",
       invalidSelection: "Vui lòng chọn đủ số lá bài trước khi xem bài.",
+      coinCost: "Giá: {{cost}} xu",
     },
     aiChat: {
       title: "Trò chuyện AI Tarot",
