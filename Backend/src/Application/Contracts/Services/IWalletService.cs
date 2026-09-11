@@ -1,5 +1,6 @@
 using MyTarotReader.Application.Dtos;
 using MyTarotReader.Application.Exceptions;
+using MyTarotReader.Domain.Enums;
 
 namespace MyTarotReader.Application.Contracts.Services;
 
@@ -30,13 +31,15 @@ public interface IWalletService
     /// </summary>
     /// <param name="userId">The identifier of the user whose wallet to deduct from.</param>
     /// <param name="cost">The amount to deduct. Must be positive.</param>
+    /// <param name="type">The transaction type recorded in the ledger (e.g. <see cref="TransactionType.AITarot"/> or <see cref="TransactionType.AIChatSession"/>).</param>
     /// <param name="cancellationToken">Token to observe for task cancellation.</param>
     /// <returns>Throws exception if the balance is insufficient.</returns>
     /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
     /// <exception cref="BadRequestException">Thrown when the cost is not positive or the balance is insufficient.</exception>
-    Task DeductAITarotCostAsync(
+    Task DeductCoinAsync(
         Guid userId,
         int cost,
+        TransactionType type,
         CancellationToken cancellationToken = default
     );
 }

@@ -21,6 +21,25 @@ public class AIChatHistory : BaseEntity
     /// </summary>
     public ChatSessionStatus Status { get; set; } = ChatSessionStatus.Chatting;
 
+    /// <summary>
+    /// The number of user messages sent in the current phase. Resets to zero whenever the
+    /// session transitions to a new phase (e.g. after a reading). Bounded by the phase
+    /// message limit (5 in the initial <see cref="ChatSessionStatus.Chatting"/> phase and
+    /// 3 in each <see cref="ChatSessionStatus.FollowUpChatting"/> phase).
+    /// </summary>
+    public int PhaseMessageCount { get; set; }
+
+    /// <summary>
+    /// The total number of readings performed in this session. Zero before the first reading;
+    /// any value &gt; 0 means the session is in a follow-up cycle and only a single card may be drawn.
+    /// </summary>
+    public int ReadingCount { get; set; }
+
+    /// <summary>
+    /// The total number of coins spent on this session (6 at creation plus 1 per follow-up phase).
+    /// </summary>
+    public int TotalCoinSpent { get; set; }
+
     #region Navigation Properties
 
     /// <summary>

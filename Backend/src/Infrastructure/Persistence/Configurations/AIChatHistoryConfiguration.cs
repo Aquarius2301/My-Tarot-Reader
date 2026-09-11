@@ -9,7 +9,7 @@ public class AIChatHistoryConfiguration : IEntityTypeConfiguration<AIChatHistory
 {
     public void Configure(EntityTypeBuilder<AIChatHistory> builder)
     {
-        builder.Property(x => x.Status).IsRequired().HasConversion<string>().HasMaxLength(10);
+        builder.Property(x => x.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
 
         builder
             .HasOne(a => a.User)

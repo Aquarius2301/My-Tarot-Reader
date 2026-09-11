@@ -11,7 +11,7 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Type).IsRequired().HasConversion<string>().HasMaxLength(10);
+        builder.Property(x => x.Type).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.Description).IsRequired().HasMaxLength(200);
         builder.Property(x => x.Amount).IsRequired();
 

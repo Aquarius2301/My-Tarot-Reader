@@ -17,6 +17,6 @@ public static class HttpExtension
     public static void AddHttpClients(this IServiceCollection services)
     {
         services.AddHttpClient<IAiTarotService, AiTarotService>();
-        services.AddHttpClient<IAiChatService, AiChatService>();
+        // services.AddHttpClient<IAiChatService, AiChatService>();
     }
 }

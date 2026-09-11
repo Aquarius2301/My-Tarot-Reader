@@ -85,7 +85,7 @@ public class AiTarotService : IAiTarotService
         await using var transaction = await _context.Database.BeginTransactionAsync(
             cancellationToken
         );
-        await _walletService.DeductAITarotCostAsync(userId, cost, cancellationToken);
+        await _walletService.DeductCoinAsync(userId, cost, TransactionType.AITarot, cancellationToken);
 
         _context.AIReadHistories.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);

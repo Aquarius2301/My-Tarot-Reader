@@ -95,6 +95,12 @@ public static class ErrorMessageCode
 
         /// <summary>The conversation history exceeds the maximum allowed messages.</summary>
         public const string ConversationTooLong = "error.aiTarot.conversationTooLong";
+
+        /// <summary>The user has reached the message limit of the current phase.</summary>
+        public const string MessageLimitReached = "error.aiTarot.messageLimitReached";
+
+        /// <summary>A follow-up reading must draw exactly one card.</summary>
+        public const string InvalidFollowUpCardCount = "error.aiTarot.invalidFollowUpCardCount";
     }
 
     /// <summary>Wallet feature codes.</summary>

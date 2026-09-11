@@ -19,9 +19,6 @@ const LazyLibraryPage = lazy(() => import("@/pages/protected/LibraryPage"));
 const LazyAIDrawTarotPage = lazy(
   () => import("@/pages/protected/AIDrawTarotPage"),
 );
-const LazyAiTarotChatPage = lazy(
-  () => import("@/pages/protected/AiTarotChatPage"),
-);
 
 interface AppRoute {
   titleKey: string;
@@ -71,11 +68,6 @@ const protectedRoutes: AppRoute[] = [
     titleKey: "page.aiDraw.title",
     path: WEB_URL.AI_DRAW,
     component: LazyAIDrawTarotPage,
-  },
-  {
-    titleKey: "page.aiChat.title",
-    path: WEB_URL.AI_CHAT,
-    component: LazyAiTarotChatPage,
   },
 ];
 

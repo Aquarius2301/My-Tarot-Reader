@@ -42,7 +42,7 @@ public class WalletService : IWalletService
                 {
                     WhiteCoin = w
                         .WhiteCoinBatches.Where(b =>
-                            b.RemainingAmount > 0 && b.ExpiredAt >= DateTime.UtcNow
+                            b.RemainingAmount > 0 && b.ExpiredAt > DateTimeOffset.UtcNow
                         )
                         .Sum(b => b.RemainingAmount),
                     w.RedCoin,
@@ -57,9 +57,10 @@ public class WalletService : IWalletService
     }
 
     /// <inheritdoc />
-    public async Task DeductAITarotCostAsync(
+    public async Task DeductCoinAsync(
         Guid userId,
         int cost,
+        TransactionType type,
         CancellationToken cancellationToken = default
     )
     {
@@ -92,8 +93,9 @@ public class WalletService : IWalletService
         var transaction = new Transaction
         {
             UserId = userId,
-            Type = TransactionType.AITarot,
+            Type = type,
             Amount = -cost,
+            Description = GetTransactionDescription(type),
             CreatedAt = DateTimeOffset.UtcNow,
         };
 
@@ -137,4 +139,18 @@ public class WalletService : IWalletService
 
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Returns a human-readable description for a transaction based on its type.
+    /// Required because the <see cref="Transaction.Description"/> column is NOT NULL.
+    /// </summary>
+    private static string GetTransactionDescription(TransactionType type) =>
+        type switch
+        {
+            TransactionType.AITarot => "AI Tarot reading",
+            TransactionType.AIChatSession => "Start AI chat session",
+            TransactionType.AIChatFollowUp => "AI chat follow-up phase",
+            TransactionType.Expired => "White coins expired",
+            _ => "Coin transaction",
+        };
 }

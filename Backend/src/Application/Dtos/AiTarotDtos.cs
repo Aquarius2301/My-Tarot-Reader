@@ -57,7 +57,14 @@ public record CreateChatSessionRequest(string Question, Language Language);
 /// </summary>
 /// <param name="HistoryId">The reading history identifier for follow-up messages.</param>
 /// <param name="Answer">The AI's initial response to the user's question.</param>
-public record CreateChatSessionResponse(Guid HistoryId, string Answer);
+/// <param name="RemainingMessages">The number of messages left in the initial chatting phase (5 coins paid).</param>
+/// <param name="CoinCost">The number of coins charged for creating this session (6).</param>
+public record CreateChatSessionResponse(
+    Guid HistoryId,
+    string Answer,
+    int RemainingMessages,
+    int CoinCost
+);
 
 /// <summary>
 /// Request to send a message in an ongoing chat session.
@@ -92,7 +99,12 @@ public record SpreadRecommendationDto(string SpreadName, int CardCount, List<Spr
 /// </summary>
 /// <param name="Answer">The AI's response text.</param>
 /// <param name="SpreadRecommendation">Parsed spread recommendation, null if AI hasn't proposed one yet.</param>
-public record SendChatMessageResponse(string Answer, SpreadRecommendationDto? SpreadRecommendation);
+/// <param name="RemainingMessages">The number of messages left in the current phase (5 in chatting, 3 in follow-up).</param>
+public record SendChatMessageResponse(
+    string Answer,
+    SpreadRecommendationDto? SpreadRecommendation,
+    int RemainingMessages
+);
 
 /// <summary>
 /// Request to submit cards for reading in a custom chat session.
@@ -107,7 +119,34 @@ public record CreateCustomReadingRequest(
 );
 
 /// <summary>
+/// Request to continue a finished reading with a follow-up chat phase.
+/// </summary>
+/// <param name="HistoryId">The reading history to continue.</param>
+public record ContinueChatSessionRequest(Guid HistoryId);
+
+/// <summary>
+/// Request to end a chat session explicitly, marking it as finished.
+/// </summary>
+/// <param name="HistoryId">The reading history to end.</param>
+public record EndChatSessionRequest(Guid HistoryId);
+
+/// <summary>
+/// Response after ending a chat session.
+/// </summary>
+/// <param name="HistoryId">The reading history that was finished.</param>
+public record EndChatSessionResponse(Guid HistoryId);
+
+/// <summary>
+/// Response after starting a follow-up chat phase.
+/// </summary>
+/// <param name="HistoryId">The reading history that was continued.</param>
+/// <param name="RemainingMessages">The number of messages available in the follow-up phase (3).</param>
+/// <param name="CoinCost">The number of coins charged for the follow-up phase (1).</param>
+public record ContinueChatSessionResponse(Guid HistoryId, int RemainingMessages, int CoinCost);
+
+/// <summary>
 /// Response after submitting cards for a custom reading.
 /// </summary>
 /// <param name="Answer">The AI-generated interpretation text.</param>
-public record CreateCustomReadingResponse(string Answer);
+/// <param name="CanContinue">Whether the user can pay 1 coin to continue chatting about the same topic.</param>
+public record CreateCustomReadingResponse(string Answer, bool CanContinue);
