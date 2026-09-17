@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>MyTarotReader.Infrastructure</AssemblyName>
+    <RootNamespace>MyTarotReader.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.22.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.76.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.8.0" />
+    <PackageReference Include="MailKit" Version="4.17.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Application/Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Templates/Welcome/*.html" />
+    <EmbeddedResource Include="Templates/Welcome/*.html" />
+  </ItemGroup>
+
+</Project>
