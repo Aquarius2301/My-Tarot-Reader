@@ -1,12 +1,27 @@
-import { ErrorComponent } from "@/components";
+import { ErrorComponent, CoinIcon } from "@/components";
 import { STREAK_DAILY_REWARDS, STREAK_CYCLE_DAYS } from "@/constants";
 import { useCheckIn, useGetStreak } from "@/hooks/api";
-import { getErrorMessage } from "@/utils";
-import { App, Button, Card, Divider, Spin, Tag, Typography, theme } from "antd";
-import { CheckCircleFilled, FireFilled, GiftFilled } from "@ant-design/icons";
+import { getErrorMessage, getDaysUntilNextMonthInVietnam } from "@/utils";
+import {
+  App,
+  Button,
+  Card,
+  Divider,
+  Grid,
+  Spin,
+  Tag,
+  Typography,
+  theme,
+} from "antd";
+import {
+  CheckCircleFilled,
+  FireFilled,
+  SafetyCertificateFilled,
+} from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 
 const { Title, Text } = Typography;
+const { useBreakpoint } = Grid;
 const DAY_LABEL_KEYS = [
   "page.streak.day1",
   "page.streak.day2",
@@ -21,6 +36,8 @@ export default function StreakCard() {
   const { t } = useTranslation();
   const { token } = theme.useToken();
   const { message } = App.useApp();
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
 
   const { data, isLoading, refetch } = useGetStreak();
   const { mutate, isPending } = useCheckIn();
@@ -33,7 +50,13 @@ export default function StreakCard() {
     return <ErrorComponent type="server" onRetry={refetch} />;
   }
 
-  const { cycleDay, currentStreak, longestStreak, isCheckedInToday } = data;
+  const {
+    cycleDay,
+    currentStreak,
+    longestStreak,
+    isCheckedInToday,
+    isSaverUsed,
+  } = data;
 
   const todayIndex = (cycleDay + STREAK_CYCLE_DAYS - 1) % STREAK_CYCLE_DAYS;
   const nextIndex = cycleDay % STREAK_CYCLE_DAYS;
@@ -76,6 +99,28 @@ export default function StreakCard() {
           <Text type="secondary" style={{ fontSize: 14 }}>
             {t("page.streak.subtitle")}
           </Text>
+          <div style={{ marginTop: token.marginXS }}>
+            <Tag
+              icon={<SafetyCertificateFilled />}
+              color={isSaverUsed ? "warning" : "success"}
+              style={{ borderRadius: token.borderRadius }}
+            >
+              {t(
+                isSaverUsed
+                  ? "page.streak.saverUsed"
+                  : "page.streak.saverAvailable",
+              )}
+            </Tag>
+            {isSaverUsed && (
+              <div>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  {t("page.streak.saverResetIn", {
+                    days: getDaysUntilNextMonthInVietnam(),
+                  })}
+                </Text>
+              </div>
+            )}
+          </div>
         </div>
 
         <div style={{ display: "flex", gap: token.marginLG }}>
@@ -92,73 +137,101 @@ export default function StreakCard() {
         </div>
       </div>
 
-      <Divider style={{ margin: `${token.marginSM}px 0 ${token.marginMD}px` }} />
+      <Divider
+        style={{ margin: `${token.marginSM}px 0 ${token.marginMD}px` }}
+      />
 
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${STREAK_CYCLE_DAYS}, 1fr)`,
-          gap: token.marginXS,
+          ...(isMobile && {
+            overflowX: "auto",
+            overflowY: "hidden",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }),
           marginBottom: token.marginLG,
         }}
       >
-        {STREAK_DAILY_REWARDS.map((reward, i) => {
-          const isToday = i === todayIndex;
-          const isNext = i === nextIndex;
-          const isChecked = isCheckedInToday && isToday;
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${STREAK_CYCLE_DAYS}, ${
+              isMobile ? "auto" : "1fr"
+            })`,
+            gap: token.marginXS,
+            ...(isMobile && { width: "max-content", minWidth: "100%" }),
+          }}
+        >
+          {STREAK_DAILY_REWARDS.map((reward, i) => {
+            const isToday = i === todayIndex;
+            const isNext = i === nextIndex;
+            const isChecked = isCheckedInToday && isToday;
 
-          return (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 4,
-                padding: `${token.paddingXS}px 4px`,
-                borderRadius: token.borderRadius,
-                border: `1px solid ${
-                  isNext ? token.colorPrimary : token.colorBorderSecondary
-                }`,
-                background: isNext
-                  ? `${token.colorPrimaryBg}`
-                  : "transparent",
-              }}
-            >
-              <Text
+            return (
+              <div
+                key={i}
                 style={{
-                  fontSize: 12,
-                  fontWeight: isNext ? 600 : 400,
-                  color: isNext ? token.colorPrimary : token.colorTextSecondary,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: `${token.paddingXS}px 4px`,
+                  borderRadius: token.borderRadius,
+                  border: `1px solid ${
+                    isNext ? token.colorPrimary : token.colorBorderSecondary
+                  }`,
+                  background: isNext
+                    ? `${token.colorPrimaryBg}`
+                    : "transparent",
                 }}
               >
-                {t(DAY_LABEL_KEYS[i])}
-              </Text>
-              <span
-                style={{
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: isChecked ? token.colorSuccess : token.colorText,
-                }}
-              >
-                {isChecked ? (
-                  <CheckCircleFilled />
-                ) : (
-                  <>
-                    <GiftFilled style={{ fontSize: 13, marginRight: 2 }} />
-                    {reward}
-                  </>
-                )}
-              </span>
-            </div>
-          );
-        })}
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: isNext ? 600 : 400,
+                    color: isNext
+                      ? token.colorPrimary
+                      : token.colorTextSecondary,
+                  }}
+                >
+                  {t(DAY_LABEL_KEYS[i])}
+                </Text>
+                <span
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: isChecked ? token.colorSuccess : token.colorText,
+                  }}
+                >
+                  {isChecked ? (
+                    <CheckCircleFilled />
+                  ) : (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
+                      <CoinIcon
+                        variant="white"
+                        size={13}
+                      />
+                      {reward}
+                    </span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {!isCheckedInToday && (
         <div style={{ textAlign: "center" }}>
           <Tag
-            icon={<GiftFilled />}
+            icon={<CoinIcon variant="white" size={14} />}
             style={{
               fontSize: 14,
               padding: "4px 12px",

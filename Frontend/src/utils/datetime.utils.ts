@@ -43,3 +43,26 @@ export function convertISOToDate(
     }),
   };
 }
+
+/**
+ * Returns the number of full days remaining until 00:00 on the 1st of the
+ * next month according to Vietnam time (UTC+7). Used as the countdown until
+ * the streak saver resets.
+ * @returns the number of remaining days, e.g. 17 when today is the 15th.
+ */
+export function getDaysUntilNextMonthInVietnam(): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const year = Number(parts.find((p) => p.type === "year")?.value);
+  const month = Number(parts.find((p) => p.type === "month")?.value);
+  const day = Number(parts.find((p) => p.type === "day")?.value);
+
+  const today = Date.UTC(year, month - 1, day);
+  const nextMonth = Date.UTC(year, month, 1);
+  return Math.round((nextMonth - today) / 86_400_000);
+}

@@ -107,7 +107,6 @@ export default function LayoutHeader({
                 redCoin={user.redCoin}
                 palette={palette}
                 isMobile={false}
-                themeMode={themeMode}
               />
             )}
 
@@ -152,7 +151,6 @@ export default function LayoutHeader({
                 redCoin={user.redCoin}
                 palette={palette}
                 isMobile
-                themeMode={themeMode}
               />
               <Avatar
                 src={user?.picture}
