@@ -12,5 +12,8 @@ export const viErrors = {
       drawnAlready: "Bạn đã rút một lá bài cho trải bài này.",
       notFound: "Không tìm thấy trải bài này.",
     },
+    streak: {
+      alreadyCheckedIn: "Bạn đã điểm danh hôm nay rồi.",
+    },
   },
 };

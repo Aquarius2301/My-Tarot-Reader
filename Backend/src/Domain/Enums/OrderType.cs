@@ -22,4 +22,7 @@ public enum OrderType
 
     /// <summary> Grant white coins for the daily check-in. </summary>
     DailyCheckIn,
+
+    /// <summary> Grant the one-time white coins for the first login (sign-up bonus). </summary>
+    FirstLogin,
 }

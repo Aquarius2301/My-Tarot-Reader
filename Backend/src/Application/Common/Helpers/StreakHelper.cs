@@ -1,4 +1,4 @@
-namespace MyTarotReader.Domain.Common;
+namespace MyTarotReader.Application.Common.Helpers;
 
 /// <summary>
 /// Time helpers for the streak check-in feature, based on Vietnam time (UTC+7).

@@ -1,11 +1,13 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Options;
 using Moq;
 using MyTarotReader.Application.Common.Exceptions;
+using MyTarotReader.Application.Common.Helpers;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Contracts.Services;
-using MyTarotReader.Domain.Common;
+using MyTarotReader.Application.Settings;
 using MyTarotReader.Domain.Entities;
 using MyTarotReader.Domain.Enums;
 using MyTarotReader.Infrastructure.Persistence;
@@ -36,11 +38,7 @@ public class StreakServiceTests
         return new AppDbContext(options);
     }
 
-    private static (
-        StreakService Service,
-        AppDbContext Db,
-        Mock<IWalletService> Wallet
-    ) CreateSut()
+    private static (StreakService Service, AppDbContext Db, Mock<IWalletService> Wallet) CreateSut()
     {
         var db = CreateInMemoryContext();
         var wallet = new Mock<IWalletService>();
@@ -53,7 +51,7 @@ public class StreakServiceTests
                 )
             )
             .ReturnsAsync(new AddCoinResult(0, 0));
-        var service = new StreakService(db, wallet.Object);
+        var service = new StreakService(db, wallet.Object, Options.Create(new StreakSetting()));
         return (service, db, wallet);
     }
 
@@ -98,7 +96,7 @@ public class StreakServiceTests
         var (service, db, wallet) = CreateSut();
         var userId = Guid.NewGuid();
 
-        var result = await service.CheckInAsync(userId);
+        await service.CheckInAsync(userId);
 
         var streak = Assert.Single(db.Streaks);
         streak.UserId.Should().Be(userId);
@@ -106,12 +104,6 @@ public class StreakServiceTests
         streak.LongestStreak.Should().Be(1);
         streak.CycleDay.Should().Be(1);
         streak.LastCheckIn.Should().BeCloseTo(VietnamNow(), TimeSpan.FromMinutes(1));
-
-        result.CurrentStreak.Should().Be(1);
-        result.LongestStreak.Should().Be(1);
-        result.CycleDay.Should().Be(1);
-        result.IsSaverUsed.Should().BeFalse();
-        result.IsCheckedInToday.Should().BeTrue();
 
         wallet.Verify(
             w =>
@@ -162,17 +154,21 @@ public class StreakServiceTests
     {
         var (service, db, wallet) = CreateSut();
         var userId = Guid.NewGuid();
-        await SeedStreakAsync(db, userId, VietnamNow().AddDays(-1), current: 1, longest: 1, cycleDay: 1);
+        await SeedStreakAsync(
+            db,
+            userId,
+            VietnamNow().AddDays(-1),
+            current: 1,
+            longest: 1,
+            cycleDay: 1
+        );
 
-        var result = await service.CheckInAsync(userId);
+        await service.CheckInAsync(userId);
 
         var streak = db.Streaks.Single();
         streak.CurrentStreak.Should().Be(2);
         streak.LongestStreak.Should().Be(2);
         streak.CycleDay.Should().Be(2);
-
-        result.CycleDay.Should().Be(2);
-        result.CurrentStreak.Should().Be(2);
 
         wallet.Verify(
             w =>
@@ -196,12 +192,18 @@ public class StreakServiceTests
     {
         var (service, db, wallet) = CreateSut();
         var userId = Guid.NewGuid();
-        await SeedStreakAsync(db, userId, VietnamNow().AddDays(-1), current: 4, longest: 4, cycleDay: 4);
+        await SeedStreakAsync(
+            db,
+            userId,
+            VietnamNow().AddDays(-1),
+            current: 4,
+            longest: 4,
+            cycleDay: 4
+        );
 
-        var result = await service.CheckInAsync(userId);
+        await service.CheckInAsync(userId);
 
-        result.CurrentStreak.Should().Be(5);
-        result.CycleDay.Should().Be(5);
+        db.Streaks.Single().CurrentStreak.Should().Be(5);
 
         wallet.Verify(
             w =>
@@ -225,14 +227,20 @@ public class StreakServiceTests
     {
         var (service, db, wallet) = CreateSut();
         var userId = Guid.NewGuid();
-        await SeedStreakAsync(db, userId, VietnamNow().AddDays(-1), current: 6, longest: 6, cycleDay: 6);
+        await SeedStreakAsync(
+            db,
+            userId,
+            VietnamNow().AddDays(-1),
+            current: 6,
+            longest: 6,
+            cycleDay: 6
+        );
 
-        var result = await service.CheckInAsync(userId);
+        await service.CheckInAsync(userId);
 
         var streak = db.Streaks.Single();
         streak.CurrentStreak.Should().Be(7);
         streak.CycleDay.Should().Be(1);
-        result.CycleDay.Should().Be(1);
 
         wallet.Verify(
             w =>
@@ -256,17 +264,21 @@ public class StreakServiceTests
     {
         var (service, db, wallet) = CreateSut();
         var userId = Guid.NewGuid();
-        await SeedStreakAsync(db, userId, VietnamNow().AddDays(-3), current: 4, longest: 9, cycleDay: 4);
+        await SeedStreakAsync(
+            db,
+            userId,
+            VietnamNow().AddDays(-3),
+            current: 4,
+            longest: 9,
+            cycleDay: 4
+        );
 
-        var result = await service.CheckInAsync(userId);
+        await service.CheckInAsync(userId);
 
         var streak = db.Streaks.Single();
         streak.CurrentStreak.Should().Be(1);
         streak.LongestStreak.Should().Be(9);
         streak.CycleDay.Should().Be(1);
-
-        result.CurrentStreak.Should().Be(1);
-        result.LongestStreak.Should().Be(9);
 
         wallet.Verify(
             w =>
@@ -279,6 +291,32 @@ public class StreakServiceTests
                 ),
             Times.Once
         );
+    }
+
+    /// <summary>
+    /// Rebuilding a streak from zero (LongestStreak was 0) also updates LongestStreak to the
+    /// new CurrentStreak, instead of leaving it at 0.
+    /// </summary>
+    [Fact]
+    public async Task CheckIn_AfterMissedDays_UpdatesLongestStreakWhenZero()
+    {
+        var (service, db, wallet) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedStreakAsync(
+            db,
+            userId,
+            VietnamNow().AddDays(-3),
+            current: 0,
+            longest: 0,
+            cycleDay: 0
+        );
+
+        await service.CheckInAsync(userId);
+
+        var streak = db.Streaks.Single();
+        streak.CurrentStreak.Should().Be(1);
+        streak.LongestStreak.Should().Be(1);
+        streak.CycleDay.Should().Be(1);
     }
 
     #endregion
@@ -346,7 +384,14 @@ public class StreakServiceTests
     {
         var (service, db, _) = CreateSut();
         var userId = Guid.NewGuid();
-        await SeedStreakAsync(db, userId, VietnamNow().AddDays(-3), current: 5, longest: 8, cycleDay: 5);
+        await SeedStreakAsync(
+            db,
+            userId,
+            VietnamNow().AddDays(-3),
+            current: 5,
+            longest: 8,
+            cycleDay: 5
+        );
 
         var result = await service.GetStreakAsync(userId);
 

@@ -57,20 +57,35 @@ public class AuthService(
 
             _context.Users.Add(user);
 
-            var wallet = new Wallet
+            var whiteCoinBatch = new WhiteCoinBatch
             {
-                UserId = user.Id,
-                WhiteCoinBatches =
-                [
-                    new()
-                    {
-                        Amount = _walletSetting.InitialWhiteCoins,
-                        RemainingAmount = _walletSetting.InitialWhiteCoins,
-                        ExpiredAt = DateTimeOffset.UtcNow.AddDays(_walletSetting.ExpireDays),
-                    },
-                ],
+                Amount = _walletSetting.InitialWhiteCoins,
+                RemainingAmount = _walletSetting.InitialWhiteCoins,
+                ExpiredAt = DateTimeOffset.UtcNow.AddDays(_walletSetting.ExpireDays),
             };
+
+            var wallet = new Wallet { UserId = user.Id, WhiteCoinBatches = [whiteCoinBatch] };
             _context.Wallets.Add(wallet);
+
+            _context.Orders.Add(
+                new Order
+                {
+                    UserId = user.Id,
+                    Amount = _walletSetting.InitialWhiteCoins,
+                    Description = "First login bonus",
+                    Type = OrderType.FirstLogin,
+                    OrderDetails =
+                    [
+                        new OrderDetail
+                        {
+                            WhiteCoinBatchId = whiteCoinBatch.Id,
+                            Amount = _walletSetting.InitialWhiteCoins,
+                        },
+                    ],
+                }
+            );
+
+            _context.Streaks.Add(new Streak { UserId = user.Id });
 
             _ = _emailHandler.SendWelcomeEmailAsync(
                 user.Email,

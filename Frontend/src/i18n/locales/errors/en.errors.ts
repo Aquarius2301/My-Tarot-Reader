@@ -12,5 +12,8 @@ export const enErrors = {
       drawnAlready: "You have already drawn a card for this reading.",
       notFound: "The reading was not found.",
     },
+    streak: {
+      alreadyCheckedIn: "You have already checked in today.",
+    },
   },
 } as const;

@@ -39,17 +39,19 @@ public class StreakController(IStreakService service) : ControllerBase
     /// <remarks>
     /// Creates a new streak on the first check-in, throws an error when the user
     /// already checked in today, otherwise increments the streak and cycle day.
+    /// Per the API contract, PUT always returns <c>data = null</c>; call
+    /// <see cref="GetStreakAsync"/> to read the updated state.
     /// </remarks>
     [HttpPut("checkin")]
     [Authorize]
-    [ProducesResponseType(typeof(ApiResponse<CheckInResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CheckInAsync(CancellationToken cancellationToken)
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.CheckInAsync(userId, cancellationToken);
-        return Ok(ApiResponse.Success(result));
+        await _service.CheckInAsync(userId, cancellationToken);
+        return Ok(ApiResponse.Success());
     }
 }

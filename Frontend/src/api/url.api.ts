@@ -13,4 +13,8 @@ export const API_URL = {
     getAllReading: "/api/tarot",
     deleteReading: "/api/tarot",
   },
+  streak: {
+    getStreak: "/api/streak",
+    checkIn: "/api/streak/checkin",
+  },
 } as const;

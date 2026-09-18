@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MyTarotReader.Application.Common.Exceptions;
+using MyTarotReader.Application.Common.Helpers;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Contracts.Persistence;
 using MyTarotReader.Application.Contracts.Services;
+using MyTarotReader.Application.Settings;
 using MyTarotReader.Domain.Common;
 using MyTarotReader.Domain.Entities;
 using MyTarotReader.Domain.Enums;
@@ -11,19 +14,25 @@ namespace MyTarotReader.Infrastructure.Services;
 
 public class StreakService(
     IAppDbContext context,
-    IWalletService walletService
+    IWalletService walletService,
+    IOptions<StreakSetting> streakSetting
 ) : IStreakService
 {
     private readonly IAppDbContext _context = context;
     private readonly IWalletService _walletService = walletService;
-    private const int CycleDays = 7;
+    private readonly StreakSetting _streakSetting = streakSetting.Value;
 
     /// <summary>
-    /// White coins rewarded per consecutive check-in day within a cycle.
-    /// A new cycle starts after 7 consecutive check-ins.
+    /// Retrieves the current streak information for a user. When the streak is broken or a
+    /// new month has started, the persisted state is reset before the result is returned.
     /// </summary>
-    private static readonly int[] DailyCheckInRewards = [1, 1, 1, 1, 2, 2, 3];
-
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>
+    /// <see cref="GetStreakResult"/> containing the cycle day, current/longest streak,
+    /// saver status and whether the user checked in today. Returns default values
+    /// when the user has no streak yet.
+    /// </returns>
     public async Task<GetStreakResult> GetStreakAsync(
         Guid userId,
         CancellationToken cancellationToken = default
@@ -62,10 +71,16 @@ public class StreakService(
         );
     }
 
-    public async Task<CheckInResult> CheckInAsync(
-        Guid userId,
-        CancellationToken cancellationToken = default
-    )
+    /// <summary>
+    /// Performs a daily check-in for a user, creating a new streak when none exists, and
+    /// grants the corresponding white coin reward.
+    /// </summary>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="BadRequestException">
+    /// Thrown when the user has already checked in today.
+    /// </exception>
+    public async Task CheckInAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var vietnamNow = StreakHelper.GetVietnamNow();
 
@@ -102,7 +117,6 @@ public class StreakService(
             if (StreakHelper.IsConsecutiveDay(streak.LastCheckIn, vietnamNow))
             {
                 streak.CurrentStreak++;
-                streak.LongestStreak = Math.Max(streak.LongestStreak, streak.CurrentStreak);
                 streak.CycleDay = GetNextCycleDay(streak.CycleDay);
             }
             else
@@ -111,14 +125,14 @@ public class StreakService(
                 streak.CycleDay = 1;
             }
 
+            streak.LongestStreak = Math.Max(streak.LongestStreak, streak.CurrentStreak);
             streak.LastCheckIn = vietnamNow;
         }
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        var reward = DailyCheckInRewards[
-            (streak.CurrentStreak - 1) % DailyCheckInRewards.Length
-        ];
+        var rewards = _streakSetting.DailyCheckInRewards;
+        var reward = rewards[(streak.CurrentStreak - 1) % rewards.Count];
         await _walletService.AddCoinAsync(
             userId,
             new AddCoinRequest(reward, 0, OrderType.DailyCheckIn),
@@ -126,14 +140,6 @@ public class StreakService(
         );
 
         await transaction.CommitAsync(cancellationToken);
-
-        return new CheckInResult(
-            GetCycleDayToShow(streak.CycleDay),
-            streak.CurrentStreak,
-            streak.LongestStreak,
-            streak.IsSaverUsed,
-            true
-        );
     }
 
     /// <summary>
@@ -142,9 +148,7 @@ public class StreakService(
     /// </summary>
     private static bool ResetSaverIfNewMonth(Streak streak, DateTime vietnamNow)
     {
-        if (
-            !streak.IsSaverUsed || !StreakHelper.IsNewMonth(streak.LastCheckIn, vietnamNow)
-        )
+        if (!streak.IsSaverUsed || !StreakHelper.IsNewMonth(streak.LastCheckIn, vietnamNow))
         {
             return false;
         }
@@ -157,15 +161,15 @@ public class StreakService(
     /// Normalizes the cycle day for display: a 7-day cycle runs from 0 to 6,
     /// so a stored value of 7 is shown as 0.
     /// </summary>
-    private static int GetCycleDayToShow(int cycleDay) => cycleDay % CycleDays;
+    private int GetCycleDayToShow(int cycleDay) => cycleDay % _streakSetting.CycleDays;
 
     /// <summary>
     /// Computes the next cycle day after a consecutive check-in. When the cycle
     /// would complete (value 7), it restarts from 1 instead.
     /// </summary>
-    private static int GetNextCycleDay(int cycleDay)
+    private int GetNextCycleDay(int cycleDay)
     {
         var next = cycleDay + 1;
-        return next >= CycleDays ? 1 : next;
+        return next >= _streakSetting.CycleDays ? 1 : next;
     }
 }

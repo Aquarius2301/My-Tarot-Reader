@@ -21,6 +21,14 @@ public class WalletService(
     private readonly WalletSetting _walletSetting = walletSetting.Value;
     private readonly IValidator<AddCoinRequest> _addCoinValidator = addCoinValidator;
 
+    /// <summary>
+    /// Adds white and/or red coins to a user's wallet and records the transaction as an order.
+    /// </summary>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="request"><see cref="AddCoinRequest"/> containing the coin amounts and order type.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="BadRequestException">Thrown when the request validation fails (amounts invalid).</exception>
+    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
     public async Task<AddCoinResult> AddCoinAsync(
         Guid userId,
         AddCoinRequest request,

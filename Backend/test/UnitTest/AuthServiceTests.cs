@@ -211,7 +211,9 @@ public class AuthServiceTests
     /// <summary>
     /// First login also creates a Wallet for the new user with exactly one
     /// WhiteCoinBatch whose Amount/RemainingAmount equal <see cref="WalletSetting.InitialWhiteCoins"/>
-    /// and whose ExpiredAt is now + <see cref="WalletSetting.ExpireDays"/>.
+    /// and whose ExpiredAt is now + <see cref="WalletSetting.ExpireDays"/>. The sign-up
+    /// bonus is recorded as an <see cref="Order"/> of type <see cref="OrderType.FirstLogin"/>
+    /// linking to that batch, and a fresh zeroed <see cref="Streak"/> is seeded for the user.
     /// </summary>
     [Fact]
     public async Task GoogleLoginAsync_NewUser_CreatesWalletWithInitialWhiteCoinBatch()
@@ -233,6 +235,22 @@ public class AuthServiceTests
             .ExpiredAt.Should()
             .BeOnOrAfter(before.AddDays(DefaultWallet.ExpireDays))
             .And.BeOnOrBefore(after.AddDays(DefaultWallet.ExpireDays));
+
+        var order = db.Orders.Include(o => o.OrderDetails).Single();
+        order.UserId.Should().Be(user.Id);
+        order.Type.Should().Be(OrderType.FirstLogin);
+        order.Amount.Should().Be(DefaultWallet.InitialWhiteCoins);
+        order.Description.Should().NotBeNullOrWhiteSpace();
+        var detail = Assert.Single(order.OrderDetails);
+        detail.WhiteCoinBatchId.Should().Be(batch.Id);
+        detail.Amount.Should().Be(DefaultWallet.InitialWhiteCoins);
+
+        var streak = Assert.Single(db.Streaks);
+        streak.UserId.Should().Be(user.Id);
+        streak.CurrentStreak.Should().Be(0);
+        streak.LongestStreak.Should().Be(0);
+        streak.CycleDay.Should().Be(0);
+        streak.IsSaverUsed.Should().BeFalse();
     }
 
     /// <summary>
@@ -305,8 +323,9 @@ public class AuthServiceTests
     }
 
     /// <summary>
-    /// Returning user keeps its existing single Wallet (no second one is created)
-    /// and no welcome email is sent for it.
+    /// Returning user keeps its existing single Wallet (no second one is created),
+    /// no welcome email is sent, and no first-login <see cref="Order"/> nor
+    /// <see cref="Streak"/> is seeded for it.
     /// </summary>
     [Fact]
     public async Task GoogleLoginAsync_ExistingUser_DoesNotRecreateWalletAndNoWelcomeEmail()
@@ -338,6 +357,9 @@ public class AuthServiceTests
                 ),
             Times.Never
         );
+
+        db.Orders.Should().BeEmpty();
+        db.Streaks.Should().BeEmpty();
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 import { HeroSection } from "@/pages/shared/home";
 import { useGetCurrentUser } from "@/hooks/api";
 import { Spin } from "antd";
+import StreakCard from "./components/StreakCard";
 
 export default function AuthHomePage() {
   const { data: user, isLoading } = useGetCurrentUser();
@@ -9,5 +10,10 @@ export default function AuthHomePage() {
     return <Spin fullscreen />;
   }
 
-  return <HeroSection role={user?.role} />;
+  return (
+    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <HeroSection role={user?.role} />
+      <StreakCard />
+    </div>
+  );
 }
