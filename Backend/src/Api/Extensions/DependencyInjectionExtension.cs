@@ -33,7 +33,9 @@ public static class DependencyInjectionExtension
 
         // Services
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IStreakService, StreakService>();
         services.AddScoped<ITarotReadingService, TarotReadingService>();
+        services.AddScoped<IWalletService, WalletService>();
 
         // Validators
         services.AddScoped<
@@ -45,6 +47,8 @@ public static class DependencyInjectionExtension
             IValidator<CreateDrawForGuestRequest>,
             CreateDrawForGuestRequestValidator
         >();
+
+        services.AddScoped<IValidator<AddCoinRequest>, AddCoinRequestValidator>();
 
         return services;
     }

@@ -15,9 +15,11 @@ public interface IAppDbContext
     DbSet<Order> Orders { get; set; }
     DbSet<OrderDetail> OrderDetails { get; set; }
     DbSet<RefreshToken> RefreshTokens { get; set; }
+    DbSet<Streak> Streaks { get; set; }
     DbSet<TarotReading> TarotReadings { get; set; }
     DbSet<User> Users { get; set; }
     DbSet<Wallet> Wallets { get; set; }
+    DbSet<WhiteCoinBatch> WhiteCoinBatches { get; set; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

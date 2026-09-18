@@ -19,4 +19,7 @@ public enum OrderType
     ///  ------------ Top Up ---------------
     /// <summary> Top up coins for user.  </summary>
     TopUp,
+
+    /// <summary> Grant white coins for the daily check-in. </summary>
+    DailyCheckIn,
 }

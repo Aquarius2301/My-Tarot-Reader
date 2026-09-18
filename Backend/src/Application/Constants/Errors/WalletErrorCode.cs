@@ -1,0 +1,9 @@
+namespace MyTarotReader.Application.Constants.Errors;
+
+public class WalletErrorCode
+{
+    private const string Prefix = "error.wallet.";
+
+    public const string InvalidAmount = $"{Prefix}invalidAmount";
+    public const string WalletNotFound = $"{Prefix}walletNotFound";
+}

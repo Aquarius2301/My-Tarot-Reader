@@ -15,9 +15,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Order> Orders { get; set; } = null!;
     public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    public DbSet<Streak> Streaks { get; set; } = null!;
     public DbSet<TarotReading> TarotReadings { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Wallet> Wallets { get; set; } = null!;
+    public DbSet<WhiteCoinBatch> WhiteCoinBatches { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +31,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         modelBuilder.ApplyConfiguration(new OrderConfiguration());
         modelBuilder.ApplyConfiguration(new OrderDetailConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+        modelBuilder.ApplyConfiguration(new StreakConfiguration());
         modelBuilder.ApplyConfiguration(new TarotReadingConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
         modelBuilder.ApplyConfiguration(new WalletConfiguration());
