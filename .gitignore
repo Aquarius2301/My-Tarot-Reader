@@ -7,7 +7,6 @@ obj/
 *.user
 *.suo
 .vs/
-Migrations/
 *.Development.json
 
 # EF Core
