@@ -58,8 +58,9 @@ export default function StreakCard() {
     isSaverUsed,
   } = data;
 
-  const todayIndex = (cycleDay + STREAK_CYCLE_DAYS - 1) % STREAK_CYCLE_DAYS;
-  const nextIndex = cycleDay % STREAK_CYCLE_DAYS;
+  const todayIndex = cycleDay - 1;
+  const nextIndex =
+    todayIndex < 0 ? 0 : isCheckedInToday ? todayIndex + 1 : todayIndex;
 
   const handleCheckIn = () => {
     mutate(undefined, {
@@ -166,7 +167,7 @@ export default function StreakCard() {
           {STREAK_DAILY_REWARDS.map((reward, i) => {
             const isToday = i === todayIndex;
             const isNext = i === nextIndex;
-            const isChecked = isCheckedInToday && isToday;
+            const isChecked = i < todayIndex || (isCheckedInToday && isToday);
 
             return (
               <div
@@ -214,10 +215,7 @@ export default function StreakCard() {
                         gap: 2,
                       }}
                     >
-                      <CoinIcon
-                        variant="white"
-                        size={13}
-                      />
+                      <CoinIcon variant="white" size={13} />
                       {reward}
                     </span>
                   )}
@@ -238,7 +236,7 @@ export default function StreakCard() {
               marginBottom: token.marginSM,
             }}
           >
-            {t("page.streak.nextReward")}: {STREAK_DAILY_REWARDS[nextIndex]}{" "}
+            {t("page.streak.reward")}: {STREAK_DAILY_REWARDS[nextIndex]}{" "}
             {t("component.mainLayout.whiteCoin")}
           </Tag>
           <br />
