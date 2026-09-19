@@ -1,4 +1,4 @@
-import type { UserRole } from "../enums.type";
+import type { UserRole } from "../enums.types";
 
 export interface GoogleLoginRequest {
   credential: string;

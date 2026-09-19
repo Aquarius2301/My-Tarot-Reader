@@ -29,5 +29,4 @@ export const useGetCurrentUser = (enabled = true) =>
     queryFn: authApi.getCurrentUser,
     enabled,
     retry: false, // 401 Unauthorized is expected when the user is not logged in, so we don't want to retry.
-    staleTime: 5 * 60 * 1000,
   });

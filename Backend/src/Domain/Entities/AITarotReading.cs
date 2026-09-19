@@ -7,6 +7,8 @@ public class AITarotReading : BaseEntity
 {
     public Guid UserId { get; set; }
 
+    public string Title { get; set; } = string.Empty;
+
     public CardCount CardCount { get; set; }
 
     public QuestionType QuestionType { get; set; }

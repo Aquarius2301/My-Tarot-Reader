@@ -5,16 +5,7 @@ import {
   HistoryOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { BenefitsPanel, GoogleLoginPanel } from "./components";
-import type { ReactNode } from "react";
-
-// Interface to avoid the 'readonly' issue with Antd List
-export interface BenefitItem {
-  key: string;
-  icon: ReactNode;
-  title: string;
-  description: string;
-}
+import { BenefitsPanel, GoogleLoginPanel, type BenefitItem } from "./components";
 
 export default function LoginPage() {
   const { t } = useTranslation();

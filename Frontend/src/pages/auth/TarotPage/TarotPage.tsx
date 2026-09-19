@@ -7,7 +7,7 @@ import {
 import { useCreateDrawForAuth, useGetLastDrawnCardForAuth } from "@/hooks/api";
 import { TarotMeaningCard } from "@/pages/shared/tarot";
 import { getErrorMessage } from "@/utils";
-import { Button, message, Spin, Typography } from "antd";
+import { App, Button, Spin, Typography } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -15,6 +15,7 @@ const { Title } = Typography;
 
 export default function AuthTarotPage() {
   const { t } = useTranslation();
+  const { message } = App.useApp();
   const { data, isLoading, refetch } = useGetLastDrawnCardForAuth();
   const { mutate, isPending } = useCreateDrawForAuth();
   const [reDraw, setReDraw] = useState(false);
