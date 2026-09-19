@@ -8,7 +8,7 @@ description: >-
 
 Standard conventions for the My Tarot Reader React frontend. Pairs with the backend `backend-dotnet-architecture` skill — the frontend mirrors its `ApiResponse<T>` envelope, DTO naming (`*Request`/`*Result`), and ordering (`POST/PUT/DELETE => 200 + null data`, cache invalidation).
 
-## Stack
+## 1. Stack
 
 - **React 19**, **TypeScript 6** (`verbatimModuleSyntax`, `erasableSyntaxOnly` — NO TS `enum`, use `as const` arrays + unions).
 - **Vite 8** build; path alias `@/*` -> `src/*` (tsconfig + vite.config).
@@ -21,7 +21,7 @@ Standard conventions for the My Tarot Reader React frontend. Pairs with the back
 - **@fingerprintjs/fingerprintjs** — device fingerprint -> `X-Device-Id` header.
 - **oxlint** — linting (`npm run lint`). **@ant-design/icons** must be declared in `package.json` (used project-wide).
 
-## Layering & data flow
+## 2. Layering & data flow
 
 NEVER call `src/api` directly from a Page or Component. Data flows strictly top-down:
 
@@ -37,7 +37,7 @@ Page/Component
 - **`src/hooks/api/*.hooks.ts`** — the ONLY place `useQuery`/`useMutation` live. Components consume hooks, never api.
 - Components never touch `queryClient` directly; mutations invalidate via the hook's `onSuccess`.
 
-## Canonical folder tree
+## 3. Canonical folder tree
 
 ```
 src/
@@ -83,7 +83,7 @@ src/
 
 Every folder of pages/components has an `index.ts` barrel (page folder: `export { default } from "./X";`). Import via `@/` alias and barrel, NEVER deep-import into a file (`@/pages/auth/HistoryPage/HistoryPage` is wrong; `@/pages/auth/HistoryPage` is right).
 
-## File & naming conventions
+## 4. File & naming conventions
 
 - **Files**: camelCase + domain suffix — `auth.hooks.ts`, `auth.api.ts`, `tarot.types.ts`, `common.constants.ts`, `error.utils.ts`, `useThemeStore.hooks.ts`.
 - **Components/Pages**: PascalCase `.tsx`, default export, feature-folder `XxxPage/`, `XxxCard/`, `XxxModal/`, props interface `XxxProps` (exported).
@@ -92,7 +92,7 @@ Every folder of pages/components has an `index.ts` barrel (page folder: `export 
 - **DTOs**: `interface`, mirrors backend `camelCase` records. List item DTOs named `XxxItem`/`XxxResult`.
 - **i18n files**: `{lang}.{domain}.ts` with `as const` (e.g. `vi.pages.ts`).
 
-## API layer
+## 5. API layer
 
 ### `config.api.ts` — the axiosClient
 
@@ -122,14 +122,14 @@ export const API_URL = {
 
 One `<domain>.api.ts` per backend controller; api fns only take DTO args. Never expose `AxiosResponse`; always typed payloads or `void`.
 
-## React Query conventions
+## 7. React Query conventions
 
 - Query keys live in `src/hooks/api/queryKey.ts` as **hierarchical `as const` arrays**: `TAROT_READING_QUERY_KEY = ["tarotReading"]`, then `GET_CARD_FOR_AUTH_QUERY_KEY = [...TAROT_READING_QUERY_KEY, "getCardForAuth"]`. Secondary keys must be prefixed with their domain — never bare (`["getAll"]` is wrong).
 - Queries: small focused hooks with sensible `staleTime` (`Infinity` for daily/cooldown data; default 5 min from the global QueryClient otherwise). `retry: false` where 401/expected errors occur.
 - Mutations: `onSuccess` invalidates only the affected keys (or `removeQueries` for auth-scoped cache). Backend returns `200 + null data` for writes, so mutations only signal success/error.
 - `useGetCurrentUser` gates routing — no duplicated `staleTime`; rely on the app-wide QueryClient default.
 
-## Routing & guards
+## 8. Routing & guards
 
 - `AppRouter.tsx`: `BrowserRouter` -> `<SessionExpiredHandler />` -> `<Suspense fallback={<MainLayout><Spin fullscreen /></MainLayout>}>` -> `<Routes>`.
 - Routes declared as `publicRoutes`/`protectedRoutes` arrays driven by `WEB_URL` constants; each entry `{ titleKey, path, component }`; pages loaded via `React.lazy`.
@@ -137,27 +137,27 @@ One `<domain>.api.ts` per backend controller; api fns only take DTO args. Never 
 - `RouteTitle` + `useDocumentTitle(titleKey)` set localized `<title>`.
 - `SessionExpiredHandler` listens for `AUTH_SESSION_EXPIRED_EVENT` -> `queryClient.removeQueries({ queryKey: AUTH_QUERY_KEY })` + navigate to guest home (no full reload).
 
-## State
+## 9. State
 
 - zustand stores in `src/hooks/stores/` for UI-only prefs (`useThemeStore`, `useLanguageStore`), persisted via `persist(...)` (`create<T>()(persist(...))`).
 - Consume with selectors: `useThemeStore((s) => s.mode)`.
 - Language store syncs `i18n.changeLanguage` on toggle/set + at module load.
 
-## Styling & antd
+## 10. Styling & antd
 
 - Theme built from constants in `src/constants/theme.constants.ts`: `COLOR_PALETTES` per role (`guest|registered|pro`) + mode (`dark|light`); `getThemeByRole`/`getPaletteByRole` feed `ConfigProvider` and inline styles.
 - Components style via `theme.useToken()` tokens (never hardcoded hex) and inline `style` props. No CSS modules / no CSS-in-JS lib.
 - App is wrapped in `<AntdApp>` (MainLayout) -> use `App.useApp()` for `message`/`modal`. Never import static `message`/`notification` from `"antd"`.
 - Icons ONLY from `@ant-design/icons` (declared dependency).
 
-## i18n
+## 11.i18n
 
 - Setup in `src/i18n/index.ts`: resources merged into a single `translation` namespace; `lng: "vi"`, `fallbackLng: "en"`.
 - Locale modules are TS `as const` objects at `src/i18n/locales/<domain>/{lang}.<domain>.ts` — key namespaces `page.*`, `component.*`, `error.*`, `tarot.*`.
 - All user-facing strings go through `useTranslation().t()` or `<Trans i18nKey=...>` (with `components` mapping, and interpolation via `values`). Never hardcode copy.
 - 78-card meanings live under `tarot.meaning.<code>.<upright|reversed>.<section>`; big tarot locales are manual chunks in vite.config to avoid a giant bundle.
 
-## Error & loading UX
+## 12. Error & loading UX
 
 Standard per-page pattern:
 
@@ -167,7 +167,7 @@ Standard per-page pattern:
 - Mutation feedback via `App.useApp().message`: `onSuccess`/`onError` callbacks showing `t(...)` key or `getErrorMessage(error)`.
 - `src/utils/error.utils.ts`: `getErrorMessage(error)` translates the `ApiErrorResponse.message` i18n key (falls back to `error.system.internalServerError`); `getFormFieldErrors` maps backend `ValidationError[]` onto antd form fields (key camelCased).
 
-## DTO types
+## 13. DTO types
 
 Mirror backend `ApiResponse<T>`:
 
@@ -182,13 +182,14 @@ export interface ApiErrorResponse extends ApiResponse<ValidationError[]> {}
 
 DTOs in `src/types/dtos/*.types.ts` as interfaces mirroring backend records (`GetCurrentUserResult`, `CreateDrawForAuthRequest`, `GetAllReadingItem`, ...). Union types from `as const` arrays in `src/types/enums.types.ts`.
 
-## Env & tooling
+## 14. Env & tooling
 
 - Only `VITE_API_URL` (axios baseURL) and `VITE_GOOGLE_CLIENT_ID` (custom OAuth redirect flow) exist; read via `import.meta.env`.
 - `npm run lint` (oxlint), `npm run build` (`tsc -b && vite build`), `npm run dev` / `npm run preview`.
 - `verbatimModuleSyntax` requires `import type` for type-only imports.
+- Only read `.env` for config; never read `.env.local`.
 
-## Known pitfalls
+## 15.Known pitfalls
 
 - Deep imports into files instead of folder barrels — always use the barrel.
 - Static `message`/`notification` from antd — use `App.useApp()`.

@@ -6,7 +6,7 @@ description: >-
 
 # Backend .NET Architecture — My Tarot Reader
 
-## Project structure & layering
+## 1. Project structure & layering
 
 Clean Architecture. Dependencies point only inwards (toward Domain):
 
@@ -22,7 +22,7 @@ Api -> Application -> Domain
 
 Namespaces: `MyTarotReader.Api`, `MyTarotReader.Application`, `MyTarotReader.Domain`, `MyTarotReader.Infrastructure`.
 
-## Canonical folder tree
+## 2. Canonical folder tree
 
 ```
 Backend
@@ -79,21 +79,21 @@ Backend
 
 File name must match class name. Avoid deviations like: `AuthExtension.cs` containing `AuthenticationExtension`, `IJwtGenerator.cs` containing `IJwtTokenGenerator`.
 
-## Naming conventions
+## 3. Naming conventions
 
 - Controller: `N + Controller`, eg: `AuthController`, `TarotReadingController`, `WalletController`.
 - Service: `N + Service`, eg: `AuthService`, `TarotReadingService`. Interface: `I + N + Service` (eg `IAuthService`), placed in `Application/Contracts/Services/`.
 - 1 controller uses 1 service; each service method uses exactly 1 request and 1 result with matching names.
   VD: `AuthController.GoogleLoginAsync(...)` -> `IAuthService.GoogleLoginAsync(GoogleLoginRequest) : GoogleLoginResult`.
 
-## DTO conventions
+## 4. DTO conventions
 
 - DTOs use `record`. Name: `FunctionName + Request` / `FunctionName + Result`, eg: `CreateDrawForAuthRequest`, `GetLastDrawnCardForAuthResult`.
 - Request/Result are declared in the **same file as the service interface** in `Application/Contracts/Services/` (no separate DTO folder).
 - List items inside a result use the `Item` suffix, eg: `GetAllReadingItem`, `GetAllReadingResult(List<GetAllReadingItem> Items)`.
 - Use `ApiResponse<T>(bool Success, string? Message, T? Data)` + factories `ApiResponse.Success()/Success<T>()/Failure()/Failure<T>()` from `Application/Common/Models/ApiResponse.cs`.
 
-## Controller
+## 5. Controller
 
 - Inject the service interface, never the implementation.
 - Route as `api/<domain>`, eg `[Route("api/streak")]`.
@@ -103,7 +103,7 @@ File name must match class name. Avoid deviations like: `AuthExtension.cs` conta
 - Header `X-Device-Id` is the device fingerprint for both login and guest flows.
 - Errors are handled by middleware; never return errors directly from the controller.
 
-## Service
+## 6. Service
 
 - Services live in `Infrastructure/Services/`, interfaces in `Application/Contracts/Services/`.
 - Services always inject `IAppDbContext` (never `DbContext` directly).
@@ -120,7 +120,7 @@ File name must match class name. Avoid deviations like: `AuthExtension.cs` conta
 - Always use `async/await`; never `.Result`/`.Wait()` (avoids deadlocks).
 - Always accept `CancellationToken cancellationToken = default` and pass it down.
 
-## Domain & Persistence
+## 7. Domain & Persistence
 
 - Entities inherit `BaseEntity` (`Id`, `CreatedAt`, `DeletedAt`). No EF Core in Domain.
 - Relationships are configured at the **weak side**: `builder.HasOne(x => x.User).WithMany(x => x.Xs).HasForeignKey(x => x.UserId)` in the child's Configuration, not the parent's.
@@ -129,32 +129,32 @@ File name must match class name. Avoid deviations like: `AuthExtension.cs` conta
 - Add check constraints for invariants (eg `CK_Wallets_RedCoin_NonNegative`).
 - Watch out for multiple cascade paths; use `DeleteBehavior.Restrict` for secondary FKs (eg `OrderDetail -> WhiteCoinBatch`).
 
-## Settings
+## 8. Settings
 
 - Never read `appsettings.json` directly in services. Always use `IOptions<T>`.
 - One settings class per domain in `Application/Settings/` (eg `JwtSetting`, `GoogleSetting`, `WalletSetting`, `StreakSetting`, `EmailSetting`, `AiTarotSetting`, `TokenCleanupSetting`).
 - Bound in `Api/Extensions/SettingExtension.cs`.
 
-## Exceptions & Error codes
+## 9.Exceptions & Error codes
 
 - Throw HTTP errors via the exception hierarchy in `Application/Common/Exceptions/AppException.cs`: `BadRequestException` (400), `ValidationException` (400 w/ field errors), `UnauthorizedException` (401), `ForbiddenException` (403), `NotFoundException` (404), `ConflictException` (409), `TooManyRequestsException` (429), `InternalServerException` (500). All inherit `BaseException`.
 - Never return errors directly from the controller; `GlobalExceptionMiddleware` maps `BaseException` → status + `ApiResponse.Failure(...)` (499 when the client cancels the request).
 - Error codes live in `Application/Constants/Errors/*ErrorCode.cs`, i18n format `error.<domain>.<camelCase>` (eg `error.wallet.walletNotFound`).
 
-## Validation
+## 10. Validation
 
 - Always use FluentValidation in `Application/Common/Validators/`; never validate directly in controllers.
 - Call via `ValidationHelper.ValidateOrThrow(...)` (BadRequest) or `ValidateOrThrowForm(...)` (ValidationException w/ field errors).
 - Register `IValidator<T>` in `Api/Extensions/DependencyInjectionExtension.cs`.
 
-## Auth & Sessions
+## 11. Auth & Sessions
 
 - JWT travels via **HttpOnly cookies** (`accessToken`, `refreshToken`), not headers. `Api/Extensions/AuthExtension.cs` reads the token from the cookie via `OnMessageReceived`.
 - Device fingerprint comes from the `X-Device-Id` header, bound to the refresh token to detect theft (mismatch → revoke all tokens + throw Unauthorized).
 - Guest flows use Redis (key `tarot:draw:{guestKey}`, cooldown TTL).
 - Refresh tokens are always rotated (old one soft-deleted `DeletedAt = now`, new one issued).
 
-## Comment conventions
+## 12. Comment conventions
 
 - `<summary>` for classes, methods, properties — short, max 1 sentence.
 - `<remarks>` for details longer than 1 sentence.
@@ -166,13 +166,17 @@ File name must match class name. Avoid deviations like: `AuthExtension.cs` conta
 - `<returns>` briefly describing the result.
 - Controller/Service classes may omit `<summary>`.
 
-## Run / Migration
+## 13. Run / Migration
 
 - Always use scripts in `scripts/` instead of `dotnet run` / `dotnet ef` directly (avoids environment-specific errors):
   - `./scripts/run-local.sh` — run the API locally (Windows: `run-local.cmd`).
   - `./scripts/add-migration.sh <MigrationName>` — create a new migration.
   - `./scripts/update-database.sh` — update the database.
   - `./scripts/clean-build.sh` — clean, restore, build.
+
+## 14.Caution
+
+- Only read `appsettings.json` for config; never read `appsettings.Development.json`.
 
 ## Quick checklist for new code
 

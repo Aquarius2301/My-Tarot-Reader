@@ -229,6 +229,10 @@ For every public service method, write at minimum:
 - **Soft-delete / query-filter edge case** — if the method queries an entity that supports `DeletedAt`, verify soft-deleted records are excluded.
 - **Boundary/edge input** — e.g. empty collections, `Guid.Empty`, max-length strings — only when the method's logic actually branches on them; don't pad tests with trivial cases that add no coverage.
 
+## 7. Caution
+
+- Only read `appsettings.json` for config; never read `appsettings.Development.json`.
+
 Do not write tests for FluentValidation rules inside service tests — validator tests belong in their own `<Validator>Tests` class, asserting `validator.Validate(request).IsValid` and specific `Errors` per rule.
 
 ## Quick checklist for new tests

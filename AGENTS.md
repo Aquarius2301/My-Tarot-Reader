@@ -34,3 +34,4 @@ Before writing or reviewing code, load the matching skill — conventions (folde
 3. **Never commit real secrets.** `appsettings*.json` and `.env*` keep placeholders / local-only values; document keys in READMEs, not values.
 4. **Frontend:** run `npm run lint` and `npm run build` to verify before finishing.
 5. Keep changes minimal and consistent with the existing barrel/folder conventions.
+6. Only read .env and appsettings.json for config. DO NOT read .env.local, appsettings.Development.json
