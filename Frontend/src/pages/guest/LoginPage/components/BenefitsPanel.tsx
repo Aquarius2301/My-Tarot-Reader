@@ -1,5 +1,5 @@
 import { Avatar, Col, List, Space, Typography, theme } from "antd";
-import type { BenefitItem } from "../LoginPage";
+import type { BenefitItem } from "./types";
 
 const { Title, Paragraph, Text } = Typography;
 

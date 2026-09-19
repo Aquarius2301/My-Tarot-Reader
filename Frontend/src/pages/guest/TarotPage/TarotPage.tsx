@@ -12,7 +12,7 @@ import { TarotMeaningCard } from "@/pages/shared/tarot";
 import { WEB_URL } from "@/routes";
 import { convertSecondsToHours } from "@/utils";
 import { getErrorMessage } from "@/utils";
-import { Button, message, Spin, Typography } from "antd";
+import { App, Button, Spin, Typography } from "antd";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -20,9 +20,9 @@ const { Title } = Typography;
 
 export default function GuestTarotPage() {
   const { t } = useTranslation();
+  const { message } = App.useApp();
   const { data, isLoading, refetch } = useGetLastDrawnCardForGuest();
   const { mutate, isPending } = useCreateDrawForGuest();
-  //   const { message } = App.useApp();
   const navigate = useNavigate();
 
   const handleConfirm = (selectedCards: SpreadResultItem[]) => {

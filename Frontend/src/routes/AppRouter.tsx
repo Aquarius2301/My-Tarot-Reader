@@ -17,7 +17,7 @@ const LoginCallbackPage = lazy(() => import("@/pages/guest/LoginCallbackPage"));
 const GuestDrawTarotPage = lazy(() => import("@/pages/guest/TarotPage"));
 const DrawTarotPage = lazy(() => import("@/pages/auth/TarotPage"));
 const LibraryPage = lazy(() => import("@/pages/auth/LibraryPage"));
-const HistoryPage = lazy(() => import("@/pages/auth/HistoryPage/HistoryPage"));
+const HistoryPage = lazy(() => import("@/pages/auth/HistoryPage"));
 
 interface AppRoute {
   titleKey: string;

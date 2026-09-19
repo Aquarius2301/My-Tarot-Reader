@@ -9,7 +9,7 @@ namespace MyTarotReader.Api.Extensions;
 /// <summary>
 /// Configures JWT bearer authentication.
 /// </summary>
-public static class AuthenticationExtension
+public static class AuthExtension
 {
     /// <summary>
     /// Registers JWT bearer authentication configured to read the access token
