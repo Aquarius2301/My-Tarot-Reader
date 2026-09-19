@@ -25,7 +25,7 @@ export interface ResponsiveModalProps {
   size?: ResponsiveModalSize;
 }
 
-// Độ rộng tối đa cho content theo size (áp dụng cho Modal ở web)
+// Max width of modal for each size
 const SIZE_WIDTH_MAP: Record<ResponsiveModalSize, number> = {
   sm: 400,
   md: 600,
@@ -35,7 +35,7 @@ const SIZE_WIDTH_MAP: Record<ResponsiveModalSize, number> = {
 
 const DEFAULT_SIZE: ResponsiveModalSize = "md";
 
-// Map buttonType -> danger/type mặc định của Antd Button
+// Map buttonType -> antd button props
 const BUTTON_TYPE_CONFIG: Record<
   ActionButtonType,
   { type: "primary" | "default"; danger?: boolean }
@@ -45,7 +45,7 @@ const BUTTON_TYPE_CONFIG: Record<
   cancel: { type: "default" },
 };
 
-const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
+export default function ResponsiveModal({
   open,
   onClose,
   title,
@@ -53,10 +53,10 @@ const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
   actions,
   loading,
   size = DEFAULT_SIZE,
-}) => {
+}: ResponsiveModalProps) {
   const { t } = useTranslation();
   const screens = useBreakpoint();
-  const isMobile = !screens.md; // < md thì coi là mobile -> dùng Drawer
+  const isMobile = !screens.md; // If the screen width is less than 768px, consider it as mobile
 
   const width = SIZE_WIDTH_MAP[size] ?? SIZE_WIDTH_MAP[DEFAULT_SIZE];
 
@@ -102,6 +102,10 @@ const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
         keyboard={!loading}
         footer={renderFooter()}
         size="auto"
+        destroyOnHidden
+        style={{
+          maxHeight: "90vh",
+        }} // Limit the height of the drawer to 90% of the viewport height
       >
         {children}
       </Drawer>
@@ -123,6 +127,4 @@ const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
       {children}
     </Modal>
   );
-};
-
-export default ResponsiveModal;
+}

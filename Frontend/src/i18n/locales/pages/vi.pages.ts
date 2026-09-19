@@ -81,7 +81,7 @@ export const viPages = {
       checkIn: "Điểm danh",
       checkedInToday: "Đã điểm danh hôm nay",
       checkInSuccess: "Điểm danh thành công",
-      nextReward: "Phần thưởng ngày mai",
+      reward: "Phần thưởng hôm nay",
       saverUsed: "Đã dùng bảo vệ chuỗi tháng này",
       saverAvailable: "Còn lượt bảo vệ chuỗi tháng này",
       saverResetIn: "Còn {{days}} ngày nữa sẽ tự reset (00:00 mùng 1, giờ VN)",

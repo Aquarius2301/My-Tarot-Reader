@@ -81,7 +81,7 @@ export const enPages = {
       checkIn: "Check in",
       checkedInToday: "Checked in today",
       checkInSuccess: "Check-in successful",
-      nextReward: "Tomorrow's reward",
+      reward: "Today's reward",
       saverUsed: "Streak saver used this month",
       saverAvailable: "Streak saver available this month",
       saverResetIn: "Resets in {{days}} days (00:00 on the 1st, VN time)",
