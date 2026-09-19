@@ -1,4 +1,5 @@
 export * from "./layouts";
+export * from "./loading";
 export * from "./tarot";
 export * from "./error";
 export * from "./modal";

@@ -127,9 +127,16 @@ axiosClient.interceptors.response.use(
       } catch (refreshError) {
         // Refresh failed -> process queue with error, redirect login
         processQueue(refreshError as AxiosError);
-        // Let the app navigate to the guest home client-side (no full page
-        // reload). SessionExpiredHandler mounted in the router listens for this.
-        window.dispatchEvent(new Event(AUTH_SESSION_EXPIRED_EVENT));
+        // A failed refresh is just "not logged in" when the failing request
+        // was the current-user probe: dispatching the session-expired event
+        // there would clear the active AUTH query and immediately refetch it
+        // (removeQueries on an observed query triggers a refetch), creating an
+        // infinite /me -> refresh -> event loop for plain guests.
+        if (originalRequest.url !== API_URL.auth.getCurrentUser) {
+          // Let the app navigate to the guest home client-side (no full page
+          // reload). SessionExpiredHandler mounted in the router listens for this.
+          window.dispatchEvent(new Event(AUTH_SESSION_EXPIRED_EVENT));
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

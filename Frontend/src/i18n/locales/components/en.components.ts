@@ -13,6 +13,9 @@ export const enComponents = {
       whiteCoin: "White coins",
       redCoin: "Red coins",
     },
+    boot: {
+      loading: "Loading...",
+    },
     deck: {
       instruction: "Hover to preview, click to select a card",
       reshuffle: "Reshuffle",

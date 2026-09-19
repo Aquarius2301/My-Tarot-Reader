@@ -1,13 +1,19 @@
 import { lazy, Suspense } from "react";
 import { Spin } from "antd";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import {
   PublicRoute,
   ProtectedRoute,
   RouteTitle,
   SessionExpiredHandler,
 } from "./components";
-import { MainLayout } from "@/components";
+import { BootScreen, MainLayout } from "@/components";
+import { useGetCurrentUser } from "@/hooks/api";
 import { WEB_URL } from "./url.routes";
 
 const HomePage = lazy(() => import("@/pages/auth/HomePage"));
@@ -74,16 +80,33 @@ export default function AppRouter() {
   return (
     <BrowserRouter>
       <SessionExpiredHandler />
-      <Suspense
-        fallback={
-          <MainLayout>
-            <Spin fullscreen />
-          </MainLayout>
-        }
-      >
+      <AppGate />
+    </BrowserRouter>
+  );
+}
+
+function AppGate() {
+  const { data, isLoading, dataUpdatedAt, errorUpdatedAt } =
+    useGetCurrentUser();
+  const location = useLocation();
+
+  // Block the first paint with a bare spinner until the auth state is known,
+  // so the header never renders guest chrome and then flips to auth chrome.
+  // Only applies on cold boot: once the query has settled, later refetches
+  // (login/session-expired) keep the current UI instead of blanking it.
+  const hasResolved = dataUpdatedAt > 0 || errorUpdatedAt > 0;
+
+  if (isLoading && !hasResolved) {
+    return <BootScreen />;
+  }
+
+  return (
+    <MainLayout user={data} role={data?.role} currentPath={location.pathname}>
+      <Suspense fallback={<Spin fullscreen />}>
         <Routes>
-          {/* Public routes render inside PublicRoute's MainLayout via <Outlet/>.
-            ProtectedRoute redirects unauthenticated users to WEB_URL.HOME. */}
+          {/* Public routes render inside PublicRoute's Outlet; ProtectedRoute
+            redirects unauthenticated users to WEB_URL.guestHome. The shared
+            MainLayout stays mounted so the header never flashes on navigation. */}
           <Route element={<PublicRoute />}>
             {publicRoutes.map((r) => {
               const Component = r.component;
@@ -113,6 +136,6 @@ export default function AppRouter() {
           </Route>
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </MainLayout>
   );
 }
