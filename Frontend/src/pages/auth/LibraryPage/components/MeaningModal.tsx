@@ -19,11 +19,23 @@ export default function MeaningModal({
 
   const [isReversed, setIsReversed] = useState(false);
 
+  // Keep the last shown card so the drawer content stays translated during the
+  // exit animation (selectedCard is nulled on close before the animation ends).
+  const [lastCard, setLastCard] = useState<TarotCardCode | null>(selectedCard);
+  if (selectedCard !== null && selectedCard !== lastCard) {
+    setLastCard(selectedCard);
+  }
+  const displayCard = selectedCard ?? lastCard;
+
+  if (!displayCard) {
+    return <ResponsiveModal open={!!selectedCard} onClose={() => onSelectedCard(null)} />;
+  }
+
   const orientation = isReversed
     ? t("tarot.position.reversed")
     : t("tarot.position.upright");
 
-  const name = t(`tarot.meaning.${selectedCard}.name`);
+  const name = t(`tarot.meaning.${displayCard}.name`);
 
   return (
     <ResponsiveModal
@@ -48,17 +60,14 @@ export default function MeaningModal({
           }}
         >
           <TarotCard
-            cardCode={selectedCard as TarotCardCode}
+            cardCode={displayCard}
             isUpright={!isReversed}
             isFlipped
             size="lg"
           />
         </div>
 
-        <TarotMeaningCard
-          cardCode={selectedCard as TarotCardCode}
-          isReversed={isReversed}
-        />
+        <TarotMeaningCard cardCode={displayCard} isReversed={isReversed} />
       </Flex>
     </ResponsiveModal>
   );
