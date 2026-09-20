@@ -58,9 +58,8 @@ export default function StreakCard() {
     isSaverUsed,
   } = data;
 
-  const todayIndex = cycleDay - 1;
-  const nextIndex =
-    todayIndex < 0 ? 0 : isCheckedInToday ? todayIndex + 1 : todayIndex;
+  const todayIndex = isCheckedInToday ? cycleDay - 1 : cycleDay;
+  const nextIndex = Math.max(0, cycleDay);
 
   const handleCheckIn = () => {
     mutate(undefined, {
