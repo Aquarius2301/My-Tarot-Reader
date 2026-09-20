@@ -104,8 +104,8 @@ export default function ResponsiveModal({
         size="auto"
         destroyOnHidden
         style={{
-          maxHeight: "90vh",
-        }} // Limit the height of the drawer to 90% of the viewport height
+          maxHeight: "calc(100dvh - 32px)",
+        }} // Limit the height of the drawer to the visible viewport height
       >
         {children}
       </Drawer>
