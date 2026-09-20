@@ -1,8 +1,10 @@
 using FluentValidation;
 using MyTarotReader.Application.Common.Validators;
+using MyTarotReader.Application.Contracts.Backgrounds;
 using MyTarotReader.Application.Contracts.Common;
 using MyTarotReader.Application.Contracts.Persistence;
 using MyTarotReader.Application.Contracts.Services;
+using MyTarotReader.Infrastructure.Backgrounds;
 using MyTarotReader.Infrastructure.Common;
 using MyTarotReader.Infrastructure.Persistence;
 using MyTarotReader.Infrastructure.Services;
@@ -30,6 +32,10 @@ public static class DependencyInjectionExtension
         services.AddScoped<IEmailHandler, EmailHandler>();
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IEmailTemplateEngine, EmailTemplateEngine>();
+
+        // Background jobs
+        services.AddSingleton<IEmailBackgroundQueue, EmailBackgroundQueue>();
+        services.AddHostedService<EmailBackgroundWorker>();
 
         // Services
         services.AddScoped<IAuthService, AuthService>();

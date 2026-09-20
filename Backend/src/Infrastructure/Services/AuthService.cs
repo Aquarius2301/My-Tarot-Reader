@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
+using MyTarotReader.Application.Contracts.Backgrounds;
 using MyTarotReader.Application.Contracts.Common;
 using MyTarotReader.Application.Contracts.Persistence;
 using MyTarotReader.Application.Contracts.Services;
@@ -15,7 +16,7 @@ public class AuthService(
     IOptions<JwtSetting> jwtSetting,
     IOptions<WalletSetting> walletSetting,
     IAppDbContext context,
-    IEmailHandler emailHandler,
+    IEmailBackgroundQueue emailBackgroundQueue,
     IGoogleAuthValidator googleAuthValidator,
     IJwtTokenGenerator jwtTokenGenerator
 ) : IAuthService
@@ -23,7 +24,7 @@ public class AuthService(
     private readonly WalletSetting _walletSetting = walletSetting.Value;
     private readonly IAppDbContext _context = context;
 
-    private readonly IEmailHandler _emailHandler = emailHandler;
+    private readonly IEmailBackgroundQueue _emailBackgroundQueue = emailBackgroundQueue;
     private readonly IGoogleAuthValidator _googleAuthValidator = googleAuthValidator;
     private readonly IJwtTokenGenerator _jwtTokenGenerator = jwtTokenGenerator;
     private readonly JwtSetting _jwtSetting = jwtSetting.Value;
@@ -44,8 +45,12 @@ public class AuthService(
             cancellationToken
         );
 
+        var isNewUser = false;
+
         if (user == null)
         {
+            isNewUser = true;
+
             user = new User
             {
                 FullName = payload.Name,
@@ -86,13 +91,6 @@ public class AuthService(
             );
 
             _context.Streaks.Add(new Streak { UserId = user.Id });
-
-            _ = _emailHandler.SendWelcomeEmailAsync(
-                user.Email,
-                user.FullName,
-                request.Locale,
-                cancellationToken
-            );
         }
         else
         {
@@ -119,6 +117,14 @@ public class AuthService(
         AddRefreshToken(user, deviceFingerprint, refreshToken);
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        if (isNewUser)
+        {
+            await _emailBackgroundQueue.EnqueueAsync(
+                new WelcomeEmailMessage(user.Email, user.FullName, request.Locale),
+                CancellationToken.None
+            );
+        }
 
         return new GoogleLoginResult(
             accessToken,

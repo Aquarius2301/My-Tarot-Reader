@@ -56,6 +56,7 @@ Backend
 │   │   │   ├── Errors/
 │   │   │   └── Tarot/
 │   │   ├── Contracts/
+│   │   │   ├── Backgrounds/
 │   │   │   ├── Common/
 │   │   │   ├── Persistence/
 │   │   │   └── Services/
@@ -67,6 +68,7 @@ Backend
 │   │   └── Enums/
 │   └── Infrastructure/
 │       ├── Infrastructure.csproj
+│       ├── Backgrounds/
 │       ├── Common/
 │       ├── Persistence/
 │       │   ├── Configurations/
@@ -116,7 +118,7 @@ File name must match class name. Avoid deviations like: `AuthExtension.cs` conta
   // ... write steps ...
   await transaction.CommitAsync(ct);
   ```
-- Non-critical async side effects (eg email) run fire-and-forget (`_ = SendWelcomeEmailAsync(...)`).
+- Non-critical async side effects that outlive the request (eg the welcome email) run in the background via the email queue: enqueue a `WelcomeEmailMessage` into `IEmailBackgroundQueue` **after** the DB transaction commits; a singleton `EmailBackgroundWorker` (`Infrastructure/Backgrounds/`) delivers it in its own scope. Never `_ =` fire-and-forget a request-scoped service, and never pass the request's `CancellationToken` to it.
 - Always use `async/await`; never `.Result`/`.Wait()` (avoids deadlocks).
 - Always accept `CancellationToken cancellationToken = default` and pass it down.
 
