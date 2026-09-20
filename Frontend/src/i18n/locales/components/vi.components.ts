@@ -13,9 +13,6 @@ export const viComponents = {
       whiteCoin: "Xu trắng",
       redCoin: "Xu đỏ",
     },
-    boot: {
-      loading: "Đang tải...",
-    },
     deck: {
       instruction: "Di chuột để xem, nhấn để chọn lá bài",
       reshuffle: "Xáo bài lại",

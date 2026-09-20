@@ -1,9 +1,6 @@
-import { ConfigProvider, Spin, Typography } from "antd";
-import { APP_NAME, getPaletteByRole, getThemeByRole } from "@/constants";
+import { ConfigProvider, Image, Spin } from "antd";
+import { getPaletteByRole, getThemeByRole } from "@/constants";
 import { useThemeStore } from "@/hooks/stores";
-import { useTranslation } from "react-i18next";
-
-const { Text } = Typography;
 
 /**
  * Full-screen branded splash shown while the app resolves the auth state on
@@ -13,7 +10,6 @@ const { Text } = Typography;
 export default function BootScreen() {
   const mode = useThemeStore((s) => s.mode);
   const palette = getPaletteByRole(undefined, mode);
-  const { t } = useTranslation();
 
   return (
     <ConfigProvider theme={getThemeByRole(undefined, mode)}>
@@ -28,18 +24,7 @@ export default function BootScreen() {
           backgroundColor: palette.bgLight,
         }}
       >
-        <Text
-          strong
-          style={{
-            fontSize: "1.5rem",
-            color: palette.text,
-            margin: 0,
-            letterSpacing: "0.5px",
-            marginBottom: 8,
-          }}
-        >
-          {APP_NAME}
-        </Text>
+        <Image src="./public/logo.png" preview={false} width={200} />
 
         <Spin fullscreen />
       </div>
