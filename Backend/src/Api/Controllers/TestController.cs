@@ -13,6 +13,11 @@ namespace MyTarotReader.Api.Controllers;
 [Route("api/test")]
 public class TestController : ControllerBase
 {
+    /// <summary>No return value.</summary>
+    [HttpHead("health")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public IActionResult HeadResult() => Ok(ApiResponse.Success());
+
     /// <summary>Returns a success envelope with a sample payload.</summary>
     [HttpGet("ok")]
     [ProducesResponseType(StatusCodes.Status200OK)]
