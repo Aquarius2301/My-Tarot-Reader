@@ -42,6 +42,10 @@ public static class DependencyInjectionExtension
         services.AddScoped<IStreakService, StreakService>();
         services.AddScoped<ITarotReadingService, TarotReadingService>();
         services.AddScoped<IWalletService, WalletService>();
+        services.AddScoped<IAiTarotReadingService, AiTarotReadingService>();
+
+        // External clients
+        services.AddHttpClient<IGeminiClient, GeminiClient>();
 
         // Validators
         services.AddScoped<
@@ -55,6 +59,11 @@ public static class DependencyInjectionExtension
         >();
 
         services.AddScoped<IValidator<AddCoinRequest>, AddCoinRequestValidator>();
+
+        services.AddScoped<
+            IValidator<CreateAiTarotReadingRequest>,
+            CreateAiTarotReadingRequestValidator
+        >();
 
         return services;
     }

@@ -11,7 +11,4 @@ public class AiTarotSetting
 
     /// <summary>Gemini model id used for readings (e.g. "gemini-2.0-flash").</summary>
     public string Model { get; set; } = string.Empty;
-
-    /// <summary>Maximum number of tokens Gemini may generate per response.</summary>
-    public int MaxOutputTokens { get; set; } = 16384;
 }

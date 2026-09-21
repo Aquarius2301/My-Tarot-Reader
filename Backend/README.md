@@ -101,6 +101,9 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 | `POST` | `api/tarot/guest-draw` | Draw a card (guest, Redis cooldown) | Public |
 | `GET` | `api/tarot` | Reading history | JWT |
 | `DELETE` | `api/tarot/{readingId:guid}` | Delete a reading (soft delete) | JWT |
+| `PUT` | `api/aiTarot` | Create an AI tarot reading (Gemini), persist result | JWT |
+| `GET` | `api/aiTarot/{readingId:guid}` | Get one AI tarot reading | JWT |
+| `GET` | `api/aiTarot` | Get all AI tarot readings (short answer excerpt only) | JWT |
 | `GET` | `api/test/*` | Dev/test-only endpoints (`ok`, `not-found`, `bad`, `validation`, `boom`) | Public |
 
 ## Useful Commands
