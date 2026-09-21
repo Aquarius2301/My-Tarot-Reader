@@ -60,6 +60,8 @@ public static class DependencyInjectionExtension
 
         services.AddScoped<IValidator<AddCoinRequest>, AddCoinRequestValidator>();
 
+        services.AddScoped<IValidator<DeductCoinRequest>, DeductCoinRequestValidator>();
+
         services.AddScoped<
             IValidator<CreateAiTarotReadingRequest>,
             CreateAiTarotReadingRequestValidator

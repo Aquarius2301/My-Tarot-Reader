@@ -52,6 +52,7 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `AiTarot:ApiKey` | Gemini API key | `YOUR_GEMINI_API_KEY` |
 | `AiTarot:Model` | Gemini model name | `gemini-2.0-flash` |
 | `AiTarot:MaxOutputTokens` | Max tokens per AI reading | `16384` |
+| `AiTarot:Costs` | White coin cost per reading, keyed by card count (3/5/7/10) | `{ "3": 2, "5": 3, "7": 4, "10": 5 }` |
 | `Jwt:SecretKey` | Signing key for JWT | `YOUR_VERY_LONG_SECRET_KEY_FOR_LOCAL_DEV_ENVIRONMENT` |
 | `Jwt:Issuer` | JWT issuer | `https://localhost:7000` |
 | `Jwt:Audience` | JWT audience (frontend origin) | `https://localhost:5173` |
