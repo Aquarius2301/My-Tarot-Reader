@@ -5,14 +5,11 @@ using MyTarotReader.Application.Contracts.Services;
 
 namespace MyTarotReader.Application.Common.Validators;
 
-public class CreateAiTarotReadingRequestValidator
-    : AbstractValidator<CreateAiTarotReadingRequest>
+public class CreateAiTarotReadingRequestValidator : AbstractValidator<CreateAiTarotReadingRequest>
 {
     public CreateAiTarotReadingRequestValidator()
     {
-        RuleFor(x => x.CardCount)
-            .IsInEnum()
-            .WithMessage(AiTarotErrorCode.InvalidCardCount);
+        RuleFor(x => x.CardCount).IsInEnum().WithMessage(AiTarotErrorCode.InvalidCardCount);
 
         RuleFor(x => x.Type).IsInEnum().WithMessage(AiTarotErrorCode.InvalidCard);
 
@@ -35,7 +32,7 @@ public class CreateAiTarotReadingRequestValidator
                 card.RuleFor(c => c.CardCode)
                     .NotEmpty()
                     .WithMessage(AiTarotErrorCode.InvalidCard)
-                    .Must(TarotConstants.IsValidCardCode)
+                    .Must(TarotConstant.IsValidCardCode)
                     .WithMessage(AiTarotErrorCode.InvalidCard);
             });
 

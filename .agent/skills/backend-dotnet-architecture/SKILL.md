@@ -81,6 +81,8 @@ Backend
 
 File name must match class name. Avoid deviations like: `AuthExtension.cs` containing `AuthenticationExtension`, `IJwtGenerator.cs` containing `IJwtTokenGenerator`.
 
+Exception: validators for the same service are grouped into one file named `<Service>ServiceValidator.cs` in `Application/Common/Validators/` (eg `TarotReadingServiceValidator.cs` holds `CreateDrawForAuthRequestValidator` + `CreateDrawForGuestRequestValidator`, `WalletServiceValidator.cs` holds `AddCoinRequestValidator` + `DeductCoinRequestValidator`).
+
 ## 3. Naming conventions
 
 - Controller: `N + Controller`, eg: `AuthController`, `TarotReadingController`, `WalletController`.
@@ -102,6 +104,7 @@ File name must match class name. Avoid deviations like: `AuthExtension.cs` conta
 - Attributes: `[ApiController]`, `[ProducesErrorResponseType(typeof(ApiResponse<object>))]`.
 - `[ProducesResponseType(typeof(ApiResponse<X>), StatusCodes.Status200OK)]` — type always wrapped in `ApiResponse<T>`.
 - POST/PUT/DELETE always return `Ok(ApiResponse.Success())` (data = null); GET returns `Ok(ApiResponse.Success(result))`. Reason: frontend uses TanStack Query to invalidate cache.
+  - Exception: when the frontend needs the newly created resource id (eg `AiTarotReadingController.CreateAiTarotReadingAsync` returns `CreateAiTarotReadingResult`), the POST/PUT/DELETE endpoint may return `Ok(ApiResponse.Success(result))`.
 - Header `X-Device-Id` is the device fingerprint for both login and guest flows.
 - Errors are handled by middleware; never return errors directly from the controller.
 
@@ -146,6 +149,7 @@ File name must match class name. Avoid deviations like: `AuthExtension.cs` conta
 ## 10. Validation
 
 - Always use FluentValidation in `Application/Common/Validators/`; never validate directly in controllers.
+- Group all validators of a service into one file `<Service>ServiceValidator.cs` (eg `TarotReadingServiceValidator.cs`, `WalletServiceValidator.cs`).
 - Call via `ValidationHelper.ValidateOrThrow(...)` (BadRequest) or `ValidateOrThrowForm(...)` (ValidationException w/ field errors).
 - Register `IValidator<T>` in `Api/Extensions/DependencyInjectionExtension.cs`.
 
@@ -185,7 +189,7 @@ File name must match class name. Avoid deviations like: `AuthExtension.cs` conta
 - [ ] Controller named `<N>Controller`, service `<N>Service` in `Infrastructure/Services/`, interface `I<N>Service` in `Application/Contracts/Services/`
 - [ ] 1 controller uses 1 service; each service method has exactly 1 matching `<Fn>Request` / `<Fn>Result` record declared in the interface file
 - [ ] DTOs are `record`s; list items use the `Item` suffix (`GetAllReadingItem`)
-- [ ] Responses always wrapped in `ApiResponse<T>`; POST/PUT/DELETE return `Ok(ApiResponse.Success())` (data = null), GET returns `Ok(ApiResponse.Success(result))`
+- [ ] Responses always wrapped in `ApiResponse<T>`; POST/PUT/DELETE return `Ok(ApiResponse.Success())` (data = null), GET returns `Ok(ApiResponse.Success(result))` (exception: create endpoints that must return the new resource id may return `Ok(ApiResponse.Success(result))`)
 - [ ] `[ProducesResponseType(typeof(ApiResponse<X>), 200)]` + `[ProducesErrorResponseType(typeof(ApiResponse<object>))]` on controllers
 - [ ] Controller injects the service interface; service injects `IAppDbContext` (never `DbContext` directly)
 - [ ] Read-only methods use `AsNoTracking()` + `Select(...)` (exception: update-after-read like refresh-token rotation)
@@ -197,4 +201,4 @@ File name must match class name. Avoid deviations like: `AuthExtension.cs` conta
 - [ ] Requests validated with FluentValidation via `ValidationHelper`, validators registered in DI
 - [ ] `async`/`await` only (no `.Result`/`.Wait()`), `CancellationToken` threaded through
 - [ ] XML docs: `<summary>` (1 sentence), `<remarks>`/`<param>`/`<exception>`/`<returns>` as needed
-- [ ] File name matches class name; run via `scripts/*.{sh,cmd}`
+- [ ] File name matches class name (exception: validators grouped per service in `<Service>ServiceValidator.cs`); run via `scripts/*.{sh,cmd}`

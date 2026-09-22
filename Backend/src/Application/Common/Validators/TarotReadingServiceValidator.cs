@@ -12,7 +12,7 @@ public class CreateDrawForAuthRequestValidator : AbstractValidator<CreateDrawFor
         RuleFor(x => x.CardCode)
             .NotEmpty()
             .WithMessage(TarotReadingErrorCode.InvalidCardCode)
-            .Must(TarotConstants.IsValidCardCode)
+            .Must(TarotConstant.IsValidCardCode)
             .WithMessage(TarotReadingErrorCode.InvalidCardCode);
     }
 }
@@ -24,7 +24,7 @@ public class CreateDrawForGuestRequestValidator : AbstractValidator<CreateDrawFo
         RuleFor(x => x.CardCode)
             .NotEmpty()
             .WithMessage(TarotReadingErrorCode.InvalidCardCode)
-            .Must(TarotConstants.IsValidCardCode)
+            .Must(TarotConstant.IsValidCardCode)
             .WithMessage(TarotReadingErrorCode.InvalidCardCode);
     }
 }

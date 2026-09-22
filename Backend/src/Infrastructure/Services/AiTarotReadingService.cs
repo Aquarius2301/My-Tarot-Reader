@@ -216,7 +216,7 @@ public class AiTarotReadingService(
             .Cards.Select(
                 (card, index) =>
                 {
-                    var name = TarotConstants.GetCardName(card.CardCode) ?? card.CardCode;
+                    var name = TarotConstant.GetCardName(card.CardCode) ?? card.CardCode;
                     var orientation = card.IsReversed ? "Reversed" : "Upright";
                     return $"{index + 1}. {name} ({orientation})";
                 }
@@ -334,7 +334,7 @@ public class AiTarotReadingService(
         int index
     )
     {
-        if (TarotConstants.IsValidCardCode(rawCardCode))
+        if (TarotConstant.IsValidCardCode(rawCardCode))
         {
             return rawCardCode;
         }
@@ -345,7 +345,7 @@ public class AiTarotReadingService(
         {
             if (
                 !used.Contains(drawnCode)
-                && TarotConstants.GetCardName(drawnCode) is { } drawnName
+                && TarotConstant.GetCardName(drawnCode) is { } drawnName
                 && NormalizeCardName(drawnName) == normalizedName
             )
             {
@@ -367,7 +367,7 @@ public class AiTarotReadingService(
     private static IReadOnlyDictionary<string, string> BuildCardCodesByName()
     {
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var (code, card) in TarotConstants.AllCards)
+        foreach (var (code, card) in TarotConstant.AllCards)
         {
             map.TryAdd(NormalizeCardName(card.Name), code);
         }
