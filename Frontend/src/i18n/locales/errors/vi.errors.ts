@@ -15,5 +15,15 @@ export const viErrors = {
     streak: {
       alreadyCheckedIn: "Bạn đã điểm danh hôm nay rồi.",
     },
+    aiTarot: {
+      invalidCardCount: "Số lá bài không hợp lệ.",
+      invalidCard: "Một hoặc nhiều lá bài không hợp lệ.",
+      invalidLocale: "Ngôn ngữ không được hỗ trợ.",
+      readingNotFound: "Không tìm thấy trải bài AI này.",
+      generationFailed: "Không thể tạo trải bài AI. Vui lòng thử lại.",
+    },
+    wallet: {
+      insufficientCoins: "Bạn không đủ xu trắng để thực hiện hành động này.",
+    },
   },
 };

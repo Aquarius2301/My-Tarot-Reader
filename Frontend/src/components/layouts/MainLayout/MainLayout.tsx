@@ -84,7 +84,12 @@ export default function MainLayout({
           label: t("page.tarot.title"),
           href: user ? WEB_URL.tarot : WEB_URL.guestTarot,
         },
-      ],
+        user && {
+          key: "aiTarot",
+          label: t("page.aiTarot.title"),
+          href: WEB_URL.aiTarot,
+        },
+      ].filter(Boolean) as NavItem[],
     },
     user && {
       key: "history",
@@ -134,7 +139,7 @@ export default function MainLayout({
         return {
           key: item.key,
           label: item.label,
-          children: buildMenuItems(item.children),
+          children: item.children && buildMenuItems(item.children),
         };
       }
 

@@ -15,5 +15,15 @@ export const enErrors = {
     streak: {
       alreadyCheckedIn: "You have already checked in today.",
     },
+    aiTarot: {
+      invalidCardCount: "Invalid number of cards.",
+      invalidCard: "One or more cards are invalid.",
+      invalidLocale: "Unsupported language.",
+      readingNotFound: "This AI reading was not found.",
+      generationFailed: "Could not create the AI reading. Please try again.",
+    },
+    wallet: {
+      insufficientCoins: "You don't have enough white coins for this action.",
+    },
   },
 } as const;

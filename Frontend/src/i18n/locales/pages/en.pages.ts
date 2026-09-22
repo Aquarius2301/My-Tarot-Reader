@@ -23,6 +23,52 @@ export const enPages = {
       cooldown:
         "<strong>Your next draw will be available in {{hours}} hours {{minutes}} minutes. <btn>Log in now</btn> to draw more cards.</strong>",
     },
+    aiTarot: {
+      title: "AI Tarot",
+      step2: {
+        subtitle:
+          "Clear your mind, focus on your question, then select {{count}} cards.",
+      },
+      cardCount: "Number of cards",
+      cardCountOption: "{{count}} cards",
+      positions: "Spread positions",
+      questionType: "Question topic",
+      questionTypes: {
+        energy: "Energy",
+        love: "Love",
+        career: "Career",
+        money: "Money",
+      },
+      cost: "Cost: {{cost}} white coins",
+      balance: "Your balance: {{balance}} white coins",
+      insufficientCoins:
+        "You need at least {{cost}} white coins to continue. Check in daily to earn more.",
+      continue: "Continue",
+      back: "Back",
+      saving: "Creating your AI reading…",
+      position: {
+        coreEnergy: "Core energy",
+        challenges: "Challenges / obstacles",
+        outcome: "Outcome / advice",
+        yourStrength: "Your strength",
+        future: "Future",
+        hiddenInfluences: "Hidden influences",
+        wayToFace: "The way to face it",
+        focus: "What to focus on",
+        past: "Past",
+        nearFuture: "Near future",
+        approach: "Suggested approach",
+        needToKnow: "What you need to know",
+        hopesFears: "Hopes / fears",
+      },
+      result: {
+        title: "Reading result",
+        overview: "Overview",
+        advice: "Overall advice",
+        noAnswer: "The reading content is being updated.",
+        drawAgain: "Draw again",
+      },
+    },
     library: {
       title: "Tarot card library",
       subtitle: "All 78 cards and their upright & reversed meanings",

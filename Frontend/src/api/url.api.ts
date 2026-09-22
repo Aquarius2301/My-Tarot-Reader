@@ -17,4 +17,8 @@ export const API_URL = {
     getStreak: "/api/streak",
     checkIn: "/api/streak/checkin",
   },
+  aiTarot: {
+    create: "/api/aiTarot",
+    getById: "/api/aiTarot",
+  },
 } as const;

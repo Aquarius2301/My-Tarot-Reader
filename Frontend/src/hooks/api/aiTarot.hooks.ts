@@ -1,0 +1,29 @@
+import { aiTarotApi } from "@/api";
+import type { CreateAiTarotReadingRequest } from "@/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  AUTH_QUERY_KEY,
+  AI_TAROT_QUERY_KEY,
+  GET_AI_TAROT_BY_ID_QUERY_KEY,
+} from "./queryKey";
+
+export const useCreateAiTarotReading = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: CreateAiTarotReadingRequest) =>
+      aiTarotApi.createAiTarotReading(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AI_TAROT_QUERY_KEY });
+      // Creating a reading deducts white coins, so refresh the user cache.
+      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+    },
+  });
+};
+
+export const useGetAiTarotReadingById = (readingId: string, enabled = true) =>
+  useQuery({
+    queryKey: [...GET_AI_TAROT_BY_ID_QUERY_KEY, readingId],
+    queryFn: () => aiTarotApi.getAiTarotReadingById(readingId),
+    enabled,
+    retry: false, // 404 NotFound is expected when the reading does not exist.
+  });
