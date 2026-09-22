@@ -120,4 +120,16 @@ public interface IAiTarotReadingService
         Guid userId,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Soft-deletes an AI tarot reading owned by the user.
+    /// </summary>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="readingId">The ID of the reading to delete.</param>
+    /// <exception cref="NotFoundException">Thrown when the reading does not exist for the user.</exception>
+    Task DeleteAiTarotReadingAsync(
+        Guid userId,
+        Guid readingId,
+        CancellationToken cancellationToken = default
+    );
 }

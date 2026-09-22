@@ -817,4 +817,80 @@ public class AiTarotReadingServiceTests
     }
 
     #endregion
+
+    #region DeleteAiTarotReadingAsync
+
+    /// <summary>
+    /// Deleting an existing reading soft-deletes it (DeletedAt set) and makes it
+    /// disappear from further GetAllAiTarotReadingsAsync results.
+    /// </summary>
+    [Fact]
+    public async Task DeleteAiTarotReading_ExistingReading_SoftDeletes()
+    {
+        var (service, db, _, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        var reading = await SeedReadingAsync(
+            db,
+            userId,
+            """[{"cardCode":"maj-00","isReversed":false}]"""
+        );
+
+        await service.DeleteAiTarotReadingAsync(userId, reading.Id);
+
+        db.AITarotReadings.IgnoreQueryFilters()
+            .Single(r => r.Id == reading.Id)
+            .DeletedAt.Should()
+            .NotBeNull();
+        var afterDelete = await service.GetAllAiTarotReadingsAsync(userId);
+        afterDelete.Items.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// A reading id that does not exist throws NotFoundException with the
+    /// AiTarotErrorCode.ReadingNotFound code.
+    /// </summary>
+    [Fact]
+    public async Task DeleteAiTarotReading_ReadingNotFound_ThrowsNotFound()
+    {
+        var (service, _, _, _) = CreateSut();
+        var userId = Guid.NewGuid();
+
+        var act = async () => await service.DeleteAiTarotReadingAsync(userId, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<NotFoundException>()
+            .Where(e => e.ErrorCode == AiTarotErrorCode.ReadingNotFound);
+    }
+
+    /// <summary>
+    /// A reading that exists but belongs to a different user is treated as not found
+    /// (NotFoundException) and the other user's reading is left untouched.
+    /// </summary>
+    [Fact]
+    public async Task DeleteAiTarotReading_BelongsToOtherUser_ThrowsNotFound()
+    {
+        var (service, db, _, _) = CreateSut();
+        var userA = Guid.NewGuid();
+        var userB = Guid.NewGuid();
+        await SeedUserAsync(db, userA);
+        await SeedUserAsync(db, userB);
+        var readingB = await SeedReadingAsync(
+            db,
+            userB,
+            """[{"cardCode":"maj-00","isReversed":false}]"""
+        );
+
+        var act = async () => await service.DeleteAiTarotReadingAsync(userA, readingB.Id);
+
+        await act.Should()
+            .ThrowAsync<NotFoundException>()
+            .Where(e => e.ErrorCode == AiTarotErrorCode.ReadingNotFound);
+        db.AITarotReadings.IgnoreQueryFilters()
+            .Single(r => r.Id == readingB.Id)
+            .DeletedAt.Should()
+            .BeNull();
+    }
+
+    #endregion
 }

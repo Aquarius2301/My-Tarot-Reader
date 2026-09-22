@@ -92,4 +92,24 @@ public class AiTarotReadingController(IAiTarotReadingService service) : Controll
 
         return Ok(ApiResponse.Success(result));
     }
+
+    /// <summary>
+    /// Deletes a specific AI tarot reading for the authenticated user.
+    /// </summary>
+    [HttpDelete("{readingId:guid}")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteAiTarotReadingAsync(
+        Guid readingId,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = JwtHelper.GetUserId(HttpContext);
+
+        await _service.DeleteAiTarotReadingAsync(userId, readingId, cancellationToken);
+
+        return Ok(ApiResponse.Success());
+    }
 }

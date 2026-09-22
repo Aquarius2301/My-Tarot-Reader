@@ -193,6 +193,22 @@ public class AiTarotReadingService(
         return new GetAllAiTarotReadingResult(items);
     }
 
+    public async Task DeleteAiTarotReadingAsync(
+        Guid userId,
+        Guid readingId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var reading =
+            await _context.AITarotReadings.FirstOrDefaultAsync(
+                r => r.Id == readingId && r.UserId == userId,
+                cancellationToken
+            ) ?? throw new NotFoundException(AiTarotErrorCode.ReadingNotFound);
+
+        reading.DeletedAt = DateTimeOffset.UtcNow;
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     private static string BuildPrompt(CreateAiTarotReadingRequest request)
     {
         var languageName = request.Locale == "vi" ? "Vietnamese" : "English";
