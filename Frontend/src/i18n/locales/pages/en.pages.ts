@@ -81,7 +81,8 @@ export const enPages = {
       meaning: "Meanings of {{card}} · {{orientation}}",
     },
     history: {
-      title: "Your reading history",
+      parentTitle: "Your reading history",
+      title: "1 card history",
       subtitle: "Review your past reflections and cosmic insights",
       empty: "No readings found yet",
       deleteDescription:
@@ -89,6 +90,16 @@ export const enPages = {
       deleteTitle: "Delete this reading?",
       deleteConfirm: "Delete reading",
       deleteSuccess: "Reading deleted",
+    },
+    historyAiTarot: {
+      title: "AI Tarot history",
+      subtitle: "Review your past AI readings and cosmic insights",
+      empty: "No AI readings found yet",
+      deleteTitle: "Delete this AI reading?",
+      deleteDescription:
+        "This AI reading will be permanently deleted. Are you sure you want to delete it?",
+      deleteConfirm: "Delete reading",
+      deleteSuccess: "AI reading deleted",
     },
     login: {
       title: "Sign in",

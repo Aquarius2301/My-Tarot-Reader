@@ -5,6 +5,7 @@ import {
   AUTH_QUERY_KEY,
   AI_TAROT_QUERY_KEY,
   GET_AI_TAROT_BY_ID_QUERY_KEY,
+  GET_ALL_AI_TAROT_QUERY_KEY,
 } from "./queryKey";
 
 export const useCreateAiTarotReading = () => {
@@ -27,3 +28,21 @@ export const useGetAiTarotReadingById = (readingId: string, enabled = true) =>
     enabled,
     retry: false, // 404 NotFound is expected when the reading does not exist.
   });
+
+export const useGetAllAiTarotReadings = () =>
+  useQuery({
+    queryKey: GET_ALL_AI_TAROT_QUERY_KEY,
+    queryFn: () => aiTarotApi.getAllAiTarotReadings(),
+  });
+
+export const useDeleteAiTarotReading = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (readingId: string) =>
+      aiTarotApi.deleteAiTarotReading(readingId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: GET_ALL_AI_TAROT_QUERY_KEY });
+    },
+  });
+};

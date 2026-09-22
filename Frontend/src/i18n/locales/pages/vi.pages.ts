@@ -26,7 +26,8 @@ export const viPages = {
     aiTarot: {
       title: "AI Tarot",
       step2: {
-        subtitle: "Hãy để tâm trí thư thái, tập trung vào câu hỏi rồi chọn {{count}} lá bài.",
+        subtitle:
+          "Hãy để tâm trí thư thái, tập trung vào câu hỏi rồi chọn {{count}} lá bài.",
       },
       cardCount: "Số lá bài",
       cardCountOption: "{{count}} lá",
@@ -80,7 +81,8 @@ export const viPages = {
       meaning: "Ý nghĩa của {{card}} · {{orientation}}",
     },
     history: {
-      title: "Lịch sử trải bài",
+      parentTitle: "Lich sử trải bài",
+      title: "Lịch sử 1 lá",
       subtitle: "Xem lại các suy nghĩ và góc nhìn vũ trụ đã qua",
       empty: "Chưa có lượt trải bài nào",
       deleteDescription:
@@ -88,6 +90,16 @@ export const viPages = {
       deleteTitle: "Xóa lượt trải bài này?",
       deleteConfirm: "Xóa lượt trải bài",
       deleteSuccess: "Đã xóa lượt trải bài",
+    },
+    historyAiTarot: {
+      title: "Lịch sử AI Tarot",
+      subtitle: "Xem lại các bài giải AI và góc nhìn vũ trụ đã qua",
+      empty: "Chưa có bài giải AI nào",
+      deleteTitle: "Xóa bài giải AI này?",
+      deleteDescription:
+        "Bài giải AI này sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa không?",
+      deleteConfirm: "Xóa bài giải",
+      deleteSuccess: "Đã xóa bài giải AI",
     },
     login: {
       title: "Đăng nhập",

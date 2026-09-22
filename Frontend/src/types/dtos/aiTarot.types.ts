@@ -55,3 +55,19 @@ export interface GetAiTarotReadingResult {
   cards: AiReadingCard[];
   createdAt: string;
 }
+
+/** A single AI tarot reading entry in the user's reading history. */
+export interface GetAllAiTarotReadingItem {
+  id: string;
+  cardCount: AiTarotCardCountValue;
+  type: AiTarotQuestionType;
+  title: string;
+  answerSummary: string;
+  cards: AiReadingCard[];
+  createdAt: string;
+}
+
+/** Result of retrieving all AI tarot readings for a user. */
+export interface GetAllAiTarotReadingResult {
+  items: GetAllAiTarotReadingItem[];
+}

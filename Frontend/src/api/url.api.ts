@@ -20,5 +20,7 @@ export const API_URL = {
   aiTarot: {
     create: "/api/aiTarot",
     getById: "/api/aiTarot",
+    getAll: "/api/aiTarot",
+    delete: "/api/aiTarot",
   },
 } as const;

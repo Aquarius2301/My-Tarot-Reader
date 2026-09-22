@@ -8,6 +8,7 @@ export const WEB_URL = {
   tarot: "/tarot",
   aiTarot: "/ai-tarot",
   aiTarotResult: "/ai-tarot/result",
+  aiTarotHistory: "/history/ai",
   library: "/library",
   history: "/history",
 } as const;

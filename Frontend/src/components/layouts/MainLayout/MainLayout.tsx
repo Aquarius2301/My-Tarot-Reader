@@ -93,9 +93,21 @@ export default function MainLayout({
     },
     user && {
       key: "history",
-      label: t("page.history.title"),
-      href: WEB_URL.history,
+      label: t("page.history.parentTitle"),
+      children: [
+        user && {
+          key: "history",
+          label: t("page.history.title"),
+          href: WEB_URL.history,
+        },
+        user && {
+          key: "aiTarotHistory",
+          label: t("page.historyAiTarot.title"),
+          href: WEB_URL.aiTarotHistory,
+        },
+      ],
     },
+
     user && {
       key: "library",
       label: t("page.library.title"),

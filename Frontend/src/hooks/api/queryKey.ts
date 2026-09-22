@@ -26,3 +26,7 @@ export const GET_AI_TAROT_BY_ID_QUERY_KEY = [
   ...AI_TAROT_QUERY_KEY,
   "getById",
 ] as const;
+export const GET_ALL_AI_TAROT_QUERY_KEY = [
+  ...AI_TAROT_QUERY_KEY,
+  "getAll",
+] as const;

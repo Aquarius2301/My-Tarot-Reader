@@ -1,6 +1,7 @@
 import type {
   CreateAiTarotReadingRequest,
   CreateAiTarotReadingResult,
+  GetAllAiTarotReadingResult,
   GetAiTarotReadingResult,
 } from "@/types";
 import axiosClient from "./config.api";
@@ -16,4 +17,10 @@ export const aiTarotApi = {
     readingId: string,
   ): Promise<GetAiTarotReadingResult> =>
     axiosClient.get(`${API_URL.aiTarot.getById}/${readingId}`),
+
+  getAllAiTarotReadings: (): Promise<GetAllAiTarotReadingResult> =>
+    axiosClient.get(API_URL.aiTarot.getAll),
+
+  deleteAiTarotReading: (readingId: string): Promise<void> =>
+    axiosClient.delete(`${API_URL.aiTarot.delete}/${readingId}`),
 };

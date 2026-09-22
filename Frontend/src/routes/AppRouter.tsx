@@ -24,6 +24,7 @@ const GuestDrawTarotPage = lazy(() => import("@/pages/guest/TarotPage"));
 const DrawTarotPage = lazy(() => import("@/pages/auth/TarotPage"));
 const AiTarotPage = lazy(() => import("@/pages/auth/AiTarotPage"));
 const AiTarotResultPage = lazy(() => import("@/pages/auth/AiTarotResultPage"));
+const HistoryAiTarotPage = lazy(() => import("@/pages/auth/HistoryAiTarotPage"));
 const LibraryPage = lazy(() => import("@/pages/auth/LibraryPage"));
 const HistoryPage = lazy(() => import("@/pages/auth/HistoryPage"));
 
@@ -75,6 +76,11 @@ const protectedRoutes: AppRoute[] = [
     titleKey: "page.aiTarot.result.title",
     path: `${WEB_URL.aiTarotResult}/:readingId`,
     component: AiTarotResultPage,
+  },
+  {
+    titleKey: "page.historyAiTarot.title",
+    path: WEB_URL.aiTarotHistory,
+    component: HistoryAiTarotPage,
   },
   {
     titleKey: "page.library.title",
