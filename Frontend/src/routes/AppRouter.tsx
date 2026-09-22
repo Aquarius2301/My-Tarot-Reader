@@ -104,9 +104,17 @@ export default function AppRouter() {
 }
 
 function AppGate() {
-  const { data, isLoading, dataUpdatedAt, errorUpdatedAt } =
-    useGetCurrentUser();
   const location = useLocation();
+
+  // /login and /login/callback don't depend on the session, so skip the auth
+  // probe there: for a guest /me would 401 and trigger a pointless
+  // /auth/refresh round-trip (the OAuth callback boots its own login flow).
+  const isAuthFreeRoute =
+    location.pathname === WEB_URL.login ||
+    location.pathname === WEB_URL.loginCallback;
+
+  const { data, isLoading, dataUpdatedAt, errorUpdatedAt } =
+    useGetCurrentUser(!isAuthFreeRoute);
 
   // Block the first paint with a bare spinner until the auth state is known,
   // so the header never renders guest chrome and then flips to auth chrome.

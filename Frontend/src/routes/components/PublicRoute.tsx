@@ -8,13 +8,20 @@ import { WEB_URL } from "../url.routes";
 // flow re-authenticates from the id_token even if a stale session exists.
 const GUEST_TO_AUTH_REDIRECT: Record<string, string> = {
   [WEB_URL.guestHome]: WEB_URL.home,
-  [WEB_URL.login]: WEB_URL.home,
   [WEB_URL.guestTarot]: WEB_URL.tarot,
 };
 
 export default function PublicLayout() {
-  const { data, isLoading } = useGetCurrentUser();
   const location = useLocation();
+
+  // Only probe the session on pages that map an authenticated user to the auth
+  // equivalent. /login (and its callback) need nothing and would otherwise 401
+  // -> trigger an unnecessary /auth/refresh for guests.
+  const isAuthFreeRoute =
+    location.pathname === WEB_URL.login ||
+    location.pathname === WEB_URL.loginCallback;
+
+  const { data, isLoading } = useGetCurrentUser(!isAuthFreeRoute);
 
   if (isLoading) {
     return <Spin fullscreen />;
