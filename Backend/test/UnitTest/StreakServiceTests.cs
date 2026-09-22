@@ -294,6 +294,54 @@ public class StreakServiceTests
     }
 
     /// <summary>
+    /// A check-in after the streak is broken (missed more than one day) within the same month
+    /// marks the streak saver as used (true), and the change is persisted.
+    /// </summary>
+    [Fact]
+    public async Task CheckIn_AfterMissedDays_WithinSameMonth_MarksSaverUsed()
+    {
+        var (service, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedStreakAsync(
+            db,
+            userId,
+            VietnamNow().AddDays(-3),
+            current: 4,
+            longest: 9,
+            cycleDay: 4,
+            saver: false
+        );
+
+        await service.CheckInAsync(userId);
+
+        db.Streaks.Single().IsSaverUsed.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// A check-in after the streak is broken across a new calendar month (VN time) re-arms
+    /// the streak saver: it is momentarily marked as used, then reset to false for the month.
+    /// </summary>
+    [Fact]
+    public async Task CheckIn_AfterMissedDays_NewMonth_ResetsSaver()
+    {
+        var (service, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedStreakAsync(
+            db,
+            userId,
+            VietnamNow().AddMonths(-1),
+            current: 4,
+            longest: 9,
+            cycleDay: 4,
+            saver: true
+        );
+
+        await service.CheckInAsync(userId);
+
+        db.Streaks.Single().IsSaverUsed.Should().BeFalse();
+    }
+
+    /// <summary>
     /// Rebuilding a streak from zero (LongestStreak was 0) also updates LongestStreak to the
     /// new CurrentStreak, instead of leaving it at 0.
     /// </summary>
@@ -403,6 +451,31 @@ public class StreakServiceTests
         var persisted = db.Streaks.Single();
         persisted.CurrentStreak.Should().Be(0);
         persisted.CycleDay.Should().Be(0);
+    }
+
+    /// <summary>
+    /// After breaking the streak within the same calendar month, the streak saver is marked as
+    /// used (true) and the change is persisted, since the saver is only re-armed per month.
+    /// </summary>
+    [Fact]
+    public async Task GetStreak_BrokenStreak_WithinSameMonth_MarksSaverUsed()
+    {
+        var (service, db, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedStreakAsync(
+            db,
+            userId,
+            VietnamNow().AddDays(-2),
+            current: 5,
+            longest: 8,
+            cycleDay: 5,
+            saver: false
+        );
+
+        var result = await service.GetStreakAsync(userId);
+
+        result.IsSaverUsed.Should().BeTrue();
+        db.Streaks.Single().IsSaverUsed.Should().BeTrue();
     }
 
     /// <summary>

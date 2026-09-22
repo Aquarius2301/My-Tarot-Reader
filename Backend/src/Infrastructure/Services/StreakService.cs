@@ -22,17 +22,6 @@ public class StreakService(
     private readonly IWalletService _walletService = walletService;
     private readonly StreakSetting _streakSetting = streakSetting.Value;
 
-    /// <summary>
-    /// Retrieves the current streak information for a user. When the streak is broken or a
-    /// new month has started, the persisted state is reset before the result is returned.
-    /// </summary>
-    /// <param name="userId">The authenticated user's ID.</param>
-    /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>
-    /// <see cref="GetStreakResult"/> containing the cycle day, current/longest streak,
-    /// saver status and whether the user checked in today. Returns default values
-    /// when the user has no streak yet.
-    /// </returns>
     public async Task<GetStreakResult> GetStreakAsync(
         Guid userId,
         CancellationToken cancellationToken = default
@@ -49,13 +38,17 @@ public class StreakService(
         }
 
         var vietnamNow = StreakHelper.GetVietnamNow();
-        var resetSaver = ResetSaverIfNewMonth(streak, vietnamNow);
+
         var resetStreak = StreakHelper.IsBroken(streak.LastCheckIn, vietnamNow);
+
         if (resetStreak)
         {
             streak.CurrentStreak = 0;
             streak.CycleDay = 0;
+            streak.IsSaverUsed = true;
         }
+
+        var resetSaver = ResetSaverIfNewMonth(streak, vietnamNow);
 
         if (resetSaver || resetStreak)
         {
@@ -71,15 +64,6 @@ public class StreakService(
         );
     }
 
-    /// <summary>
-    /// Performs a daily check-in for a user, creating a new streak when none exists, and
-    /// grants the corresponding white coin reward.
-    /// </summary>
-    /// <param name="userId">The authenticated user's ID.</param>
-    /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <exception cref="BadRequestException">
-    /// Thrown when the user has already checked in today.
-    /// </exception>
     public async Task CheckInAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var vietnamNow = StreakHelper.GetVietnamNow();
@@ -107,8 +91,6 @@ public class StreakService(
         }
         else
         {
-            ResetSaverIfNewMonth(streak, vietnamNow);
-
             if (StreakHelper.IsSameDay(streak.LastCheckIn, vietnamNow))
             {
                 throw new BadRequestException(StreakErrorCode.AlreadyCheckedIn);
@@ -123,7 +105,10 @@ public class StreakService(
             {
                 streak.CurrentStreak = 1;
                 streak.CycleDay = 1;
+                streak.IsSaverUsed = true;
             }
+
+            ResetSaverIfNewMonth(streak, vietnamNow);
 
             streak.LongestStreak = Math.Max(streak.LongestStreak, streak.CurrentStreak);
             streak.LastCheckIn = vietnamNow;
