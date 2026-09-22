@@ -36,6 +36,7 @@ public static class DependencyInjectionExtension
         // Background jobs
         services.AddSingleton<IEmailBackgroundQueue, EmailBackgroundQueue>();
         services.AddHostedService<EmailBackgroundWorker>();
+        services.AddHostedService<TokenCleanupWorker>();
 
         // Services
         services.AddScoped<IAuthService, AuthService>();
