@@ -9,7 +9,7 @@ import {
 import { TarotCard } from "@/components";
 import Text from "antd/es/typography/Text";
 import type { CardData, GetAllReadingItem } from "@/types";
-import type { ModalType } from "../HistoryPage";
+import type { ModalType } from "../HistoryTarotPage";
 
 interface TarotCardItemProps {
   data: GetAllReadingItem;

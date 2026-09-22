@@ -98,7 +98,7 @@ export default function MainLayout({
         user && {
           key: "history",
           label: t("page.history.title"),
-          href: WEB_URL.history,
+          href: WEB_URL.tarotHistory,
         },
         user && {
           key: "aiTarotHistory",

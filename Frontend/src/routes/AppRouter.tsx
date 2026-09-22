@@ -1,11 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Spin } from "antd";
-import {
-  BrowserRouter,
-  Route,
-  Routes,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import {
   PublicRoute,
   ProtectedRoute,
@@ -21,12 +16,16 @@ const GuestHomePage = lazy(() => import("@/pages/guest/HomePage"));
 const LoginPage = lazy(() => import("@/pages/guest/LoginPage"));
 const LoginCallbackPage = lazy(() => import("@/pages/guest/LoginCallbackPage"));
 const GuestDrawTarotPage = lazy(() => import("@/pages/guest/TarotPage"));
-const DrawTarotPage = lazy(() => import("@/pages/auth/TarotPage"));
-const AiTarotPage = lazy(() => import("@/pages/auth/AiTarotPage"));
+const DrawTarotPage = lazy(() => import("@/pages/auth/DrawPage/TarotPage"));
+const AiTarotPage = lazy(() => import("@/pages/auth/DrawPage/AiTarotPage"));
 const AiTarotResultPage = lazy(() => import("@/pages/auth/AiTarotResultPage"));
-const HistoryAiTarotPage = lazy(() => import("@/pages/auth/HistoryAiTarotPage"));
+const HistoryAiTarotPage = lazy(
+  () => import("@/pages/auth/HistoryPage/HistoryAiTarotPage"),
+);
 const LibraryPage = lazy(() => import("@/pages/auth/LibraryPage"));
-const HistoryPage = lazy(() => import("@/pages/auth/HistoryPage"));
+const HistoryTarotPage = lazy(
+  () => import("@/pages/auth/HistoryPage/HistoryTarotPage"),
+);
 
 interface AppRoute {
   titleKey: string;
@@ -89,8 +88,8 @@ const protectedRoutes: AppRoute[] = [
   },
   {
     titleKey: "page.history.title",
-    path: WEB_URL.history,
-    component: HistoryPage,
+    path: WEB_URL.tarotHistory,
+    component: HistoryTarotPage,
   },
 ];
 

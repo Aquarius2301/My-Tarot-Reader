@@ -81,7 +81,7 @@ src/
 └── main.tsx                # createRoot + StrictMode; fingerprints warm-up
 ```
 
-Every folder of pages/components has an `index.ts` barrel (page folder: `export { default } from "./X";`). Import via `@/` alias and barrel, NEVER deep-import into a file (`@/pages/auth/HistoryPage/HistoryPage` is wrong; `@/pages/auth/HistoryPage` is right).
+Every folder of pages/components has an `index.ts` barrel (page folder: `export { default } from "./X";`). Import via `@/` alias and barrel, NEVER deep-import into a file (`@/pages/auth/DrawPage/TarotPage/TarotPage` is wrong; `@/pages/auth/DrawPage/TarotPage` is right). Grouped pages under a shared parent folder (e.g. `DrawPage/{TarotPage, AiTarotPage}`, `HistoryPage/{HistoryTarotPage, HistoryAiTarotPage}`) keep per-page barrels; import the page barrel directly.
 
 ## 4. File & naming conventions
 

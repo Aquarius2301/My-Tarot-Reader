@@ -2,13 +2,13 @@ export const WEB_URL = {
   guestHome: "/guest",
   login: "/login",
   loginCallback: "/login/callback",
-  guestTarot: "/guest/tarot",
+  guestTarot: "/draw/guest",
 
   home: "/",
-  tarot: "/tarot",
-  aiTarot: "/ai-tarot",
-  aiTarotResult: "/ai-tarot/result",
+  tarot: "/draw",
+  aiTarot: "/draw/ai",
+  aiTarotResult: "/result/ai",
+  tarotHistory: "/history",
   aiTarotHistory: "/history/ai",
   library: "/library",
-  history: "/history",
 } as const;

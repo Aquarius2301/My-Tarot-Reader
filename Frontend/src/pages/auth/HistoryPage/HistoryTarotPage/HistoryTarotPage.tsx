@@ -14,7 +14,7 @@ const { Title, Text } = Typography;
 
 export type ModalType = "view" | "delete" | null;
 
-export default function HistoryPage() {
+export default function HistoryTarotPage() {
   const { t } = useTranslation();
   const { token } = theme.useToken();
   const { message } = App.useApp();
