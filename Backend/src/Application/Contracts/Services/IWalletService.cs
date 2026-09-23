@@ -37,6 +37,40 @@ public record DeductCoinResult(int WhiteCoin);
 /// <param name="RedCoin">The red coin wallet balance.</param>
 public record GetWalletBalanceResult(int WhiteCoin, int RedCoin);
 
+/// <summary>
+/// A single active white coin batch owned by the user.
+/// </summary>
+/// <param name="Id">The batch identifier.</param>
+/// <param name="Amount">The original number of white coins granted in this batch.</param>
+/// <param name="RemainingAmount">The number of white coins still usable from this batch.</param>
+/// <param name="ExpiredAt">The date/time after which the remaining coins are forfeited.</param>
+public record WhiteCoinBatchItem(Guid Id, int Amount, int RemainingAmount, DateTimeOffset ExpiredAt);
+
+/// <summary>
+/// Result of querying a user's wallet balance together with their white coin batches.
+/// </summary>
+/// <param name="WhiteCoin">The white coin balance, derived from active, non-expired batches.</param>
+/// <param name="RedCoin">The red coin wallet balance.</param>
+/// <param name="WhiteCoinBatches">The active white coin batches ordered by expiry (soonest first).</param>
+public record GetWalletResult(
+    int WhiteCoin,
+    int RedCoin,
+    List<WhiteCoinBatchItem> WhiteCoinBatches
+);
+
+/// <summary>
+/// Request to convert red coins into white coins.
+/// </summary>
+/// <param name="RedCoins">The number of red coins to convert. <c>1</c> red coin yields <c>2</c> white coins.</param>
+public record ConvertRedToWhiteRequest(int RedCoins);
+
+/// <summary>
+/// Result of converting red coins into white coins.
+/// </summary>
+/// <param name="RedCoin">The updated red coin wallet balance.</param>
+/// <param name="WhiteCoin">The updated white coin balance, derived from active, non-expired batches.</param>
+public record ConvertRedToWhiteResult(int RedCoin, int WhiteCoin);
+
 public interface IWalletService
 {
     /// <summary>
@@ -84,6 +118,35 @@ public interface IWalletService
     Task<DeductCoinResult> DeductCoinAsync(
         Guid userId,
         DeductCoinRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Returns the current white and red coin balances together with the active
+    /// white coin batches ordered by expiry (soonest first).
+    /// </summary>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
+    /// <returns><see cref="GetWalletResult"/> with the balances and active white coin batches.</returns>
+    Task<GetWalletResult> GetWalletAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Converts red coins into white coins (1 red = 2 white) as a new dated batch
+    /// and records the transaction as an order.
+    /// </summary>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="request"><see cref="ConvertRedToWhiteRequest"/> containing the number of red coins to convert.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="BadRequestException">Thrown when the request validation fails or the user does not have enough red coins.</exception>
+    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
+    /// <returns><see cref="ConvertRedToWhiteResult"/> with the updated balances.</returns>
+    Task<ConvertRedToWhiteResult> ConvertRedToWhiteAsync(
+        Guid userId,
+        ConvertRedToWhiteRequest request,
         CancellationToken cancellationToken = default
     );
 }

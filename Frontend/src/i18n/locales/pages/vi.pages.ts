@@ -21,7 +21,8 @@ export const viPages = {
       streakReward: "Phần thưởng hôm nay",
       streakSaverUsed: "Đã dùng bảo vệ chuỗi tháng này",
       streakSaverAvailable: "Còn lượt bảo vệ chuỗi tháng này",
-      streakSaverResetIn: "Còn {{days}} ngày nữa sẽ tự reset (00:00 mùng 1, giờ VN)",
+      streakSaverResetIn:
+        "Còn {{days}} ngày nữa sẽ tự reset (00:00 mùng 1, giờ VN)",
       streakDay1: "Ngày 1",
       streakDay2: "Ngày 2",
       streakDay3: "Ngày 3",
@@ -147,6 +148,28 @@ export const viPages = {
             "Nhận thông điệp Tarot đầu ngày và đề xuất cân bằng cảm xúc.",
         },
       },
+    },
+    wallet: {
+      title: "Ví của tôi",
+      subtitle:
+        "Theo dõi xu trắng và xu đỏ của bạn. Xu trắng từng đợt sẽ hết hạn sau một khoảng thời gian, hãy chú ý hạn dùng.",
+      batchesTitle: "Các đợt xu trắng",
+      batchesSubtitle:
+        "Phần xu còn lại trong một đợt sẽ bị mất khi đợt hết hạn. Danh sách xếp theo hạn dùng, đợt gần hết hạn hiện trước.",
+      empty: "Bạn chưa có đợt xu trắng nào",
+      colAmount: "Số xu gốc",
+      colRemaining: "Còn lại",
+      colExpiresAt: "Hết hạn",
+      daysLeft: "Còn {{days}} ngày",
+      expiresToday: "Hết hạn hôm nay",
+      convertTitle: "Đổi xu đỏ sang xu trắng",
+      convertSubtitle:
+        "1 xu đỏ = 2 xu trắng. Số xu trắng nhận được sẽ được cộng thành một đợt mới.",
+      convertRedCoins: "Số xu đỏ cần đổi",
+      convertYouReceive: "Bạn sẽ nhận được",
+      convertButton: "Đổi",
+      convertSuccess: "Đã đổi {{redCoins}} xu đỏ thành {{whiteCoins}} xu trắng",
+      convertExceedsBalance: "Bạn chỉ có {{balance}} xu đỏ",
     },
   },
 } as const;

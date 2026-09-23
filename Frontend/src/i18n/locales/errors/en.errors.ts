@@ -24,6 +24,9 @@ export const enErrors = {
     },
     wallet: {
       insufficientCoins: "You don't have enough white coins for this action.",
+      insufficientRedCoin: "You don't have enough red coins for this conversion.",
+      invalidAmount: "The number of coins is invalid.",
+      walletNotFound: "Your wallet was not found.",
     },
   },
 } as const;

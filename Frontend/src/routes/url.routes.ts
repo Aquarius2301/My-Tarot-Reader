@@ -11,4 +11,5 @@ export const WEB_URL = {
   tarotHistory: "/history",
   aiTarotHistory: "/history/ai",
   library: "/library",
+  wallet: "/wallet",
 } as const;

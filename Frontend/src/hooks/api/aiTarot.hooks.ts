@@ -6,6 +6,7 @@ import {
   AI_TAROT_QUERY_KEY,
   GET_AI_TAROT_BY_ID_QUERY_KEY,
   GET_ALL_AI_TAROT_QUERY_KEY,
+  GET_WALLET_QUERY_KEY,
 } from "./queryKey";
 
 export const useCreateAiTarotReading = () => {
@@ -15,8 +16,10 @@ export const useCreateAiTarotReading = () => {
       aiTarotApi.createAiTarotReading(request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: AI_TAROT_QUERY_KEY });
-      // Creating a reading deducts white coins, so refresh the user cache.
+      // Creating a reading deducts white coins, so refresh the user cache and
+      // the wallet page (batches list is also affected).
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: GET_WALLET_QUERY_KEY });
     },
   });
 };

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { AUTH_SESSION_EXPIRED_EVENT } from "@/constants";
-import { AUTH_QUERY_KEY } from "@/hooks/api";
+import { AUTH_QUERY_KEY, WALLET_QUERY_KEY } from "@/hooks/api";
 import { WEB_URL } from "../url.routes";
 
 /**
@@ -17,6 +17,7 @@ export default function SessionExpiredHandler() {
   useEffect(() => {
     const handleSessionExpired = () => {
       queryClient.removeQueries({ queryKey: AUTH_QUERY_KEY });
+      queryClient.removeQueries({ queryKey: WALLET_QUERY_KEY });
       navigate(WEB_URL.guestHome, { replace: true });
     };
 

@@ -106,6 +106,8 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 | `GET` | `api/aiTarot/{readingId:guid}` | Get one AI tarot reading | JWT |
 | `GET` | `api/aiTarot` | Get all AI tarot readings (short answer excerpt only) | JWT |
 | `GET` | `api/test/*` | Dev/test-only endpoints (`ok`, `not-found`, `bad`, `validation`, `boom`) | Public |
+| `GET` | `api/wallet` | Wallet balance + active white coin batches ordered by expiry | JWT |
+| `POST` | `api/wallet/convert` | Convert red coins to white coins (1 red = 2 white) | JWT |
 
 ## Useful Commands
 

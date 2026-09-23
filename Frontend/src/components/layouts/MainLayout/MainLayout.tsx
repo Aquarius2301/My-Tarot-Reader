@@ -113,6 +113,12 @@ export default function MainLayout({
       label: t("page.library.title"),
       href: WEB_URL.library,
     },
+
+    user && {
+      key: "wallet",
+      label: t("page.wallet.title"),
+      href: WEB_URL.wallet,
+    },
   ].filter(Boolean) as NavItem[];
 
   // Dropdown for user info and logout

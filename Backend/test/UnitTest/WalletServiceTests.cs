@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Common.Validators;
@@ -34,6 +35,7 @@ public class WalletServiceTests
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .EnableServiceProviderCaching(false)
+            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
         return new AppDbContext(options);
     }
@@ -43,7 +45,8 @@ public class WalletServiceTests
             db,
             Options.Create(DefaultWallet),
             new AddCoinRequestValidator(),
-            new DeductCoinRequestValidator()
+            new DeductCoinRequestValidator(),
+            new ConvertRedToWhiteRequestValidator()
         );
 
     private static async Task<(User User, Wallet Wallet)> SeedUserAsync(
@@ -603,6 +606,243 @@ public class WalletServiceTests
             .RemainingAmount
             .Should()
             .Be(5);
+    }
+
+    #endregion
+
+    #region GetWalletAsync
+
+    /// <summary>
+    /// The wallet result sums RemainingAmount of active (non-expired, non-depleted) batches
+    /// for white coins, returns the wallet's RedCoin, and lists only the active batches
+    /// ordered by expiry (soonest first).
+    /// </summary>
+    [Fact]
+    public async Task GetWallet_WithMixedBatches_ReturnsBalanceAndActiveBatchesOrderedByExpiry()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+        var (user, _) = await SeedUserAsync(
+            db,
+            redCoin: 4,
+            batches:
+            [
+                new()
+                {
+                    Amount = 3,
+                    RemainingAmount = 3,
+                    ExpiredAt = DateTimeOffset.UtcNow.AddDays(10),
+                },
+                new()
+                {
+                    Amount = 5,
+                    RemainingAmount = 5,
+                    ExpiredAt = DateTimeOffset.UtcNow.AddDays(2),
+                },
+                new()
+                {
+                    Amount = 2,
+                    RemainingAmount = 2,
+                    ExpiredAt = DateTimeOffset.UtcNow.AddDays(-1),
+                },
+                new()
+                {
+                    Amount = 7,
+                    RemainingAmount = 0,
+                    ExpiredAt = DateTimeOffset.UtcNow.AddDays(10),
+                },
+            ]
+        );
+
+        var result = await service.GetWalletAsync(user.Id);
+
+        result.RedCoin.Should().Be(4);
+        result.WhiteCoin.Should().Be(8);
+
+        result.WhiteCoinBatches.Should().HaveCount(2);
+        result
+            .WhiteCoinBatches.Should()
+            .BeInAscendingOrder(b => b.ExpiredAt);
+        result.WhiteCoinBatches[0].RemainingAmount.Should().Be(5);
+        result.WhiteCoinBatches[1].RemainingAmount.Should().Be(3);
+    }
+
+    /// <summary>
+    /// A user without a wallet throws NotFoundException with the walletNotFound code.
+    /// </summary>
+    [Fact]
+    public async Task GetWallet_WalletNotFound_ThrowsNotFound()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+
+        var act = async () => await service.GetWalletAsync(Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<NotFoundException>()
+            .Where(e => e.ErrorCode == WalletErrorCode.WalletNotFound);
+    }
+
+    #endregion
+
+    #region ConvertRedToWhiteAsync
+
+    /// <summary>
+    /// Converting red coins deducts the red balance, grants double the number of white coins
+    /// as a new dated batch (expiry = now + WalletSetting.ExpireDays), records an order of
+    /// type <see cref="OrderType.RedToWhite"/> with one OrderDetail per leg, and returns the
+    /// updated balances.
+    /// </summary>
+    [Fact]
+    public async Task ConvertRedToWhite_HappyPath_DeductsRedGrantsDoubleWhiteAndRecordsOrder()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+        var (user, _) = await SeedUserAsync(db, redCoin: 5);
+        var before = DateTimeOffset.UtcNow;
+
+        var result = await service.ConvertRedToWhiteAsync(
+            user.Id,
+            new ConvertRedToWhiteRequest(2)
+        );
+
+        var after = DateTimeOffset.UtcNow;
+
+        var wallet = db.Wallets.Include(w => w.WhiteCoinBatches).Single();
+        wallet.RedCoin.Should().Be(3);
+
+        var batch = Assert.Single(wallet.WhiteCoinBatches);
+        batch.Amount.Should().Be(4);
+        batch.RemainingAmount.Should().Be(4);
+        batch
+            .ExpiredAt.Should()
+            .BeOnOrAfter(before.AddDays(DefaultWallet.ExpireDays))
+            .And.BeOnOrBefore(after.AddDays(DefaultWallet.ExpireDays));
+
+        var order = db.Orders.Include(o => o.OrderDetails).Single();
+        order.UserId.Should().Be(user.Id);
+        order.Amount.Should().Be(6);
+        order.Type.Should().Be(OrderType.RedToWhite);
+        order.Description.Should().StartWith("Convert red coins");
+
+        order.OrderDetails.Should().HaveCount(2);
+        order.OrderDetails.Single(d => d.WhiteCoinBatchId is null).Amount.Should().Be(2);
+        order.OrderDetails.Single(d => d.WhiteCoinBatchId == batch.Id).Amount.Should().Be(4);
+
+        result.RedCoin.Should().Be(3);
+        result.WhiteCoin.Should().Be(4);
+    }
+
+    /// <summary>
+    /// The returned white balance still counts existing active batches alongside the new
+    /// converted one, while expired or depleted batches stay excluded.
+    /// </summary>
+    [Fact]
+    public async Task ConvertRedToWhite_WithExistingBatches_CountsAllActiveWhite()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+        var (user, _) = await SeedUserAsync(
+            db,
+            redCoin: 2,
+            batches:
+            [
+                new()
+                {
+                    Amount = 3,
+                    RemainingAmount = 3,
+                    ExpiredAt = DateTimeOffset.UtcNow.AddDays(5),
+                },
+                new()
+                {
+                    Amount = 9,
+                    RemainingAmount = 9,
+                    ExpiredAt = DateTimeOffset.UtcNow.AddDays(-1),
+                },
+            ]
+        );
+
+        var result = await service.ConvertRedToWhiteAsync(
+            user.Id,
+            new ConvertRedToWhiteRequest(1)
+        );
+
+        result.RedCoin.Should().Be(1);
+        result.WhiteCoin.Should().Be(5); // 3 (existing active) + 2 (converted)
+    }
+
+    /// <summary>
+    /// Converting more red coins than the wallet holds throws BadRequestException with the
+    /// insufficientRedCoin code and leaves balances, batches, and orders untouched.
+    /// </summary>
+    [Fact]
+    public async Task ConvertRedToWhite_InsufficientRed_ThrowsBadRequestAndNoChanges()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+        var (user, wallet) = await SeedUserAsync(db, redCoin: 1);
+
+        var act = async () =>
+            await service.ConvertRedToWhiteAsync(
+                user.Id,
+                new ConvertRedToWhiteRequest(5)
+            );
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == WalletErrorCode.InsufficientRedCoin);
+        db.Wallets.Single().RedCoin.Should().Be(1);
+        wallet.WhiteCoinBatches.Should().BeEmpty();
+        db.Orders.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// A non-positive red coin amount is rejected as a BadRequestException with the
+    /// invalidAmount code before any persistence.
+    /// </summary>
+    [Fact]
+    public async Task ConvertRedToWhite_InvalidRequest_ThrowsBadRequest()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+        var (user, _) = await SeedUserAsync(db, redCoin: 5);
+
+        var requests = new[] { new ConvertRedToWhiteRequest(0), new ConvertRedToWhiteRequest(-2) };
+
+        foreach (var request in requests)
+        {
+            var act = async () => await service.ConvertRedToWhiteAsync(user.Id, request);
+
+            await act.Should()
+                .ThrowAsync<BadRequestException>()
+                .Where(e => e.ErrorCode == WalletErrorCode.InvalidAmount);
+        }
+
+        db.Wallets.Single().RedCoin.Should().Be(5);
+        db.Orders.Should().BeEmpty();
+        db.WhiteCoinBatches.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// A conversion for a user without a wallet throws NotFoundException with the
+    /// walletNotFound code and records no order.
+    /// </summary>
+    [Fact]
+    public async Task ConvertRedToWhite_WalletNotFound_ThrowsNotFound()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+
+        var act = async () =>
+            await service.ConvertRedToWhiteAsync(
+                Guid.NewGuid(),
+                new ConvertRedToWhiteRequest(1)
+            );
+
+        await act.Should()
+            .ThrowAsync<NotFoundException>()
+            .Where(e => e.ErrorCode == WalletErrorCode.WalletNotFound);
+        db.Orders.Should().BeEmpty();
     }
 
     #endregion

@@ -148,5 +148,28 @@ export const enPages = {
         },
       },
     },
+    wallet: {
+      title: "My Wallet",
+      subtitle:
+        "Track your white and red coins. White coins in each batch expire after a period, so watch the deadlines.",
+      batchesTitle: "White coin batches",
+      batchesSubtitle:
+        "Coins remaining in a batch are forfeited once it expires. Listed by expiry date, soonest first.",
+      empty: "You don't have any white coin batches yet",
+      colAmount: "Original amount",
+      colRemaining: "Remaining",
+      colExpiresAt: "Expires at",
+      daysLeft: "{{days}} days left",
+      expiresToday: "Expires today",
+      convertTitle: "Convert red coins to white coins",
+      convertSubtitle:
+        "1 red coin = 2 white coins. The white coins you receive are added as a new batch.",
+      convertRedCoins: "Red coins to convert",
+      convertYouReceive: "You will receive",
+      convertButton: "Convert",
+      convertSuccess:
+        "Converted {{redCoins}} red coins into {{whiteCoins}} white coins",
+      convertExceedsBalance: "You only have {{balance}} red coins",
+    },
   },
 } as const;

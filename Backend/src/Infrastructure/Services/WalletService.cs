@@ -8,6 +8,7 @@ using MyTarotReader.Application.Contracts.Persistence;
 using MyTarotReader.Application.Contracts.Services;
 using MyTarotReader.Application.Settings;
 using MyTarotReader.Domain.Entities;
+using MyTarotReader.Domain.Enums;
 
 namespace MyTarotReader.Infrastructure.Services;
 
@@ -15,13 +16,16 @@ public class WalletService(
     IAppDbContext context,
     IOptions<WalletSetting> walletSetting,
     IValidator<AddCoinRequest> addCoinValidator,
-    IValidator<DeductCoinRequest> deductCoinValidator
+    IValidator<DeductCoinRequest> deductCoinValidator,
+    IValidator<ConvertRedToWhiteRequest> convertRedToWhiteValidator
 ) : IWalletService
 {
     private readonly IAppDbContext _context = context;
     private readonly WalletSetting _walletSetting = walletSetting.Value;
     private readonly IValidator<AddCoinRequest> _addCoinValidator = addCoinValidator;
     private readonly IValidator<DeductCoinRequest> _deductCoinValidator = deductCoinValidator;
+    private readonly IValidator<ConvertRedToWhiteRequest> _convertRedToWhiteValidator =
+        convertRedToWhiteValidator;
 
     /// <summary>
     /// Adds white and/or red coins to a user's wallet and records the transaction as an order.
@@ -194,5 +198,122 @@ public class WalletService(
         await _context.SaveChangesAsync(cancellationToken);
 
         return new DeductCoinResult(activeBatches.Sum(b => b.RemainingAmount));
+    }
+
+    /// <summary>
+    /// Returns the current white and red coin balances together with the active
+    /// white coin batches ordered by expiry (soonest first).
+    /// </summary>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
+    /// <returns><see cref="GetWalletResult"/> with the balances and active white coin batches.</returns>
+    public async Task<GetWalletResult> GetWalletAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        var wallet =
+            await _context
+                .Wallets.AsNoTracking()
+                .Where(w => w.UserId == userId)
+                .Select(w => new GetWalletResult(
+                    w.WhiteCoinBatches.Where(b =>
+                            b.RemainingAmount > 0 && b.ExpiredAt >= now
+                        )
+                        .Sum(b => b.RemainingAmount),
+                    w.RedCoin,
+                    w.WhiteCoinBatches
+                        .Where(b => b.RemainingAmount > 0 && b.ExpiredAt >= now)
+                        .OrderBy(b => b.ExpiredAt)
+                        .Select(b => new WhiteCoinBatchItem(
+                            b.Id,
+                            b.Amount,
+                            b.RemainingAmount,
+                            b.ExpiredAt
+                        ))
+                        .ToList()
+                ))
+                .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException(WalletErrorCode.WalletNotFound);
+
+        return wallet;
+    }
+
+    /// <summary>
+    /// Converts red coins into white coins (1 red = 2 white) as a new dated batch
+    /// and records the transaction as an order.
+    /// </summary>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="request"><see cref="ConvertRedToWhiteRequest"/> containing the number of red coins to convert.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="BadRequestException">Thrown when the request validation fails or the user does not have enough red coins.</exception>
+    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
+    /// <returns><see cref="ConvertRedToWhiteResult"/> with the updated balances.</returns>
+    public async Task<ConvertRedToWhiteResult> ConvertRedToWhiteAsync(
+        Guid userId,
+        ConvertRedToWhiteRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ValidationHelper.ValidateOrThrow(_convertRedToWhiteValidator, request);
+
+        var wallet =
+            await _context
+                .Wallets.Include(w => w.WhiteCoinBatches)
+                .FirstOrDefaultAsync(w => w.UserId == userId, cancellationToken)
+            ?? throw new NotFoundException(WalletErrorCode.WalletNotFound);
+
+        if (wallet.RedCoin < request.RedCoins)
+        {
+            throw new BadRequestException(WalletErrorCode.InsufficientRedCoin);
+        }
+
+        var whiteCoins = request.RedCoins * 2;
+
+        await using var transaction = await _context.Database.BeginTransactionAsync(
+            cancellationToken
+        );
+
+        wallet.RedCoin -= request.RedCoins;
+
+        var whiteBatch = new WhiteCoinBatch
+        {
+            WalletId = wallet.Id,
+            Amount = whiteCoins,
+            RemainingAmount = whiteCoins,
+            ExpiredAt = DateTimeOffset.UtcNow.AddDays(_walletSetting.ExpireDays),
+        };
+        _context.WhiteCoinBatches.Add(whiteBatch);
+
+        _context.Orders.Add(
+            new Order
+            {
+                UserId = userId,
+                Amount = request.RedCoins + whiteCoins,
+                Description = "Convert red coins to white coins",
+                Type = OrderType.RedToWhite,
+                OrderDetails =
+                [
+                    new OrderDetail { Amount = request.RedCoins },
+                    new OrderDetail { WhiteCoinBatchId = whiteBatch.Id, Amount = whiteCoins },
+                ],
+            }
+        );
+
+        wallet.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
+        var whiteCoin = wallet
+            .WhiteCoinBatches.Where(b =>
+                b.RemainingAmount > 0 && b.ExpiredAt >= DateTimeOffset.UtcNow
+            )
+            .Sum(b => b.RemainingAmount);
+
+        return new ConvertRedToWhiteResult(wallet.RedCoin, whiteCoin);
     }
 }

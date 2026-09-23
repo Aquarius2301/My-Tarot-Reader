@@ -23,4 +23,8 @@ export const API_URL = {
     getAll: "/api/aiTarot",
     delete: "/api/aiTarot",
   },
+  wallet: {
+    getWallet: "/api/wallet",
+    convertRedToWhite: "/api/wallet/convert",
+  },
 } as const;

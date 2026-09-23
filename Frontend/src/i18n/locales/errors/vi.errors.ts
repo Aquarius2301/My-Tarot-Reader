@@ -24,6 +24,9 @@ export const viErrors = {
     },
     wallet: {
       insufficientCoins: "Bạn không đủ xu trắng để thực hiện hành động này.",
+      insufficientRedCoin: "Bạn không đủ xu đỏ để đổi.",
+      invalidAmount: "Số xu không hợp lệ.",
+      walletNotFound: "Không tìm thấy ví của bạn.",
     },
   },
 };

@@ -36,3 +36,13 @@ public class DeductCoinRequestValidator : AbstractValidator<DeductCoinRequest>
         RuleFor(x => x.Type).IsInEnum().WithMessage(WalletErrorCode.InvalidAmount);
     }
 }
+
+public class ConvertRedToWhiteRequestValidator : AbstractValidator<ConvertRedToWhiteRequest>
+{
+    public ConvertRedToWhiteRequestValidator()
+    {
+        RuleFor(x => x.RedCoins)
+            .GreaterThan(0)
+            .WithMessage(WalletErrorCode.InvalidAmount);
+    }
+}

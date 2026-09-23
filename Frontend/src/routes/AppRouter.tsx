@@ -26,6 +26,7 @@ const LibraryPage = lazy(() => import("@/pages/auth/LibraryPage"));
 const HistoryTarotPage = lazy(
   () => import("@/pages/auth/HistoryPage/HistoryTarotPage"),
 );
+const WalletPage = lazy(() => import("@/pages/auth/WalletPage"));
 
 interface AppRoute {
   titleKey: string;
@@ -90,6 +91,11 @@ const protectedRoutes: AppRoute[] = [
     titleKey: "page.history.title",
     path: WEB_URL.tarotHistory,
     component: HistoryTarotPage,
+  },
+  {
+    titleKey: "page.wallet.title",
+    path: WEB_URL.wallet,
+    component: WalletPage,
   },
 ];
 

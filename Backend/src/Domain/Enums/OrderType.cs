@@ -25,4 +25,7 @@ public enum OrderType
 
     /// <summary> Grant the one-time white coins for the first login (sign-up bonus). </summary>
     FirstLogin,
+
+    /// <summary> Swap red coins into white coins (1 red = 2 white). </summary>
+    RedToWhite,
 }
