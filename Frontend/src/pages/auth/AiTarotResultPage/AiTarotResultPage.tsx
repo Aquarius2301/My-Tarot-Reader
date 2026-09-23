@@ -1,4 +1,4 @@
-import { ErrorComponent, TarotCard } from "@/components";
+import { CopyButton, ErrorComponent, TarotCard } from "@/components";
 import { AI_TAROT_CARD_COUNT_BY_VALUE, AI_TAROT_POSITIONS } from "@/constants";
 import { useGetAiTarotReadingById } from "@/hooks/api";
 import { WEB_URL } from "@/routes";
@@ -36,6 +36,41 @@ export default function AiTarotResultPage() {
   const orientationLabel = (isReversed: boolean) =>
     isReversed ? t("tarot.position.reversed") : t("tarot.position.upright");
 
+  const buildCopyText = () => {
+    if (!answer) return data.title;
+
+    const sections = [data.title];
+
+    if (answer.overview) {
+      sections.push(
+        `${t("page.aiTarot.result.overview")}\n${answer.overview}`,
+      );
+    }
+
+    data.cards.forEach((card, index) => {
+      const answerCard = matchedAnswerCards[index];
+      const positionKey = positions[index];
+      const header = positionKey
+        ? t(`page.aiTarot.position.${positionKey}`)
+        : t(`tarot.meaning.${card.cardCode}.name`);
+
+      sections.push(
+        [
+          `${header} · ${t(`tarot.meaning.${card.cardCode}.name`)} · ${orientationLabel(card.isReversed)}`,
+          ...(answerCard?.interpretation ? [answerCard.interpretation] : []),
+        ].join("\n"),
+      );
+    });
+
+    if (answer.overallAdvice) {
+      sections.push(
+        `${t("page.aiTarot.result.advice")}\n${answer.overallAdvice}`,
+      );
+    }
+
+    return sections.join("\n\n");
+  };
+
   return (
     <div
       style={{
@@ -48,7 +83,10 @@ export default function AiTarotResultPage() {
         <Title level={2} style={{ margin: 0 }}>
           {data.title}
         </Title>
-        <Text type="secondary">{t("page.aiTarot.result.title")}</Text>
+        <Flex justify="center" align="center" gap={token.marginSM} wrap>
+          <Text type="secondary">{t("page.aiTarot.result.title")}</Text>
+          {answer && <CopyButton text={buildCopyText()} size="small" />}
+        </Flex>
       </div>
 
       {/* Drawn cards */}

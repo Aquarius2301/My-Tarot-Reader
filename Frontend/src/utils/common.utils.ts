@@ -23,3 +23,34 @@ export const getVisitorId = async (): Promise<string> => {
 export function toCamelCase(value: string): string {
   return value.charAt(0).toLowerCase() + value.slice(1);
 }
+
+/**
+ * Copies the given text to the clipboard. Uses the modern async Clipboard API
+ * when available (secure contexts) and falls back to a hidden textarea trick.
+ * @param text  The text to copy.
+ * @returns  True when the text was copied successfully, false otherwise.
+ */
+export async function copyTextToClipboard(text: string): Promise<boolean> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fall through to the legacy path
+    }
+  }
+
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand("copy");
+    document.body.removeChild(textarea);
+    return copied;
+  } catch {
+    return false;
+  }
+}

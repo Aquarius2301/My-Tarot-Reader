@@ -4,3 +4,4 @@ export * from "./tarot";
 export * from "./error";
 export * from "./modal";
 export * from "./coins";
+export * from "./CopyButton";
