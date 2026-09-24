@@ -5,7 +5,8 @@ namespace MyTarotReader.Api.Middlewares;
 
 /// <summary>
 /// Logs each API request and its response to a per-day file under <c>logs/</c>,
-/// pairing both entries with a short trace id. Headers and cookies are never logged.
+/// pairing both entries with a short trace id. Cookies are never logged; only
+/// the <c>X-Device-Id</c> header is exposed for debugging refresh-token issues.
 /// </summary>
 public class RequestResponseLoggingMiddleware(
     RequestDelegate next,
@@ -37,6 +38,7 @@ public class RequestResponseLoggingMiddleware(
         var traceId = Guid.NewGuid().ToString("N")[..8];
 
         var requestBody = await ReadRequestBodyAsync(context.Request);
+        var deviceId = context.Request.Headers["X-Device-Id"].ToString();
         await LogAsync(
             traceId,
             RequestMarker,
@@ -47,6 +49,8 @@ public class RequestResponseLoggingMiddleware(
                     .Append(context.Request.Path)
                     .Append(context.Request.QueryString)
                     .AppendLine()
+                    .Append("X-Device-Id: ")
+                    .AppendLine(deviceId)
                     .Append("Request: ")
                     .AppendLine(requestBody)
         );
