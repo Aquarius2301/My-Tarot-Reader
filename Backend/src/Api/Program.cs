@@ -3,7 +3,8 @@ using MyTarotReader.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAllServices(builder.Configuration);
+builder.Services.AddAllServices(builder.Configuration, builder.Environment);
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -21,5 +22,6 @@ app.UseCors(CorsExtension.PolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health").RequireCors(CorsExtension.HealthPolicyName);
 
 app.Run();

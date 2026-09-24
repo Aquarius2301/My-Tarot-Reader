@@ -98,6 +98,7 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 - **Response envelope:** every response is `ApiResponse<T>: { success, message, data }`. Writes (`POST`/`PUT`/`DELETE`) return `200 OK` with `data = null`; reads return `200 OK` with the payload in `data`.
 - **Errors:** thrown as `BaseException` subtypes (`BadRequestException`, `ValidationException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `InternalServerException`) and mapped by `GlobalExceptionMiddleware` to the envelope with i18n error keys (`error.<domain>.<camelCase>`).
 - **Authentication:** JWT in **HttpOnly cookies** (`accessToken`, `refreshToken`); refresh tokens are rotated on every refresh and bound to the device fingerprint sent in the `X-Device-Id` header. Guest flows use Redis for draw cooldowns.
+- **Health:** `/health` returns `200 OK` in every environment and bypasses the frontend CORS policy (separate `HealthCors` policy allows any origin). Point Render's health-check / wake-up URL at `https://<api>/health`.
 
 | Method | Route | Description | Auth |
 | --- | --- | --- | --- |
@@ -111,12 +112,14 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 | `POST` | `api/tarot/draw` | Draw a card (auth) | JWT |
 | `GET` | `api/tarot/guest-draw` | Last drawn card (guest) | Public |
 | `POST` | `api/tarot/guest-draw` | Draw a card (guest, Redis cooldown) | Public |
+| `DELETE` | `api/tarot/guest-draw` | Clear last drawn card (guest) — dev-only, never mapped in production | Public |
 | `GET` | `api/tarot` | Reading history | JWT |
 | `DELETE` | `api/tarot/{readingId:guid}` | Delete a reading (soft delete) | JWT |
 | `PUT` | `api/aiTarot` | Create an AI tarot reading (Gemini), persist result | JWT |
 | `GET` | `api/aiTarot/{readingId:guid}` | Get one AI tarot reading | JWT |
 | `GET` | `api/aiTarot` | Get all AI tarot readings (short answer excerpt only) | JWT |
-| `GET` | `api/test/*` | Dev/test-only endpoints (`ok`, `not-found`, `bad`, `validation`, `boom`) | Public |
+| `GET` / `HEAD` | `health` | Health check — reachable from any origin (used to wake up Render) | Public |
+| `GET` | `api/test/*` | Dev-only test endpoints (`ok`, `not-found`, `bad`, `validation`, `boom`); mapped only in the Development environment | Public |
 | `GET` | `api/wallet` | Wallet balance + active white coin batches ordered by expiry | JWT |
 | `POST` | `api/wallet/convert` | Convert red coins to white coins (1 red = 2 white) | JWT |
 

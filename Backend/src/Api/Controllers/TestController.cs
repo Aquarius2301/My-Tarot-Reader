@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Common.Models;
 using MyTarotReader.Application.Constants.Errors;
@@ -7,17 +8,13 @@ namespace MyTarotReader.Api.Controllers;
 
 /// <summary>
 /// Test controller to exercise the standard API response envelope and global
-/// exception handling on Swagger. Not part of the production feature set.
+/// exception handling on Swagger. Development-only; never mapped in production.
 /// </summary>
 [ApiController]
 [Route("api/test")]
+[DevelopmentOnly]
 public class TestController : ControllerBase
 {
-    /// <summary>No return value.</summary>
-    [HttpHead("health")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult HeadResult() => Ok(ApiResponse.Success());
-
     /// <summary>Returns a success envelope with a sample payload.</summary>
     [HttpGet("ok")]
     [ProducesResponseType(StatusCodes.Status200OK)]

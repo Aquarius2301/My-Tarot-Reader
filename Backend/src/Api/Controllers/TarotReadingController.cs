@@ -113,6 +113,7 @@ public class TarotReadingController(ITarotReadingService service) : ControllerBa
     /// </summary>
     /// <remarks> This endpoint is for testing purposes only. </remarks>
     [HttpDelete("guest-draw")]
+    [DevelopmentOnly]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ClearGuestDrawAsync(
