@@ -161,7 +161,15 @@ function AppGate() {
               const Component = r.component;
 
               return (
-                <Route key={r.path} path={r.path} element={<Component />} />
+                <Route
+                  key={r.path}
+                  path={r.path}
+                  element={
+                    <RouteTitle titleKey={r.titleKey}>
+                      <Component />
+                    </RouteTitle>
+                  }
+                />
               );
             })}
           </Route>

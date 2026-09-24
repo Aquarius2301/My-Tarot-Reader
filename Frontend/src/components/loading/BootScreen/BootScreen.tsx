@@ -24,7 +24,7 @@ export default function BootScreen() {
           backgroundColor: palette.bgLight,
         }}
       >
-        <Image src="logo.png" preview={false} width={200} />
+        <Image src="/logo.png" preview={false} width={200} />
 
         <Spin fullscreen />
       </div>

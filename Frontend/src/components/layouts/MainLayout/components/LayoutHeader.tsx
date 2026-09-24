@@ -83,7 +83,7 @@ export default function LayoutHeader({
         }}
         onClick={() => navigate(WEB_URL.home)}
       >
-        <Image src="logo.png" preview={false} width={30} />
+        <Image src="/logo.png" preview={false} width={30} />
         <Text
           strong
           style={{

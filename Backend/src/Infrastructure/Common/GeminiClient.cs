@@ -10,12 +10,14 @@ namespace MyTarotReader.Infrastructure.Common;
 
 /// <summary>
 /// Sends generateContent requests to the Google Gemini REST API using a raw HttpClient
-/// (no external SDK), configured from <see cref="AiTarotSetting"/>.
+/// (no external SDK), configured from <see cref="GeminiSetting"/>.
 /// </summary>
-public class GeminiClient(HttpClient httpClient, IOptions<AiTarotSetting> setting) : IGeminiClient
+public class GeminiClient(HttpClient httpClient, IOptions<GeminiSetting> setting) : IGeminiClient
 {
+    private const int MaxAttempts = 3;
+
     private readonly HttpClient _httpClient = httpClient;
-    private readonly AiTarotSetting _setting = setting.Value;
+    private readonly GeminiSetting _setting = setting.Value;
 
     /// <inheritdoc/>
     public async Task<string> GenerateContentAsync(
@@ -23,72 +25,99 @@ public class GeminiClient(HttpClient httpClient, IOptions<AiTarotSetting> settin
         CancellationToken cancellationToken = default
     )
     {
-        try
-        {
-            if (string.IsNullOrWhiteSpace(_setting.ApiKey))
-            {
-                throw new InternalServerException(AiTarotErrorCode.GenerationFailed);
-            }
+        var apis = _setting
+            .Apis.Where(a => !string.IsNullOrWhiteSpace(a.ApiKey) && !string.IsNullOrWhiteSpace(a.Model))
+            .ToList();
 
-            var request = new
+        if (apis.Count == 0)
+        {
+            throw new InternalServerException(AiTarotErrorCode.GenerationFailed);
+        }
+
+        // Pick a random start, then try up to MaxAttempts consecutive credentials
+        // in circular order so every configured API gets used over time.
+        var start = Random.Shared.Next(apis.Count);
+        var candidates = apis
+            .Skip(start)
+            .Concat(apis.Take(start))
+            .Take(MaxAttempts)
+            .ToList();
+
+        Exception? lastException = null;
+        foreach (var api in candidates)
+        {
+            try
             {
-                contents = new[]
+                return await TryCallAsync(api, prompt, cancellationToken);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or InternalServerException)
+            {
+                lastException = ex;
+            }
+        }
+
+        throw new InternalServerException(
+            AiTarotErrorCode.GenerationFailed,
+            innerException: lastException
+        );
+    }
+
+    private async Task<string> TryCallAsync(
+        GeminiApiSetting api,
+        string prompt,
+        CancellationToken cancellationToken
+    )
+    {
+        var request = new
+        {
+            contents = new[]
+            {
+                new
                 {
-                    new
-                    {
-                        parts = new[] { new { text = prompt } },
-                    },
+                    parts = new[] { new { text = prompt } },
                 },
-                generationConfig = new { responseMimeType = "application/json" },
-            };
+            },
+            generationConfig = new { responseMimeType = "application/json" },
+        };
 
-            var url =
-                $"https://generativelanguage.googleapis.com/v1beta/models/{_setting.Model}:generateContent";
+        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{api.Model}:generateContent";
 
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, url);
-            httpRequest.Headers.Add("x-goog-api-key", _setting.ApiKey);
-            httpRequest.Content = JsonContent.Create(request);
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, url);
+        httpRequest.Headers.Add("x-goog-api-key", api.ApiKey);
+        httpRequest.Content = JsonContent.Create(request);
 
-            using var response = await _httpClient.SendAsync(
-                httpRequest,
-                cancellationToken
-            );
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            using var document = JsonDocument.Parse(json);
-            var root = document.RootElement;
-
-            if (
-                !root.TryGetProperty("candidates", out var candidates)
-                || candidates.GetArrayLength() == 0
-                || !candidates[0].TryGetProperty("content", out var content)
-                || !content.TryGetProperty("parts", out var parts)
-                || parts.GetArrayLength() == 0
-                || !parts[0].TryGetProperty("text", out var text)
-            )
-            {
-                throw new InternalServerException(AiTarotErrorCode.GenerationFailed);
-            }
-
-            var result = text.GetString();
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                throw new InternalServerException(AiTarotErrorCode.GenerationFailed);
-            }
-
-            return result;
-        }
-        catch (InternalServerException)
+        using var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
+        if (!response.IsSuccessStatusCode)
         {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InternalServerException(
-                AiTarotErrorCode.GenerationFailed,
-                innerException: ex
+            throw new HttpRequestException(
+                $"Gemini API returned {(int)response.StatusCode}.",
+                inner: null,
+                statusCode: response.StatusCode
             );
         }
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        if (
+            !root.TryGetProperty("candidates", out var candidates)
+            || candidates.GetArrayLength() == 0
+            || !candidates[0].TryGetProperty("content", out var content)
+            || !content.TryGetProperty("parts", out var parts)
+            || parts.GetArrayLength() == 0
+            || !parts[0].TryGetProperty("text", out var text)
+        )
+        {
+            throw new InternalServerException(AiTarotErrorCode.GenerationFailed);
+        }
+
+        var result = text.GetString();
+        if (string.IsNullOrWhiteSpace(result))
+        {
+            throw new InternalServerException(AiTarotErrorCode.GenerationFailed);
+        }
+
+        return result;
     }
 }

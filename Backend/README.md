@@ -49,8 +49,7 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `Redis:Configuration` | Redis connection string | `localhost:6379` |
 | `Cors:FrontendUrl` | Allowed frontend origin (CORS, with credentials) | `https://your-frontend-domain.example` |
 | `Google:ClientId` | Google OAuth client ID | `YOUR_PRODUCTION_CLIENT_ID.apps.googleusercontent.com` |
-| `AiTarot:ApiKey` | Gemini API key | `YOUR_GEMINI_API_KEY` |
-| `AiTarot:Model` | Gemini model name | `gemini-2.0-flash` |
+| `Gemini:Apis` | List of Gemini credentials `{ApiKey, Model}`. May hold many entries; each call picks a **random start** then tries up to three consecutive credentials in circular order, falling back to the next whenever one fails (any HTTP error, empty/invalid response) | `[ { "ApiKey": "KEY1", "Model": "gemini-2.0-flash" }, ... ]` |
 | `AiTarot:MaxOutputTokens` | Max tokens per AI reading | `16384` |
 | `AiTarot:Costs` | White coin cost per reading, keyed by card count (3/5/7/10) | `{ "3": 2, "5": 3, "7": 4, "10": 5 }` |
 | `Jwt:SecretKey` | Signing key for JWT | `YOUR_VERY_LONG_SECRET_KEY_FOR_LOCAL_DEV_ENVIRONMENT` |
@@ -66,6 +65,18 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `Email:Host` / `Email:Port` / `Email:Username` / `Email:Password` | SMTP settings | `smtp.example.com` / `587` |
 | `Email:FromAddress` / `Email:FromName` | Sender identity | `you@your-domain.com` / `My Tarot Reader` |
 | `Email:EnableSsl` | TLS for SMTP | `true` |
+
+`Gemini:Apis` is an array, so on Render (or any env-var platform) set one variable per entry using the `__` separator and a numeric index (these override `appsettings.json`):
+
+```
+Gemini__Apis__0__ApiKey=KEY_1
+Gemini__Apis__0__Model=gemini-2.0-flash
+Gemini__Apis__1__ApiKey=KEY_2
+Gemini__Apis__1__Model=gemini-2.5-flash
+Gemini__Apis__2__ApiKey=KEY_3
+Gemini__Apis__2__Model=gemini-2.5-flash-8b
+...
+```
 
 ## Install & Run
 
