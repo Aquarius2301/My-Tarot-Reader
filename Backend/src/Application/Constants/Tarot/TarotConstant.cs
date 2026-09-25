@@ -5,7 +5,7 @@ public record TarotCard(string Code, string Name);
 /// <summary>
 /// Contains the canonical list of all 78 valid tarot card codes.
 /// </summary>
-public static class TarotConstants
+public static class TarotConstant
 {
     /**
     * Contains the canonical list of all 78 valid tarot card codes and their corresponding English names.

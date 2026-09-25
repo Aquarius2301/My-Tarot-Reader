@@ -19,3 +19,18 @@ export const GET_ALL_READING_QUERY_KEY = [
 // streak.hooks.ts
 export const STREAK_QUERY_KEY = ["streak"] as const;
 export const GET_STREAK_QUERY_KEY = [...STREAK_QUERY_KEY, "getStreak"] as const;
+
+// aiTarot.hooks.ts
+export const AI_TAROT_QUERY_KEY = ["aiTarot"] as const;
+export const GET_AI_TAROT_BY_ID_QUERY_KEY = [
+  ...AI_TAROT_QUERY_KEY,
+  "getById",
+] as const;
+export const GET_ALL_AI_TAROT_QUERY_KEY = [
+  ...AI_TAROT_QUERY_KEY,
+  "getAll",
+] as const;
+
+// wallet.hooks.ts
+export const WALLET_QUERY_KEY = ["wallet"] as const;
+export const GET_WALLET_QUERY_KEY = [...WALLET_QUERY_KEY, "getWallet"] as const;

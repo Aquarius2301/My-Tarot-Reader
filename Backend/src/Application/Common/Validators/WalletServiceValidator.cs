@@ -24,3 +24,25 @@ public class AddCoinRequestValidator : AbstractValidator<AddCoinRequest>
         RuleFor(x => x.Type).IsInEnum().WithMessage(WalletErrorCode.InvalidAmount);
     }
 }
+
+public class DeductCoinRequestValidator : AbstractValidator<DeductCoinRequest>
+{
+    public DeductCoinRequestValidator()
+    {
+        RuleFor(x => x.Amount)
+            .GreaterThan(0)
+            .WithMessage(WalletErrorCode.InvalidAmount);
+
+        RuleFor(x => x.Type).IsInEnum().WithMessage(WalletErrorCode.InvalidAmount);
+    }
+}
+
+public class ConvertRedToWhiteRequestValidator : AbstractValidator<ConvertRedToWhiteRequest>
+{
+    public ConvertRedToWhiteRequestValidator()
+    {
+        RuleFor(x => x.RedCoins)
+            .GreaterThan(0)
+            .WithMessage(WalletErrorCode.InvalidAmount);
+    }
+}

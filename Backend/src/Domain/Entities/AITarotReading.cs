@@ -13,6 +13,12 @@ public class AITarotReading : BaseEntity
 
     public QuestionType QuestionType { get; set; }
 
+    /// <summary>
+    /// A short excerpt of the answer (overview) used for list views,
+    /// so callers do not have to fetch the full reading.
+    /// </summary>
+    public string AnswerSummary { get; set; } = string.Empty;
+
     public string Answer { get; set; } = string.Empty;
 
     /// <summary>

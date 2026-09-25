@@ -84,17 +84,40 @@ export default function MainLayout({
           label: t("page.tarot.title"),
           href: user ? WEB_URL.tarot : WEB_URL.guestTarot,
         },
-      ],
+        user && {
+          key: "aiTarot",
+          label: t("page.aiTarot.title"),
+          href: WEB_URL.aiTarot,
+        },
+      ].filter(Boolean) as NavItem[],
     },
     user && {
       key: "history",
-      label: t("page.history.title"),
-      href: WEB_URL.history,
+      label: t("page.history.parentTitle"),
+      children: [
+        user && {
+          key: "history",
+          label: t("page.history.title"),
+          href: WEB_URL.tarotHistory,
+        },
+        user && {
+          key: "aiTarotHistory",
+          label: t("page.historyAiTarot.title"),
+          href: WEB_URL.aiTarotHistory,
+        },
+      ],
     },
+
     user && {
       key: "library",
       label: t("page.library.title"),
       href: WEB_URL.library,
+    },
+
+    user && {
+      key: "wallet",
+      label: t("page.wallet.title"),
+      href: WEB_URL.wallet,
     },
   ].filter(Boolean) as NavItem[];
 
@@ -134,7 +157,7 @@ export default function MainLayout({
         return {
           key: item.key,
           label: item.label,
-          children: buildMenuItems(item.children),
+          children: item.children && buildMenuItems(item.children),
         };
       }
 

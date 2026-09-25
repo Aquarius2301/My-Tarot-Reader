@@ -17,4 +17,14 @@ export const API_URL = {
     getStreak: "/api/streak",
     checkIn: "/api/streak/checkin",
   },
+  aiTarot: {
+    create: "/api/aiTarot",
+    getById: "/api/aiTarot",
+    getAll: "/api/aiTarot",
+    delete: "/api/aiTarot",
+  },
+  wallet: {
+    getWallet: "/api/wallet",
+    convertRedToWhite: "/api/wallet/convert",
+  },
 } as const;

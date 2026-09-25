@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
+using MyTarotReader.Application.Contracts.Backgrounds;
 using MyTarotReader.Application.Contracts.Common;
 using MyTarotReader.Application.Contracts.Services;
 using MyTarotReader.Application.Settings;
@@ -19,7 +20,7 @@ namespace MyTarotReader.UnitTest;
 /// Unit tests for <see cref="AuthService"/>, running against a real
 /// <see cref="AppDbContext"/> with the EF Core InMemory provider so that
 /// query filters, <c>IgnoreQueryFilters</c>, projections and aggregates behave
-/// like production. Only the external seams (email, Google validator,
+/// like production. Only the external seams (email queue, Google validator,
 /// token generator) are mocked.
 /// </summary>
 public class AuthServiceTests
@@ -72,23 +73,18 @@ public class AuthServiceTests
     private static (
         AuthService Service,
         AppDbContext Db,
-        Mock<IEmailHandler> Email,
+        Mock<IEmailBackgroundQueue> EmailQueue,
         Mock<IGoogleAuthValidator> Google
     ) CreateSut(AppDbContext? db = null, Action<Mock<IGoogleAuthValidator>>? google = null)
     {
         var context = db ?? CreateInMemoryContext();
 
-        var email = new Mock<IEmailHandler>();
-        email
-            .Setup(e =>
-                e.SendWelcomeEmailAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string?>(),
-                    It.IsAny<CancellationToken>()
-                )
+        var emailQueue = new Mock<IEmailBackgroundQueue>();
+        emailQueue
+            .Setup(q =>
+                q.EnqueueAsync(It.IsAny<WelcomeEmailMessage>(), It.IsAny<CancellationToken>())
             )
-            .Returns(Task.CompletedTask);
+            .Returns(ValueTask.CompletedTask);
 
         var googleMock = new Mock<IGoogleAuthValidator>();
         googleMock
@@ -104,12 +100,12 @@ public class AuthServiceTests
             Options.Create(DefaultJwt),
             Options.Create(DefaultWallet),
             context,
-            email.Object,
+            emailQueue.Object,
             googleMock.Object,
             tokens.Object
         );
 
-        return (service, context, email, googleMock);
+        return (service, context, emailQueue, googleMock);
     }
 
     private static async Task<(User User, Wallet Wallet)> SeedUserAsync(
@@ -254,23 +250,20 @@ public class AuthServiceTests
     }
 
     /// <summary>
-    /// A brand-new user triggers the welcome email exactly once (fire-and-forget),
-    /// addressed to the Google payload email, in the requested locale.
+    /// A brand-new user queues exactly one welcome email (delivered later in the
+    /// background), addressed to the Google payload email, in the requested locale.
     /// </summary>
     [Fact]
-    public async Task GoogleLoginAsync_NewUser_SendsWelcomeEmailOnce()
+    public async Task GoogleLoginAsync_NewUser_QueuesWelcomeEmailOnce()
     {
-        var (service, _, email, _) = CreateSut();
+        var (service, _, emailQueue, _) = CreateSut();
 
         await service.GoogleLoginAsync(new GoogleLoginRequest("credential", "en"), "device-1");
-        await Task.Yield();
 
-        email.Verify(
-            e =>
-                e.SendWelcomeEmailAsync(
-                    DefaultPayload.Email,
-                    DefaultPayload.Name,
-                    "en",
+        emailQueue.Verify(
+            q =>
+                q.EnqueueAsync(
+                    new WelcomeEmailMessage(DefaultPayload.Email, DefaultPayload.Name, "en"),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -324,13 +317,13 @@ public class AuthServiceTests
 
     /// <summary>
     /// Returning user keeps its existing single Wallet (no second one is created),
-    /// no welcome email is sent, and no first-login <see cref="Order"/> nor
+    /// no welcome email is queued, and no first-login <see cref="Order"/> nor
     /// <see cref="Streak"/> is seeded for it.
     /// </summary>
     [Fact]
     public async Task GoogleLoginAsync_ExistingUser_DoesNotRecreateWalletAndNoWelcomeEmail()
     {
-        var (service, db, email, _) = CreateSut();
+        var (service, db, emailQueue, _) = CreateSut();
         await SeedUserAsync(
             db,
             new User
@@ -347,14 +340,8 @@ public class AuthServiceTests
         await service.GoogleLoginAsync(NewLoginRequest(), "device-1");
 
         db.Wallets.Should().HaveCount(1);
-        email.Verify(
-            e =>
-                e.SendWelcomeEmailAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string?>(),
-                    It.IsAny<CancellationToken>()
-                ),
+        emailQueue.Verify(
+            q => q.EnqueueAsync(It.IsAny<WelcomeEmailMessage>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
 

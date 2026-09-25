@@ -49,9 +49,9 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `Redis:Configuration` | Redis connection string | `localhost:6379` |
 | `Cors:FrontendUrl` | Allowed frontend origin (CORS, with credentials) | `https://your-frontend-domain.example` |
 | `Google:ClientId` | Google OAuth client ID | `YOUR_PRODUCTION_CLIENT_ID.apps.googleusercontent.com` |
-| `AiTarot:ApiKey` | Gemini API key | `YOUR_GEMINI_API_KEY` |
-| `AiTarot:Model` | Gemini model name | `gemini-2.0-flash` |
+| `Gemini:Apis` | List of Gemini credentials `{ApiKey, Model}`. May hold many entries; each call picks a **random start** then tries up to three consecutive credentials in circular order, falling back to the next whenever one fails (any HTTP error, empty/invalid response) | `[ { "ApiKey": "KEY1", "Model": "gemini-2.0-flash" }, ... ]` |
 | `AiTarot:MaxOutputTokens` | Max tokens per AI reading | `16384` |
+| `AiTarot:Costs` | White coin cost per reading, keyed by card count (3/5/7/10) | `{ "3": 2, "5": 3, "7": 4, "10": 5 }` |
 | `Jwt:SecretKey` | Signing key for JWT | `YOUR_VERY_LONG_SECRET_KEY_FOR_LOCAL_DEV_ENVIRONMENT` |
 | `Jwt:Issuer` | JWT issuer | `https://localhost:7000` |
 | `Jwt:Audience` | JWT audience (frontend origin) | `https://localhost:5173` |
@@ -65,6 +65,18 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `Email:Host` / `Email:Port` / `Email:Username` / `Email:Password` | SMTP settings | `smtp.example.com` / `587` |
 | `Email:FromAddress` / `Email:FromName` | Sender identity | `you@your-domain.com` / `My Tarot Reader` |
 | `Email:EnableSsl` | TLS for SMTP | `true` |
+
+`Gemini:Apis` is an array, so on Render (or any env-var platform) set one variable per entry using the `__` separator and a numeric index (these override `appsettings.json`):
+
+```
+Gemini__Apis__0__ApiKey=KEY_1
+Gemini__Apis__0__Model=gemini-2.0-flash
+Gemini__Apis__1__ApiKey=KEY_2
+Gemini__Apis__1__Model=gemini-2.5-flash
+Gemini__Apis__2__ApiKey=KEY_3
+Gemini__Apis__2__Model=gemini-2.5-flash-8b
+...
+```
 
 ## Install & Run
 
@@ -86,6 +98,7 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 - **Response envelope:** every response is `ApiResponse<T>: { success, message, data }`. Writes (`POST`/`PUT`/`DELETE`) return `200 OK` with `data = null`; reads return `200 OK` with the payload in `data`.
 - **Errors:** thrown as `BaseException` subtypes (`BadRequestException`, `ValidationException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `InternalServerException`) and mapped by `GlobalExceptionMiddleware` to the envelope with i18n error keys (`error.<domain>.<camelCase>`).
 - **Authentication:** JWT in **HttpOnly cookies** (`accessToken`, `refreshToken`); refresh tokens are rotated on every refresh and bound to the device fingerprint sent in the `X-Device-Id` header. Guest flows use Redis for draw cooldowns.
+- **Health:** `/health` returns `200 OK` in every environment and bypasses the frontend CORS policy (separate `HealthCors` policy allows any origin). Point Render's health-check / wake-up URL at `https://<api>/health`.
 
 | Method | Route | Description | Auth |
 | --- | --- | --- | --- |
@@ -99,9 +112,16 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 | `POST` | `api/tarot/draw` | Draw a card (auth) | JWT |
 | `GET` | `api/tarot/guest-draw` | Last drawn card (guest) | Public |
 | `POST` | `api/tarot/guest-draw` | Draw a card (guest, Redis cooldown) | Public |
+| `DELETE` | `api/tarot/guest-draw` | Clear last drawn card (guest) — dev-only, never mapped in production | Public |
 | `GET` | `api/tarot` | Reading history | JWT |
 | `DELETE` | `api/tarot/{readingId:guid}` | Delete a reading (soft delete) | JWT |
-| `GET` | `api/test/*` | Dev/test-only endpoints (`ok`, `not-found`, `bad`, `validation`, `boom`) | Public |
+| `PUT` | `api/aiTarot` | Create an AI tarot reading (Gemini), persist result | JWT |
+| `GET` | `api/aiTarot/{readingId:guid}` | Get one AI tarot reading | JWT |
+| `GET` | `api/aiTarot` | Get all AI tarot readings (short answer excerpt only) | JWT |
+| `GET` / `HEAD` | `health` | Health check — reachable from any origin (used to wake up Render) | Public |
+| `GET` | `api/test/*` | Dev-only test endpoints (`ok`, `not-found`, `bad`, `validation`, `boom`); mapped only in the Development environment | Public |
+| `GET` | `api/wallet` | Wallet balance + active white coin batches ordered by expiry | JWT |
+| `POST` | `api/wallet/convert` | Convert red coins to white coins (1 red = 2 white) | JWT |
 
 ## Useful Commands
 

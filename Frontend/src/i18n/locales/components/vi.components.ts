@@ -21,6 +21,11 @@ export const viComponents = {
       limitReached: "Bạn chỉ được chọn tối đa {{n}} lá",
       noEnoughCoin: "Bạn không có đủ xu để rút bài này",
     },
+    copyButton: {
+      copy: "Sao chép",
+      copied: "Đã sao chép",
+      failed: "Sao chép thất bại",
+    },
     error: {
       offlineTitle: "Bạn đang ngoại tuyến",
       offlineDesc: "Vui lòng kiểm tra kết nối internet và thử lại.",

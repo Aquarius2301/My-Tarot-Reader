@@ -11,7 +11,13 @@
 
 ![Home page](docs/homepage.png)
 
+![Home page (English)](docs/homepageEn.png)
+
+![Home page (Light mode)](docs/homepageLight.png)
+
 ![Tarot draw page](docs/drawpage.png)
+
+![AI Tarot draw page](docs/aidraw.png)
 
 ![Card library page](docs/librarypage.png)
 

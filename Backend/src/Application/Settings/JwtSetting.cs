@@ -16,8 +16,8 @@ public class JwtSetting
     public string Audience { get; set; } = string.Empty;
 
     /// <summary>Lifetime of an access token in minutes.</summary>
-    public int AccessTokenDurationMinutes { get; set; } = 480;
+    public int AccessTokenDurationMinutes { get; set; } = 15;
 
     /// <summary>Lifetime of a refresh token in days.</summary>
-    public int RefreshTokenDurationDays { get; set; } = 7;
+    public int RefreshTokenDurationDays { get; set; } = 14;
 }

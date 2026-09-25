@@ -26,6 +26,11 @@ export const enComponents = {
       cancel: "Cancel",
       delete: "Delete",
     },
+    copyButton: {
+      copy: "Copy",
+      copied: "Copied",
+      failed: "Copy failed",
+    },
     error: {
       offlineTitle: "You're offline",
       offlineDesc: "Please check your internet connection and try again.",

@@ -1,7 +1,7 @@
 import { authApi } from "@/api";
 import type { GoogleLoginRequest } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AUTH_QUERY_KEY } from "./queryKey";
+import { AUTH_QUERY_KEY, WALLET_QUERY_KEY } from "./queryKey";
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
@@ -10,6 +10,8 @@ export const useLogin = () => {
     onSuccess: () => {
       // Drop any stale previous-user /me cache before ProtectedRoute mounts.
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+      // A new sign-up grants the first-login white coin bonus.
+      queryClient.invalidateQueries({ queryKey: WALLET_QUERY_KEY });
     },
   });
 };
@@ -19,7 +21,10 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: () => authApi.logout(),
     // Only clear auth-scoped cache keys; leave unrelated queries alive.
-    onSuccess: () => queryClient.removeQueries({ queryKey: AUTH_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: AUTH_QUERY_KEY });
+      queryClient.removeQueries({ queryKey: WALLET_QUERY_KEY });
+    },
   });
 };
 

@@ -72,11 +72,7 @@ export default function MobileDrawer({
           backgroundColor: "transparent",
           borderRight: "none",
         }}
-        onClick={(info) => {
-          if (!info.keyPath || info.keyPath.length === 1) {
-            onClose();
-          }
-        }}
+        onClick={onClose}
       />
 
       <div
