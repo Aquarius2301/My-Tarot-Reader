@@ -9,7 +9,7 @@ ASP.NET Core 8 Web API for **My Tarot Reader**, built with Clean Architecture. I
 - [Redis](https://redis.io/download/) — guest draw cooldown & device fingerprints (local, or Upstash-style `rediss://` URI)
 - **Google OAuth credentials** (Client ID) — required for Google login
 - **Google Gemini API key** — required for AI tarot readings
-- **SMTP credentials** — optional, used for transactional email
+- **Resend API key** — optional, used for the transactional welcome email
 
 ## Architecture
 
@@ -62,9 +62,9 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `Wallet:ExpireDays` | White coin batch expiry in days | `30` |
 | `Streak:CycleDays` | Days in a check-in streak cycle | `7` |
 | `Streak:DailyCheckInRewards` | Coins per day in the cycle | `[1, 1, 1, 1, 2, 2, 3]` |
-| `Email:Host` / `Email:Port` / `Email:Username` / `Email:Password` | SMTP settings | `smtp.example.com` / `587` |
-| `Email:FromAddress` / `Email:FromName` | Sender identity | `you@your-domain.com` / `My Tarot Reader` |
-| `Email:EnableSsl` | TLS for SMTP | `true` |
+| `Email:ApiKey` | Resend API key — secret, never committed | `re_YOUR_API_KEY` |
+| `Email:Endpoint` | Resend API base URL | `https://api.resend.com` |
+| `Email:FromAddress` / `Email:FromName` | Sender identity (the domain must be verified in Resend) | `you@your-domain.com` / `My Tarot Reader` |
 
 `Gemini:Apis` is an array, so on Render (or any env-var platform) set one variable per entry using the `__` separator and a numeric index (these override `appsettings.json`):
 
@@ -77,6 +77,82 @@ Gemini__Apis__2__ApiKey=KEY_3
 Gemini__Apis__2__Model=gemini-2.5-flash-8b
 ...
 ```
+
+Welcome emails are delivered through the **Resend HTTPS API** (`POST https://api.resend.com/emails`, bearer `Email:ApiKey`) rather than Resend's SMTP endpoint. Render's free tier blocks outbound traffic to the SMTP ports `25`, `465` and `587`, so an SMTP client times out on connect there; HTTPS on port `443` is unaffected.
+
+On an env-var-only platform (no settings file), `Email:ApiKey` is set as:
+
+```
+Email__ApiKey=re_YOUR_API_KEY
+```
+
+### Production configuration
+
+Production keeps all of its settings in a single JSON document instead of `A__B` environment variables, so the whole file can be copied in one go. In production `Program.cs` loads it from the path below **before** the services are registered (JWT, Redis, the connection string and CORS are read eagerly at that point, so a file added later would be ignored by them).
+
+1. Render Dashboard → your service → **Environment** → **Secret Files** → **+ Add Secret File**
+2. Filename: `appsettings.Production.json`
+3. Contents: the JSON below with your real values
+4. **Save Changes** — Render deploys again and mounts the file at `/etc/secrets/`
+
+Delete the `A__B` variables the file replaces in the same save, so the service never starts without its settings. Keep the platform variables Render generates itself (`PORT`, `ASPNETCORE_*`).
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=...;Port=5432;Database=...;Username=...;Password=...;SSL Mode=Require"
+  },
+  "Redis": {
+    "Configuration": "rediss://default:...@....upstash.io:6379"
+  },
+  "Cors": {
+    "FrontendUrl": "https://your-frontend-domain.example"
+  },
+  "Google": {
+    "ClientId": "YOUR_PRODUCTION_CLIENT_ID.apps.googleusercontent.com"
+  },
+  "Gemini": {
+    "Apis": [
+      { "ApiKey": "KEY_1", "Model": "gemini-2.5-flash" },
+      { "ApiKey": "KEY_2", "Model": "gemini-2.5-flash" }
+    ]
+  },
+  "Jwt": {
+    "SecretKey": "YOUR_VERY_LONG_SECRET_KEY",
+    "Issuer": "https://accounts.google.com",
+    "Audience": "your-frontend-domain.example",
+    "AccessTokenDurationMinutes": 480,
+    "RefreshTokenDurationDays": 7
+  },
+  "TokenCleanup": { "IntervalMinutes": 60 },
+  "Wallet": { "InitialWhiteCoins": 5, "ExpireDays": 30 },
+  "Streak": { "CycleDays": 7, "DailyCheckInRewards": [1, 1, 1, 1, 2, 2, 3] },
+  "AiTarot": { "Costs": { "3": 2, "5": 3, "7": 4, "10": 5 } },
+  "Email": {
+    "ApiKey": "re_YOUR_API_KEY",
+    "Endpoint": "https://api.resend.com",
+    "FromAddress": "noreply@your-domain.com",
+    "FromName": "My Tarot Reader"
+  }
+}
+```
+
+Priority order, highest first:
+
+1. the settings file (when present)
+2. environment variables (`A__B`)
+3. `appsettings.{Environment}.json`
+4. `appsettings.json`
+
+A key that the file does not mention still comes from the sources below it, so settings can be migrated to the file one by one. On startup the app logs whether the file was loaded — `Loaded secret settings from …` or `No secret settings file at …`, so a missing or misnamed file is never a silent fallback.
+
+The path can be changed with the `SETTINGS_FILE` environment variable, which also makes the file testable locally:
+
+```bash
+SETTINGS_FILE=./appsettings.Production.json ASPNETCORE_ENVIRONMENT=Production dotnet run --project src/Api
+```
+
+`*.Production.json` is git-ignored, so a local copy of the file is never committed.
 
 ## Install & Run
 
