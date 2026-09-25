@@ -1,7 +1,6 @@
-using MailKit.Net.Smtp;
-using MailKit.Security;
+using System.Net.Http.Json;
+using System.Net.Mail;
 using Microsoft.Extensions.Options;
-using MimeKit;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Contracts.Common;
@@ -9,10 +8,20 @@ using MyTarotReader.Application.Settings;
 
 namespace MyTarotReader.Infrastructure.Common;
 
-public class EmailSender(IOptions<EmailSetting> emailSetting) : IEmailSender
+/// <summary>
+/// Sends emails through the Resend HTTPS API using a raw HttpClient (no external SDK),
+/// configured from <see cref="EmailSetting"/>.
+/// </summary>
+/// <remarks>
+/// The HTTP API is used instead of SMTP because hosting providers such as Render block
+/// outbound traffic to the SMTP ports 25, 465 and 587 on their free tier.
+/// </remarks>
+public class EmailSender(HttpClient httpClient, IOptions<EmailSetting> emailSetting) : IEmailSender
 {
+    private readonly HttpClient _httpClient = httpClient;
     private readonly EmailSetting _emailSetting = emailSetting.Value;
 
+    /// <inheritdoc />
     public async Task SendAsync(
         string toEmail,
         string toName,
@@ -21,40 +30,43 @@ public class EmailSender(IOptions<EmailSetting> emailSetting) : IEmailSender
         CancellationToken cancellationToken = default
     )
     {
-        if (!MailboxAddress.TryParse(toEmail, out _))
+        if (!MailAddress.TryCreate(toEmail, out _))
             throw new BadRequestException(EmailErrorCode.InvalidAddress);
 
-        var message = new MimeMessage
+        if (string.IsNullOrWhiteSpace(_emailSetting.ApiKey))
+            throw new InternalServerException(EmailErrorCode.SendFailed);
+
+        var from = string.IsNullOrWhiteSpace(_emailSetting.FromName)
+            ? _emailSetting.FromAddress
+            : $"{_emailSetting.FromName} <{_emailSetting.FromAddress}>";
+
+        var request = new
         {
-            From = { new MailboxAddress(_emailSetting.FromName, _emailSetting.FromAddress) },
-            To = { new MailboxAddress(toName, toEmail) },
-            Subject = subject,
-            Body = new TextPart("html") { Text = htmlBody },
+            from,
+            to = new[] { toEmail },
+            subject,
+            html = htmlBody,
         };
 
         try
         {
-            using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(
-                _emailSetting.Host,
-                _emailSetting.Port,
-                ResolveSecureSocketOptions(),
-                cancellationToken
+            using var httpRequest = new HttpRequestMessage(
+                HttpMethod.Post,
+                $"{_emailSetting.Endpoint.TrimEnd('/')}/emails"
             );
+            httpRequest.Headers.Add("Authorization", $"Bearer {_emailSetting.ApiKey}");
+            httpRequest.Content = JsonContent.Create(request);
 
-            if (!string.IsNullOrEmpty(_emailSetting.Username))
+            using var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
+            if (!response.IsSuccessStatusCode)
             {
-                await smtp.AuthenticateAsync(
-                    _emailSetting.Username,
-                    _emailSetting.Password,
-                    cancellationToken
+                var error = await response.Content.ReadAsStringAsync(cancellationToken);
+                throw new HttpRequestException(
+                    $"Resend API returned {(int)response.StatusCode}: {error}"
                 );
             }
-
-            await smtp.SendAsync(message, cancellationToken);
-            await smtp.DisconnectAsync(true, cancellationToken);
         }
-        catch (BadRequestException)
+        catch (OperationCanceledException)
         {
             throw;
         }
@@ -63,12 +75,4 @@ public class EmailSender(IOptions<EmailSetting> emailSetting) : IEmailSender
             throw new InternalServerException(EmailErrorCode.SendFailed, innerException: ex);
         }
     }
-
-    private SecureSocketOptions ResolveSecureSocketOptions() =>
-        _emailSetting.EnableSsl switch
-        {
-            true when _emailSetting.Port == 465 => SecureSocketOptions.SslOnConnect,
-            true => SecureSocketOptions.StartTls,
-            _ => SecureSocketOptions.None,
-        };
 }

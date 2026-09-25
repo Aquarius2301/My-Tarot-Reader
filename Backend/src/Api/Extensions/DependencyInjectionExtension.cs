@@ -30,7 +30,6 @@ public static class DependencyInjectionExtension
         services.AddScoped<IGoogleAuthValidator, GoogleAuthValidator>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IEmailHandler, EmailHandler>();
-        services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IEmailTemplateEngine, EmailTemplateEngine>();
 
         // Background jobs
@@ -46,6 +45,7 @@ public static class DependencyInjectionExtension
         services.AddScoped<IAiTarotReadingService, AiTarotReadingService>();
 
         // External clients
+        services.AddHttpClient<IEmailSender, EmailSender>();
         services.AddHttpClient<IGeminiClient, GeminiClient>();
 
         // Validators

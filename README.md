@@ -36,7 +36,7 @@
 
 ## Tech Stack
 
-- **Backend:** ASP.NET Core 8 Web API — Clean Architecture, EF Core 8 + PostgreSQL (Npgsql), Redis, JWT (HttpOnly cookies), Google OAuth, MailKit (email), Google Gemini
+- **Backend:** ASP.NET Core 8 Web API — Clean Architecture, EF Core 8 + PostgreSQL (Npgsql), Redis, JWT (HttpOnly cookies), Google OAuth, Resend API (email), Google Gemini
 - **Frontend:** React 19 + Vite 8 + TypeScript 6, Ant Design v6, TanStack Query v5, react-router v7, Zustand, react-i18next, axios, FingerprintJS, oxlint
 - **Database:** PostgreSQL + Redis
 - **CI/CD:** GitHub Actions (build + deploy), Render (API), Vercel (SPA), Dockerfile
