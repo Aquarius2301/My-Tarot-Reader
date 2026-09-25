@@ -15,6 +15,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+if (builder.Environment.IsProduction())
+{
+    var secretFilePath = "/etc/secrets/appsettings.Production.json";
+    if (File.Exists(secretFilePath))
+    {
+        builder.Configuration.AddJsonFile(secretFilePath, optional: false, reloadOnChange: true);
+    }
+}
+
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
