@@ -194,6 +194,10 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 | `PUT` | `api/aiTarot` | Create an AI tarot reading (Gemini), persist result | JWT |
 | `GET` | `api/aiTarot/{readingId:guid}` | Get one AI tarot reading | JWT |
 | `GET` | `api/aiTarot` | Get all AI tarot readings (short answer excerpt only) | JWT |
+| `PUT` | `api/aiDeepTarot` | Create a deep tarot reading (topic-specific spread, Gemini) | JWT |
+| `GET` | `api/aiDeepTarot/{readingId:guid}` | Get one deep tarot reading | JWT |
+| `GET` | `api/aiDeepTarot` | Get all deep tarot readings (short answer excerpt only) | JWT |
+| `DELETE` | `api/aiDeepTarot/{readingId:guid}` | Delete a deep tarot reading (soft delete) | JWT |
 | `GET` / `HEAD` | `health` | Health check — reachable from any origin (used to wake up Render) | Public |
 | `GET` | `api/test/*` | Dev-only test endpoints (`ok`, `not-found`, `bad`, `validation`, `boom`); mapped only in the Development environment | Public |
 | `GET` | `api/wallet` | Wallet balance + active white coin batches ordered by expiry | JWT |

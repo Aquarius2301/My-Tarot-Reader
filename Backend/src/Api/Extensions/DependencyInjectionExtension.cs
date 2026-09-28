@@ -43,6 +43,7 @@ public static class DependencyInjectionExtension
         services.AddScoped<ITarotReadingService, TarotReadingService>();
         services.AddScoped<IWalletService, WalletService>();
         services.AddScoped<IAiTarotReadingService, AiTarotReadingService>();
+        services.AddScoped<IAIDeepTarotReadingService, AIDeepTarotReadingService>();
 
         // External clients
         services.AddHttpClient<IEmailSender, EmailSender>();
@@ -71,6 +72,11 @@ public static class DependencyInjectionExtension
         services.AddScoped<
             IValidator<CreateAiTarotReadingRequest>,
             CreateAiTarotReadingRequestValidator
+        >();
+
+        services.AddScoped<
+            IValidator<CreateAiDeepTarotReadingRequest>,
+            CreateAiDeepTarotReadingRequestValidator
         >();
 
         return services;
