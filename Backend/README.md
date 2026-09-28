@@ -173,7 +173,7 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 - **Swagger:** `/swagger` (Dev environment only; production builds reference the contract via controllers).
 - **Response envelope:** every response is `ApiResponse<T>: { success, message, data }`. Writes (`POST`/`PUT`/`DELETE`) return `200 OK` with `data = null`; reads return `200 OK` with the payload in `data`.
 - **Errors:** thrown as `BaseException` subtypes (`BadRequestException`, `ValidationException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `InternalServerException`) and mapped by `GlobalExceptionMiddleware` to the envelope with i18n error keys (`error.<domain>.<camelCase>`).
-- **Authentication:** JWT in **HttpOnly cookies** (`accessToken`, `refreshToken`); refresh tokens are rotated on every refresh and bound to the device fingerprint sent in the `X-Device-Id` header. Guest flows use Redis for draw cooldowns.
+- **Authentication:** JWT in **HttpOnly cookies** (`accessToken`, `refreshToken`); refresh tokens are rotated on every refresh and bound to the device fingerprint sent in the `X-Device-Id` header. Guest flows use Redis for draw cooldowns. An `Authorization: Bearer <token>` header is also honoured, and takes precedence over the cookie — that is what Swagger's **Authorize** button uses.
 - **Health:** `/health` returns `200 OK` in every environment and bypasses the frontend CORS policy (separate `HealthCors` policy allows any origin). Point Render's health-check / wake-up URL at `https://<api>/health`.
 
 | Method | Route | Description | Auth |
@@ -200,8 +200,63 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 | `DELETE` | `api/aiDeepTarot/{readingId:guid}` | Delete a deep tarot reading (soft delete) | JWT |
 | `GET` / `HEAD` | `health` | Health check — reachable from any origin (used to wake up Render) | Public |
 | `GET` | `api/test/*` | Dev-only test endpoints (`ok`, `not-found`, `bad`, `validation`, `boom`); mapped only in the Development environment | Public |
+| `POST` | `api/dev/auth/token` | **Dev-only** fake login — mints a real JWT for a seeded dev user, no Google OAuth needed; mapped only in the Development environment | Public |
 | `GET` | `api/wallet` | Wallet balance + active white coin batches ordered by expiry | JWT |
 | `POST` | `api/wallet/convert` | Convert red coins to white coins (1 red = 2 white) | JWT |
+
+### Testing `[Authorize]` endpoints in Swagger
+
+Every `JWT` route above needs a signed token. Since Google OAuth needs a real Google
+account, the API ships a development-only login that issues a genuine JWT for a single
+seeded user, so you can exercise protected routes straight from Swagger.
+
+**1. Get a token** — expand `POST /api/dev/auth/token` and click **Execute**. The body is
+optional, so it works with an empty request. Set the `X-Device-Id` header so the refresh
+token is bound to a device:
+
+```
+X-Device-Id: swagger-dev
+```
+
+The response returns the dev user's identity, so you can copy it into path parameters:
+
+```json
+{
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "userId": "31914a3f-d572-4d70-9df9-6c18942a6c42",
+    "email": "dev@my-tarot-reader.local",
+    "whiteCoin": 1000,
+    "role": "registered"
+  }
+}
+```
+
+**2a. Authorize with the token** — click **Authorize** at the top of the page and paste
+the `accessToken`. An `Authorization: Bearer` header takes precedence over the
+`accessToken` cookie, so this always wins even if you are also logged in on the frontend.
+
+**2b. Or rely on the cookies** — the endpoint also sets the `accessToken` / `refreshToken`
+HttpOnly cookies, so requests work without **Authorize**. Prefer 2a: browsers only send
+`Secure` cookies over HTTPS (or `http://localhost`), and the header path is immune to that.
+
+**3. Test the refresh flow** — `POST /api/auth/refresh` reads the cookie and requires the
+same `X-Device-Id` value used in step 1, otherwise the token is treated as stolen and all
+of that user's tokens are revoked.
+
+Notes:
+
+- The dev user is looked up by `ProviderKey` in the `DevAuth` settings section and reused
+  across calls, so readings and streak state accumulate. Soft-delete the row from the
+  database to start clean.
+- Seeded with `DevAuth:InitialWhiteCoins` white coins so coin-deducting routes
+  (`api/aiDeepTarot`, `api/tarot/draw`) stay testable. Add more via `api/wallet/convert`
+  or a new dev login after raising the setting.
+- Send `{ "role": "pro" }` in the body to switch the dev user's role.
+- Without the `X-Device-Id` header, tokens are bound to `DevAuth:DefaultDeviceFingerprint`.
+- The controller is marked `[DevelopmentOnly]`, so the route **does not exist** outside
+  Development — it is removed from the application model, not merely blocked.
+
 
 ## Useful Commands
 
