@@ -49,7 +49,11 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `Redis:Configuration` | Redis connection string | `localhost:6379` |
 | `Cors:FrontendUrl` | Allowed frontend origin (CORS, with credentials) | `https://your-frontend-domain.example` |
 | `Google:ClientId` | Google OAuth client ID | `YOUR_PRODUCTION_CLIENT_ID.apps.googleusercontent.com` |
-| `Gemini:Apis` | List of Gemini credentials `{ApiKey, Model}`. May hold many entries; each call picks a **random start** then tries up to three consecutive credentials in circular order, falling back to the next whenever one fails (any HTTP error, empty/invalid response) | `[ { "ApiKey": "KEY1", "Model": "gemini-2.0-flash" }, ... ]` |
+| `Gemini:Apis` | Ordered list of Gemini API keys, tried from the first one on every call | `[ "KEY1", "KEY2" ]` |
+| `Gemini:Models` | Ordered list of models `{ model, thinking-level }`, each one paired with every key in `Gemini:Apis` | `[ { "model": "gemini-3.8-flash", "thinking-level": "low" } ]` |
+| `Gemini:MaxRetries` | Extra attempts on the same (api, model) pair before failing over | `2` |
+| `Gemini:RetryDelayMilliseconds` | Base delay of the exponential backoff between two attempts | `1000` |
+| `Gemini:MaxTotalWaitSeconds` | Total time spent retrying before giving up; `0` = unlimited | `30` |
 | `AiTarot:MaxOutputTokens` | Max tokens per AI reading | `16384` |
 | `AiTarot:Costs` | White coin cost per reading, keyed by card count (3/5/7/10) | `{ "3": 2, "5": 3, "7": 4, "10": 5 }` |
 | `Jwt:SecretKey` | Signing key for JWT | `YOUR_VERY_LONG_SECRET_KEY_FOR_LOCAL_DEV_ENVIRONMENT` |
@@ -66,17 +70,33 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `Email:Endpoint` | Resend API base URL | `https://api.resend.com` |
 | `Email:FromAddress` / `Email:FromName` | Sender identity (the domain must be verified in Resend) | `you@your-domain.com` / `My Tarot Reader` |
 
-`Gemini:Apis` is an array, so on Render (or any env-var platform) set one variable per entry using the `__` separator and a numeric index (these override `appsettings.json`):
+`Gemini:Apis` and `Gemini:Models` are arrays, so on Render (or any env-var platform) set one variable per entry using the `__` separator and a numeric index (these override `appsettings.json`):
 
 ```
-Gemini__Apis__0__ApiKey=KEY_1
-Gemini__Apis__0__Model=gemini-2.0-flash
-Gemini__Apis__1__ApiKey=KEY_2
-Gemini__Apis__1__Model=gemini-2.5-flash
-Gemini__Apis__2__ApiKey=KEY_3
-Gemini__Apis__2__Model=gemini-2.5-flash-8b
+Gemini__Apis__0=KEY_1
+Gemini__Apis__1=KEY_2
+Gemini__Models__0__Model=gemini-3.8-flash
+Gemini__Models__0__thinking-level=low
+Gemini__Models__1__Model=gemini-3.5-flash
+Gemini__Models__1__thinking-level=low
 ...
 ```
+
+### Gemini retry and failover
+
+Every call walks the `(api, model)` pairs from `Api1/Model1` and never revisits a pair. On each pair it makes `1 + MaxRetries` attempts: the first retry waits `RetryDelayMilliseconds`, then every next one doubles it and adds a random jitter of up to `RetryDelayMilliseconds` (so `1000ms`, then `2000–2999ms`), and a `Retry-After` header from Gemini always wins when it asks for a longer wait. `MaxTotalWaitSeconds` caps the time spent retrying in a single call.
+
+Once the attempts of a pair are used up, the next pair depends on the failure:
+
+| Failure | Retry with backoff | Next pair |
+| --- | --- | --- |
+| `429` | yes | next **api**, same model |
+| `500` / `502` / `503` / `504` / network error | yes | next **model**, same api |
+| `400` / `404` (model or parameter rejected) | no | next **model**, same api |
+| `401` / `403` (api key rejected) | no | next **api**, same model |
+| `200` with an empty or unreadable body | no | next **model**, same api |
+
+`thinking-level` is only sent when the model accepts it: `GeminiThinkingLevelCatalog` (`src/Infrastructure/Common/`) lists the levels of each model, and anything unsupported (including the 2.5 series, which only takes `thinkingBudget`) is left out so the call falls back to the model default instead of failing with a `400`.
 
 Welcome emails are delivered through the **Resend HTTPS API** (`POST https://api.resend.com/emails`, bearer `Email:ApiKey`) rather than Resend's SMTP endpoint. Render's free tier blocks outbound traffic to the SMTP ports `25`, `465` and `587`, so an SMTP client times out on connect there; HTTPS on port `443` is unaffected.
 
@@ -112,9 +132,13 @@ Delete the `A__B` variables the file replaces in the same save, so the service n
     "ClientId": "YOUR_PRODUCTION_CLIENT_ID.apps.googleusercontent.com"
   },
   "Gemini": {
-    "Apis": [
-      { "ApiKey": "KEY_1", "Model": "gemini-2.5-flash" },
-      { "ApiKey": "KEY_2", "Model": "gemini-2.5-flash" }
+    "MaxRetries": 2,
+    "RetryDelayMilliseconds": 1000,
+    "MaxTotalWaitSeconds": 30,
+    "Apis": ["KEY_1", "KEY_2"],
+    "Models": [
+      { "model": "gemini-3.8-flash", "thinking-level": "low" },
+      { "model": "gemini-3.5-flash", "thinking-level": "low" }
     ]
   },
   "Jwt": {
