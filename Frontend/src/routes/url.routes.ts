@@ -9,6 +9,7 @@ export const WEB_URL = {
   aiTarot: "/draw/ai",
   aiTarotResult: "/result/ai",
   aiDeepTarotTwelveHouses: "/draw/deep/twelve-houses",
+  aiDeepTarotTwelveMonths: "/draw/deep/twelve-months",
   aiDeepTarotResult: "/result/deep",
   tarotHistory: "/history",
   aiTarotHistory: "/history/ai",

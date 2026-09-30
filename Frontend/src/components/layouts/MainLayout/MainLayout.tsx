@@ -95,8 +95,13 @@ export default function MainLayout({
           children: [
             {
               key: "aiDeepTarotTwelveHouses",
-              label: t("page.aiDeepTarot.twelveHouses.title"),
+              label: t("page.aiDeepTarot.spreads.twelveHouses.title"),
               href: WEB_URL.aiDeepTarotTwelveHouses,
+            },
+            {
+              key: "aiDeepTarotTwelveMonths",
+              label: t("page.aiDeepTarot.spreads.twelveMonths.title"),
+              href: WEB_URL.aiDeepTarotTwelveMonths,
             },
           ],
         },

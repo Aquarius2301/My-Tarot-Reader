@@ -6,20 +6,21 @@ import { useTranslation } from "react-i18next";
 
 const { Text, Paragraph } = Typography;
 
-export interface HouseSectionCardProps {
-  positionKey: string;
+export interface PositionSectionCardProps {
+  /** Already resolved by the caller: a house name, or a calendar month. */
+  label: string;
   section?: AiDeepTarotAnswerSection;
   cardCode: TarotCardCode;
   isReversed: boolean;
 }
 
-/** One house of the spread: the drawn card plus its AI interpretation. */
-export default function HouseSectionCard({
-  positionKey,
+/** One position of the spread: the drawn card plus its AI interpretation. */
+export default function PositionSectionCard({
+  label,
   section,
   cardCode,
   isReversed,
-}: HouseSectionCardProps) {
+}: PositionSectionCardProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
 
@@ -31,10 +32,15 @@ export default function HouseSectionCard({
   return (
     <Card>
       <Flex align="center" gap={token.marginSM} wrap>
-        <TarotCard cardCode={cardCode} isUpright={!isReversed} isFlipped size="sm" />
+        <TarotCard
+          cardCode={cardCode}
+          isUpright={!isReversed}
+          isFlipped
+          size="sm"
+        />
         <div>
           <Text strong style={{ display: "block" }}>
-            {t(`page.aiDeepTarot.house.${positionKey}`)}
+            {label}
           </Text>
           {section?.title && (
             <Text type="secondary" style={{ display: "block" }}>

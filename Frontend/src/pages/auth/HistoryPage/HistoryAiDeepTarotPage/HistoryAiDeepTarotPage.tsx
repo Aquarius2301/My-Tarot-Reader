@@ -1,5 +1,8 @@
 import { ErrorComponent, TarotCard } from "@/components";
-import { AI_DEEP_TAROT_TOPIC_LABEL_KEYS } from "@/constants";
+import {
+  AI_DEEP_TAROT_TOPIC_LABEL_KEYS,
+  type AiDeepTarotTopic,
+} from "@/constants";
 import {
   useDeleteAiDeepTarotReading,
   useGetAllAiDeepTarotReadings,
@@ -24,10 +27,16 @@ import {
   Typography,
   theme,
 } from "antd";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { DeleteAiDeepTarotModal } from "./components";
+
+/** Badge icon in front of each reading, so the spread is recognisable. */
+const TOPIC_ICONS = {
+  twelveHouses: <HomeOutlined />,
+  twelveMonths: <CalendarOutlined />,
+} as const satisfies Record<AiDeepTarotTopic, ReactNode>;
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -169,7 +178,9 @@ function HistoryAiDeepTarotItem({
       }
       title={
         <Flex align="center" gap={token.marginXS}>
-          <HomeOutlined style={{ color: token.colorPrimary }} />
+          <span style={{ color: token.colorPrimary }}>
+            {TOPIC_ICONS[item.topic]}
+          </span>
           <Text strong ellipsis>
             {item.title}
           </Text>

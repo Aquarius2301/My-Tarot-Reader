@@ -14,14 +14,16 @@ export default function TwelveHousesGuide() {
   return (
     <Flex vertical gap={token.marginLG}>
       <Card>
-        <Text strong>{t("page.aiDeepTarot.twelveHouses.what.title")}</Text>
+        <Text strong>
+          {t("page.aiDeepTarot.spreads.twelveHouses.what.title")}
+        </Text>
         <Paragraph style={{ marginTop: token.marginSM, marginBottom: 0 }}>
-          {t("page.aiDeepTarot.twelveHouses.what.body")}
+          {t("page.aiDeepTarot.spreads.twelveHouses.what.body")}
         </Paragraph>
       </Card>
 
       <Card>
-        <Text strong>{t("page.aiDeepTarot.twelveHouses.why.title")}</Text>
+        <Text strong>{t("page.aiDeepTarot.spreads.twelveHouses.why.title")}</Text>
         <List
           size="small"
           style={{ marginTop: token.marginSM }}
@@ -33,7 +35,7 @@ export default function TwelveHousesGuide() {
           renderItem={(item) => (
             <List.Item style={{ paddingBlock: token.paddingXS }}>
               <Text>
-                {t(`page.aiDeepTarot.twelveHouses.why.items.${item}`)}
+                {t(`page.aiDeepTarot.spreads.twelveHouses.why.items.${item}`)}
               </Text>
             </List.Item>
           )}
@@ -41,7 +43,7 @@ export default function TwelveHousesGuide() {
       </Card>
 
       <Card>
-        <Text strong>{t("page.aiDeepTarot.twelveHouses.when.title")}</Text>
+        <Text strong>{t("page.aiDeepTarot.spreads.twelveHouses.when.title")}</Text>
         <List
           size="small"
           style={{ marginTop: token.marginSM }}
@@ -53,7 +55,7 @@ export default function TwelveHousesGuide() {
           renderItem={(item) => (
             <List.Item style={{ paddingBlock: token.paddingXS }}>
               <Text>
-                {t(`page.aiDeepTarot.twelveHouses.when.items.${item}`)}
+                {t(`page.aiDeepTarot.spreads.twelveHouses.when.items.${item}`)}
               </Text>
             </List.Item>
           )}
@@ -61,15 +63,19 @@ export default function TwelveHousesGuide() {
       </Card>
 
       <Card>
-        <Text strong>{t("page.aiDeepTarot.houses.title")}</Text>
+        <Text strong>
+          {t("page.aiDeepTarot.spreads.twelveHouses.positions.title")}
+        </Text>
         <Paragraph type="secondary" style={{ marginTop: token.marginXS }}>
-          {t("page.aiDeepTarot.houses.hint")}
+          {t("page.aiDeepTarot.spreads.twelveHouses.positions.hint")}
         </Paragraph>
         <Flex vertical gap={token.marginXS} style={{ marginTop: token.marginSM }}>
           {positions.map((positionKey, index) => (
             <Flex key={positionKey} gap={token.marginSM} align="baseline">
               <Text type="secondary">{index + 1}.</Text>
-              <Text>{t(`page.aiDeepTarot.house.${positionKey}`)}</Text>
+              <Text>
+                {t(`page.aiDeepTarot.spreads.twelveHouses.position.${positionKey}`)}
+              </Text>
             </Flex>
           ))}
         </Flex>

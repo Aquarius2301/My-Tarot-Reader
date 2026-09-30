@@ -1,16 +1,29 @@
 import { CopyButton, ErrorComponent } from "@/components";
-import { AI_DEEP_TAROT_POSITIONS } from "@/constants";
+import { AI_DEEP_TAROT_POSITIONS, type AiDeepTarotTopic } from "@/constants";
 import { useGetAiDeepTarotReadingById } from "@/hooks/api";
 import { WEB_URL } from "@/routes";
-import { matchDeepAnswerSections, parseAiDeepTarotAnswer } from "@/utils";
+import {
+  getDeepTarotPositionLabel,
+  matchDeepAnswerSections,
+  parseAiDeepTarotAnswer,
+} from "@/utils";
 import { Button, Card, Flex, Spin, Typography, theme } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { HouseSectionCard } from "./components";
+import { PositionSectionCard } from "./components";
 
 const { Title, Text, Paragraph } = Typography;
 
-/** Shows a created deep tarot reading: title, the 12 houses and their meanings. */
+/** Where to send the user to draw a new reading of the same spread. */
+const DRAW_URL_BY_TOPIC = {
+  twelveHouses: WEB_URL.aiDeepTarotTwelveHouses,
+  twelveMonths: WEB_URL.aiDeepTarotTwelveMonths,
+} as const satisfies Record<AiDeepTarotTopic, string>;
+
+/**
+ * Shows a created deep tarot reading, whichever spread it belongs to: the
+ * title, then one card per position (a house name, or a calendar month).
+ */
 export default function AiDeepTarotResultPage() {
   const { readingId } = useParams<{ readingId: string }>();
   const navigate = useNavigate();
@@ -38,6 +51,16 @@ export default function AiDeepTarotResultPage() {
   const orientationLabel = (isReversed: boolean) =>
     isReversed ? t("tarot.position.reversed") : t("tarot.position.upright");
 
+  // Falls back to the card name when the reading has no known position for it.
+  const positionLabel = (index: number) =>
+    getDeepTarotPositionLabel(
+      data.topic,
+      index,
+      positions[index] ?? "",
+      data.createdAt,
+      t,
+    ) || t(`tarot.meaning.${data.cards[index].cardCode}.name`);
+
   const buildCopyText = () => {
     if (!answer) return data.title;
 
@@ -51,14 +74,10 @@ export default function AiDeepTarotResultPage() {
 
     data.cards.forEach((card, index) => {
       const matched = matchedSections[index];
-      const positionKey = positions[index];
-      const header = positionKey
-        ? t(`page.aiDeepTarot.house.${positionKey}`)
-        : t(`tarot.meaning.${card.cardCode}.name`);
 
       sections.push(
         [
-          `${header} · ${t(`tarot.meaning.${card.cardCode}.name`)} · ${orientationLabel(card.isReversed)}`,
+          `${positionLabel(index)} · ${t(`tarot.meaning.${card.cardCode}.name`)} · ${orientationLabel(card.isReversed)}`,
           ...(matched?.interpretation ? [matched.interpretation] : []),
         ].join("\n"),
       );
@@ -103,9 +122,9 @@ export default function AiDeepTarotResultPage() {
           )}
 
           {data.cards.map((card, index) => (
-            <HouseSectionCard
-              key={`${card.cardCode}-house-${index}`}
-              positionKey={positions[index] ?? ""}
+            <PositionSectionCard
+              key={`${card.cardCode}-position-${index}`}
+              label={positionLabel(index)}
               section={matchedSections[index]}
               cardCode={card.cardCode}
               isReversed={card.isReversed}
@@ -129,7 +148,7 @@ export default function AiDeepTarotResultPage() {
         <Button
           type="primary"
           size="large"
-          onClick={() => navigate(WEB_URL.aiDeepTarotTwelveHouses)}
+          onClick={() => navigate(DRAW_URL_BY_TOPIC[data.topic])}
         >
           {t("page.aiDeepTarot.result.drawAgain")}
         </Button>

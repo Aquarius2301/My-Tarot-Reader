@@ -1,4 +1,5 @@
 import { TarotDeck, type SpreadResultItem } from "@/components";
+import { AI_DEEP_TAROT_CARD_COUNTS } from "@/constants";
 import { useCreateTwelveHousesReading } from "@/hooks/api";
 import { useLanguageStore } from "@/hooks/stores";
 import { WEB_URL } from "@/routes";
@@ -7,16 +8,17 @@ import { App, Button, Flex, Spin, Typography } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { AI_DEEP_TAROT_CARD_COUNTS } from "@/constants";
 
 const { Text } = Typography;
 
-export interface DrawCardsStepProps {
+export interface TwelveHousesDrawCardsStepProps {
   onBack: () => void;
 }
 
 /** Step 2: draw the 12 houses spread on the TarotDeck and create the reading. */
-export default function DrawCardsStep({ onBack }: DrawCardsStepProps) {
+export default function TwelveHousesDrawCardsStep({
+  onBack,
+}: TwelveHousesDrawCardsStepProps) {
   const { t } = useTranslation();
   const { message } = App.useApp();
   const navigate = useNavigate();
@@ -49,7 +51,7 @@ export default function DrawCardsStep({ onBack }: DrawCardsStepProps) {
         type="secondary"
         style={{ display: "block", textAlign: "center", marginBottom: 16 }}
       >
-        {t("page.aiDeepTarot.draw.subtitle")}
+        {t("page.aiDeepTarot.spreads.twelveHouses.draw.subtitle")}
       </Text>
 
       <TarotDeck
@@ -59,11 +61,16 @@ export default function DrawCardsStep({ onBack }: DrawCardsStepProps) {
 
       <Flex justify="center" style={{ marginTop: 16 }}>
         <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
-          {t("page.aiDeepTarot.back")}
+          {t("page.aiDeepTarot.common.back")}
         </Button>
       </Flex>
 
-      {isPending && <Spin fullscreen description={t("page.aiDeepTarot.saving")} />}
+      {isPending && (
+        <Spin
+          fullscreen
+          description={t("page.aiDeepTarot.common.saving")}
+        />
+      )}
     </div>
   );
 }

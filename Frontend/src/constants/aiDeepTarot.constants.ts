@@ -3,7 +3,7 @@
  * serialized with camelCase naming (JsonStringEnumConverter). Only topics with
  * a spread definition on the backend are listed here.
  */
-export const AI_DEEP_TAROT_TOPICS = ["twelveHouses"] as const;
+export const AI_DEEP_TAROT_TOPICS = ["twelveHouses", "twelveMonths"] as const;
 
 /** The type representing a supported deep tarot topic. */
 export type AiDeepTarotTopic = (typeof AI_DEEP_TAROT_TOPICS)[number];
@@ -14,7 +14,8 @@ export type AiDeepTarotTopic = (typeof AI_DEEP_TAROT_TOPICS)[number];
  */
 export const AI_DEEP_TAROT_TOPIC_LABEL_KEYS: Record<AiDeepTarotTopic, string> =
   {
-    twelveHouses: "page.aiDeepTarot.twelveHouses.title",
+    twelveHouses: "page.aiDeepTarot.spreads.twelveHouses.title",
+    twelveMonths: "page.aiDeepTarot.spreads.twelveMonths.title",
   };
 
 /**
@@ -23,6 +24,7 @@ export const AI_DEEP_TAROT_TOPIC_LABEL_KEYS: Record<AiDeepTarotTopic, string> =
  */
 export const AI_DEEP_TAROT_CARD_COUNTS: Record<AiDeepTarotTopic, number> = {
   twelveHouses: 12,
+  twelveMonths: 12,
 };
 
 /**
@@ -31,12 +33,17 @@ export const AI_DEEP_TAROT_CARD_COUNTS: Record<AiDeepTarotTopic, number> = {
  */
 export const AI_DEEP_TAROT_COSTS: Record<AiDeepTarotTopic, number> = {
   twelveHouses: 3,
+  twelveMonths: 3,
 };
 
 /**
  * Position keys per topic, in drawn order. `cards[i]` is interpreted in the
- * light of `positions[i]`. Mirrors the backend `DeepTarotConstant.*Positions`;
- * localized labels live in i18n under `page.aiDeepTarot.house.<key>`.
+ * light of `positions[i]`. Mirrors the backend `DeepTarotConstant.*Positions`.
+ *
+ * The 12 months labels are calendar values (`MM/yyyy`) rather than i18n keys,
+ * so they are resolved with `getDeepTarotMonthLabel` instead of a translation.
+ * The 12 houses labels are static and live in i18n under
+ * `page.aiDeepTarot.spreads.twelveHouses.position.<key>`.
  */
 export const AI_DEEP_TAROT_POSITIONS: Record<
   AiDeepTarotTopic,
@@ -55,5 +62,19 @@ export const AI_DEEP_TAROT_POSITIONS: Record<
     "house-10",
     "house-11",
     "house-12",
+  ],
+  twelveMonths: [
+    "month-1",
+    "month-2",
+    "month-3",
+    "month-4",
+    "month-5",
+    "month-6",
+    "month-7",
+    "month-8",
+    "month-9",
+    "month-10",
+    "month-11",
+    "month-12",
   ],
 };

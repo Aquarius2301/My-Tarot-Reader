@@ -7,12 +7,14 @@ import TwelveHousesGuide from "./TwelveHousesGuide";
 
 const { Text } = Typography;
 
-export interface IntroStepProps {
+export interface TwelveHousesIntroStepProps {
   onNext: () => void;
 }
 
 /** Step 1: explain the 12 houses spread, then check the red coin balance. */
-export default function IntroStep({ onNext }: IntroStepProps) {
+export default function TwelveHousesIntroStep({
+  onNext,
+}: TwelveHousesIntroStepProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
   const { data: user } = useGetCurrentUser();
@@ -28,7 +30,7 @@ export default function IntroStep({ onNext }: IntroStepProps) {
         type="secondary"
         style={{ display: "block", textAlign: "center" }}
       >
-        {t("page.aiDeepTarot.twelveHouses.subtitle")}
+        {t("page.aiDeepTarot.spreads.twelveHouses.subtitle")}
       </Text>
 
       <TwelveHousesGuide />
@@ -37,23 +39,25 @@ export default function IntroStep({ onNext }: IntroStepProps) {
         <Flex vertical gap={token.marginSM}>
           <Flex justify="space-between" align="center" wrap>
             <Text>
-              <WalletFilled /> {t("page.aiDeepTarot.balance", { balance })}
+              <WalletFilled />{" "}
+              {t("page.aiDeepTarot.common.balance", { balance })}
             </Text>
             <Text>
-              <ThunderboltFilled /> {t("page.aiDeepTarot.cost", { cost })}
+              <ThunderboltFilled />{" "}
+              {t("page.aiDeepTarot.common.cost", { cost })}
             </Text>
           </Flex>
 
           <Text type="secondary">
-            {t("page.aiDeepTarot.cardCount", {
+            {t("page.aiDeepTarot.common.cardCount", {
               count: cardCount,
-              houses: cardCount,
+              positions: cardCount,
             })}
           </Text>
 
           {!canAfford && (
             <Text type="warning">
-              {t("page.aiDeepTarot.insufficientCoins", { cost, balance })}
+              {t("page.aiDeepTarot.common.insufficientCoins", { cost, balance })}
             </Text>
           )}
 
@@ -64,7 +68,7 @@ export default function IntroStep({ onNext }: IntroStepProps) {
             disabled={!canAfford}
             onClick={onNext}
           >
-            {t("page.aiDeepTarot.continue")}
+            {t("page.aiDeepTarot.common.continue")}
           </Button>
         </Flex>
       </Card>

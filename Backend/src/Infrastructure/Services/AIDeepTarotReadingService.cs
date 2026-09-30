@@ -41,10 +41,10 @@ public class AIDeepTarotReadingService(
     private readonly IAppDbContext _context = context;
     private readonly IGeminiClient _geminiClient = geminiClient;
     private readonly IWalletService _walletService = walletService;
-    private readonly IValidator<CreateTwelveHousesReadingRequest>
-        _createTwelveHousesReadingValidator = createTwelveHousesReadingValidator;
-    private readonly IValidator<CreateTwelveMonthsReadingRequest>
-        _createTwelveMonthsReadingValidator = createTwelveMonthsReadingValidator;
+    private readonly IValidator<CreateTwelveHousesReadingRequest> _createTwelveHousesReadingValidator =
+        createTwelveHousesReadingValidator;
+    private readonly IValidator<CreateTwelveMonthsReadingRequest> _createTwelveMonthsReadingValidator =
+        createTwelveMonthsReadingValidator;
 
     public async Task<CreateTwelveHousesReadingResult> CreateTwelveHousesReadingAsync(
         CreateTwelveHousesReadingRequest request,
@@ -281,8 +281,7 @@ public class AIDeepTarotReadingService(
                     var monthLabel = isTwelveMonths
                         ? $" ({DeepTarotConstant.GetMonthLabel(position, createdAt)})"
                         : string.Empty;
-                    return
-                        $"{position.Number}. {position.Name}{monthLabel} [{position.Keywords}] -> {name} ({orientation}), key=\"{position.Key}\"";
+                    return $"{position.Number}. {position.Name}{monthLabel} [{position.Keywords}] -> {name} ({orientation}), key=\"{position.Key}\"";
                 }
             )
             .ToList();
@@ -357,14 +356,14 @@ public class AIDeepTarotReadingService(
             "Quality: Ensure EVERY month is given a thorough analysis. Do not rush or skim through the final months of the year.",
             "Structure:",
             $"+ Write exactly {positionCount} sections, one per month, in the given order.",
-            $"+ Each section: `title` MUST start with the exact calendar label of that month as given in the spread, in the format MM/yyyy, optionally followed by a short theme in {languageName} (e.g. \"10/2026 - Khởi đầu mới\"). `interpretation` explains the card within that month (~90-130 words).",
+            $"+ Each section: `title` is a short theme in {languageName} (e.g. \"Khởi đầu mới\"). `interpretation` explains the card within that month (~90-130 words).",
             "+ Then `overview` summarises the whole year-long arc in ~120-180 words, and `overallAdvice` gives a final takeaway (~60-100 words).",
             "",
             "The spread positions (with their calendar month labels) and the card drawn on each of them:",
             string.Join("\n", lines),
             "",
             "Interpret the spread and return ONLY one valid JSON string (no other text), according to this exact schema:",
-            $$"""{ "title": "short title of the reading (5-8 words, in {{languageName}})", "overview": "overall arc of the year across the 12 months", "sections": [ { "key": "the position key given in the spread, e.g. \"{{positions[0].Key}}\"", "title": "the calendar month label (MM/yyyy) plus a short theme", "cardCode": "the card code", "interpretation": "interpretation of the card within that month" } ], "overallAdvice": "overall advice for the user" }"""
+            $$"""{ "title": "short title of the reading (5-8 words, in {{languageName}})", "overview": "overall arc of the year across the 12 months", "sections": [ { "key": "the position key given in the spread, e.g. \"{{positions[0].Key}}\"", "title": "a title of the month (don't need to repeat the month label)", "cardCode": "the card code", "interpretation": "interpretation of the card within that month" } ], "overallAdvice": "overall advice for the user" }"""
         );
     }
 
@@ -421,23 +420,14 @@ public class AIDeepTarotReadingService(
         {
             var section = answer.Sections[i];
             var key =
-                section.Key is not null && knownKeys.ContainsKey(section.Key)
-                    ? section.Key
-                    : i < positions.Count ? positions[i].Key : section.Key ?? string.Empty;
+                section.Key is not null && knownKeys.ContainsKey(section.Key) ? section.Key
+                : i < positions.Count ? positions[i].Key
+                : section.Key ?? string.Empty;
 
-            var resolvedCard = ResolveCardCode(
-                section.CardCode,
-                drawnCardCodes,
-                usedCards,
-                i
-            );
+            var resolvedCard = ResolveCardCode(section.CardCode, drawnCardCodes, usedCards, i);
             usedCards.Add(resolvedCard);
 
-            answer.Sections[i] = section with
-            {
-                Key = key,
-                CardCode = resolvedCard,
-            };
+            answer.Sections[i] = section with { Key = key, CardCode = resolvedCard };
         }
     }
 
