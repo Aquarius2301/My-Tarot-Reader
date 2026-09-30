@@ -1,45 +1,20 @@
-# My Tarot Reader Plan
+Trải bài 12 Tháng (Year Ahead Spread) giống như một "cuốn lịch năng lượng" hay "bản đồ dự báo thời tiết" cho chặng đường 12 tháng sắp tới của bạn.
 
-This document tracks the suggested work for completing and growing the product. Items are grouped by priority so the application can be improved incrementally.
+Trải bài 12 Tháng trong Tarot là gì?
+Trong trải bài này, 12 lá Tarot sẽ đại diện cho 12 tháng liên tiếp (thường đi kèm thêm 1 lá bài tổng quan đóng vai trò là "chủ đề chính" của cả năm). Thay vì đi sâu vào từng ngóc ngách nhỏ, trải bài này tập trung chỉ ra điểm nhấn, cơ hội và thử thách nổi bật nhất trong từng khoảng thời gian.
 
-## P0 - Before wider production use
+Trải bài này để làm gì?
 
-- [ ] Add CSRF protection for cookie-authenticated mutations.
-- [ ] Add rate limiting for OAuth, guest draws, AI readings, wallet actions, and other write endpoints.
-- [ ] Disable or restrict public test endpoints outside the Development environment.
-- [ ] Replace raw request/response logging with structured, redacted logs and a clear retention policy.
-- [ ] Define and complete the streak saver flow, or remove the saver UI until the flow is implemented.
-- [ ] Add integration tests for authentication cookies, refresh-token rotation, Redis cooldowns, wallet transactions, and AI coin charging/refunds.
-- [ ] Run backend tests in CI and add frontend component or end-to-end tests for the main user journeys.
-- [ ] Add health checks and monitoring for PostgreSQL, Redis, Gemini, authentication failures, and background workers.
+Dự báo xu hướng theo dòng thời gian: Cho bạn thấy sự biến chuyển năng lượng của bản thân qua từng tháng trong năm.
 
-## P1 - High-value product features
+Lập kế hoạch chủ động: Biết trước tháng nào sóng yên biển lặng để bứt phá (đầu tư, đổi việc, tỏ tình...) và tháng nào có nhiều biến động để cẩn trọng, di chuyển chậm lại.
 
-- [ ] Let users enter a specific question before requesting an AI reading.
-- [ ] Add AI follow-up chat so users can ask questions about an existing reading.
-- [ ] Display the complete card spread in AI results, including positions, orientation, and card detail links.
-- [ ] Add pagination, filtering, date ranges, and search to tarot and AI reading history.
-- [ ] Add favorites or bookmarks for cards and readings.
-- [ ] Add an account and privacy page with data export, account deletion, and session/device revocation.
-- [ ] Preserve or migrate guest readings when a user signs in, or clearly explain the guest data policy.
-- [ ] Add wallet transaction history with coin source, spending, expiry, conversion, and refund details.
-- [ ] Add payment or top-up support only after transaction idempotency, webhook verification, receipts, and refunds are designed.
+Đón nhận bài học: Giúp bạn chuẩn bị tâm lý vững vàng, chủ động đón nhận những cơ hội hoặc bài học mà cuộc sống mang lại.
 
-## P2 - Growth and engagement
+Khi nào bạn nên xem 12 Tháng?
 
-- [ ] Add shareable reading links, image export, or PDF export with privacy controls.
-- [ ] Add a calendar and insights dashboard for draws, streaks, favorite cards, and reading topics.
-- [ ] Add email or browser reminders for daily draws, check-ins, and completed cooldowns.
-- [ ] Add named spread presets with meaningful card positions, such as love, career, decision, and three-card guidance.
-- [ ] Personalize recommendations using timezone, preferences, and reading history.
-- [ ] Support additional card decks and configurable visual themes.
-- [ ] Consider public or community readings only after moderation, reporting, privacy, and abuse-prevention workflows are ready.
+Đầu năm mới: Dịp Tết Dương lịch hoặc Tết Âm lịch để lên kế hoạch cho một năm bứt phá.
 
-## Recommended implementation order
+Dịp sinh nhật: Thời điểm bạn bước sang tuổi mới — khởi đầu cho một chu kỳ 12 tháng cá nhân.
 
-1. Production security, test coverage, health checks, and logging.
-2. Specific questions for AI readings.
-3. AI follow-up chat.
-4. History pagination, filtering, and favorites.
-5. Account privacy controls and wallet transaction history.
-6. Sharing, reminders, analytics, and community features.
+Bắt đầu một hành trình dài: Khi chuẩn bị bước vào một dự án lớn, một năm học mới hoặc một giai đoạn quan trọng kéo dài cả năm.

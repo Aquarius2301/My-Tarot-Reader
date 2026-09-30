@@ -14,30 +14,70 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     private readonly IAIDeepTarotReadingService _service = service;
 
     /// <summary>
-    /// Creates a new deep tarot reading by generating a reading with Gemini and saving it.
+    /// Creates a new 12 astrological houses deep tarot reading by generating a reading with
+    /// Gemini and saving it.
     /// </summary>
     /// <remarks>
-    /// The request contains the topic, the locale and the drawn cards (code + reversed status),
-    /// whose count must match the topic's spread size (e.g. 12 cards for the 12 houses topic).
-    /// The AI-generated answer is persisted only after the AI call succeeds.
+    /// The request contains the locale and the 12 drawn cards (code + reversed status), one
+    /// card per house. The AI-generated answer is persisted only after the AI call succeeds.
+    /// The ID of the created reading is returned.
     /// </remarks>
-    [HttpPut]
+    [HttpPost("twelveHouses")]
     [Authorize]
     [ProducesResponseType(
-        typeof(ApiResponse<CreateAiDeepTarotReadingResult>),
+        typeof(ApiResponse<CreateTwelveHousesReadingResult>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateAiDeepTarotReadingAsync(
-        [FromBody] CreateAiDeepTarotReadingRequest request,
+    public async Task<IActionResult> CreateTwelveHousesReadingAsync(
+        [FromBody] CreateTwelveHousesReadingRequest request,
         CancellationToken cancellationToken
     )
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.CreateAiDeepTarotReadingAsync(request, userId, cancellationToken);
+        var result = await _service.CreateTwelveHousesReadingAsync(
+            request,
+            userId,
+            cancellationToken
+        );
+
+        return Ok(ApiResponse.Success(result));
+    }
+
+    /// <summary>
+    /// Creates a new 12 months deep tarot reading by generating a reading with Gemini and
+    /// saving it.
+    /// </summary>
+    /// <remarks>
+    /// The request contains the locale and the 12 drawn cards (code + reversed status), one
+    /// card per month. The spread covers the consecutive calendar months starting the month
+    /// after the month this reading is created in. The AI-generated answer is persisted only
+    /// after the AI call succeeds. The ID of the created reading is returned.
+    /// </remarks>
+    [HttpPost("twelveMonths")]
+    [Authorize]
+    [ProducesResponseType(
+        typeof(ApiResponse<CreateTwelveMonthsReadingResult>),
+        StatusCodes.Status200OK
+    )]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CreateTwelveMonthsReadingAsync(
+        [FromBody] CreateTwelveMonthsReadingRequest request,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = JwtHelper.GetUserId(HttpContext);
+
+        var result = await _service.CreateTwelveMonthsReadingAsync(
+            request,
+            userId,
+            cancellationToken
+        );
 
         return Ok(ApiResponse.Success(result));
     }

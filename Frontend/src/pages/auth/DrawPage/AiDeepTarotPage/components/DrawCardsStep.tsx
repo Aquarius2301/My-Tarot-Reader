@@ -1,5 +1,5 @@
 import { TarotDeck, type SpreadResultItem } from "@/components";
-import { useCreateAiDeepTarotReading } from "@/hooks/api";
+import { useCreateTwelveHousesReading } from "@/hooks/api";
 import { useLanguageStore } from "@/hooks/stores";
 import { WEB_URL } from "@/routes";
 import { getErrorMessage } from "@/utils";
@@ -21,12 +21,11 @@ export default function DrawCardsStep({ onBack }: DrawCardsStepProps) {
   const { message } = App.useApp();
   const navigate = useNavigate();
   const locale = useLanguageStore((s) => s.mode);
-  const { mutate, isPending } = useCreateAiDeepTarotReading();
+  const { mutate, isPending } = useCreateTwelveHousesReading();
 
   const handleConfirm = (selectedCards: SpreadResultItem[]) => {
     mutate(
       {
-        topic: "twelveHouses",
         locale,
         cards: selectedCards.map((card) => ({
           cardCode: card.cardCode,

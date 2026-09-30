@@ -1,5 +1,8 @@
 import { aiDeepTarotApi } from "@/api";
-import type { CreateAiDeepTarotReadingRequest } from "@/types";
+import type {
+  CreateTwelveHousesReadingRequest,
+  CreateTwelveMonthsReadingRequest,
+} from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AUTH_QUERY_KEY,
@@ -9,19 +12,37 @@ import {
   GET_WALLET_QUERY_KEY,
 } from "./queryKey";
 
-export const useCreateAiDeepTarotReading = () => {
+/**
+ * Creating a reading deducts red coins, so every create flow refreshes the reading list, the
+ * user cache and the wallet.
+ */
+const useInvalidateAfterCreate = () => {
   const queryClient = useQueryClient();
 
+  return () => {
+    queryClient.invalidateQueries({ queryKey: AI_DEEP_TAROT_QUERY_KEY });
+    queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+    queryClient.invalidateQueries({ queryKey: GET_WALLET_QUERY_KEY });
+  };
+};
+
+export const useCreateTwelveHousesReading = () => {
+  const onSuccess = useInvalidateAfterCreate();
+
   return useMutation({
-    mutationFn: async (request: CreateAiDeepTarotReadingRequest) =>
-      aiDeepTarotApi.createAiDeepTarotReading(request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AI_DEEP_TAROT_QUERY_KEY });
-      // Creating a reading deducts red coins, so refresh the user cache and
-      // the wallet page.
-      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: GET_WALLET_QUERY_KEY });
-    },
+    mutationFn: async (request: CreateTwelveHousesReadingRequest) =>
+      aiDeepTarotApi.createTwelveHousesReading(request),
+    onSuccess,
+  });
+};
+
+export const useCreateTwelveMonthsReading = () => {
+  const onSuccess = useInvalidateAfterCreate();
+
+  return useMutation({
+    mutationFn: async (request: CreateTwelveMonthsReadingRequest) =>
+      aiDeepTarotApi.createTwelveMonthsReading(request),
+    onSuccess,
   });
 };
 

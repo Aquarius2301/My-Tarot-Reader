@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -14,14 +15,16 @@ using MyTarotReader.Domain.Enums;
 namespace MyTarotReader.Infrastructure.Services;
 
 /// <summary>
-/// Builds deep tarot readings (topic-specific spreads such as the 12 astrological houses)
-/// by asking Gemini to interpret the spread, then stores the result.
+/// Builds deep tarot readings (topic-specific spreads such as the 12 astrological houses
+/// or the 12 upcoming calendar months) by asking Gemini to interpret the spread, then stores
+/// the result.
 /// </summary>
 public class AIDeepTarotReadingService(
     IAppDbContext context,
     IGeminiClient geminiClient,
     IWalletService walletService,
-    IValidator<CreateAiDeepTarotReadingRequest> createAiDeepTarotReadingValidator
+    IValidator<CreateTwelveHousesReadingRequest> createTwelveHousesReadingValidator,
+    IValidator<CreateTwelveMonthsReadingRequest> createTwelveMonthsReadingValidator
 ) : IAIDeepTarotReadingService
 {
     private const int AnswerSummaryMaxLength = 500;
@@ -38,18 +41,62 @@ public class AIDeepTarotReadingService(
     private readonly IAppDbContext _context = context;
     private readonly IGeminiClient _geminiClient = geminiClient;
     private readonly IWalletService _walletService = walletService;
-    private readonly IValidator<CreateAiDeepTarotReadingRequest> _createAiDeepTarotReadingValidator =
-        createAiDeepTarotReadingValidator;
+    private readonly IValidator<CreateTwelveHousesReadingRequest>
+        _createTwelveHousesReadingValidator = createTwelveHousesReadingValidator;
+    private readonly IValidator<CreateTwelveMonthsReadingRequest>
+        _createTwelveMonthsReadingValidator = createTwelveMonthsReadingValidator;
 
-    public async Task<CreateAiDeepTarotReadingResult> CreateAiDeepTarotReadingAsync(
-        CreateAiDeepTarotReadingRequest request,
+    public async Task<CreateTwelveHousesReadingResult> CreateTwelveHousesReadingAsync(
+        CreateTwelveHousesReadingRequest request,
         Guid userId,
         CancellationToken cancellationToken = default
     )
     {
-        ValidationHelper.ValidateOrThrow(_createAiDeepTarotReadingValidator, request);
+        ValidationHelper.ValidateOrThrow(_createTwelveHousesReadingValidator, request);
 
-        var cost = DeepTarotConstant.GetCost(request.Topic);
+        var readingId = await CreateReadingCoreAsync(
+            DeepTarotTopic.TwelveHouses,
+            request.Locale,
+            request.Cards,
+            userId,
+            cancellationToken
+        );
+
+        return new CreateTwelveHousesReadingResult(readingId);
+    }
+
+    public async Task<CreateTwelveMonthsReadingResult> CreateTwelveMonthsReadingAsync(
+        CreateTwelveMonthsReadingRequest request,
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ValidationHelper.ValidateOrThrow(_createTwelveMonthsReadingValidator, request);
+
+        var readingId = await CreateReadingCoreAsync(
+            DeepTarotTopic.TwelveMonths,
+            request.Locale,
+            request.Cards,
+            userId,
+            cancellationToken
+        );
+
+        return new CreateTwelveMonthsReadingResult(readingId);
+    }
+
+    /// <summary>
+    /// The shared create pipeline behind every deep tarot topic: check the red coin balance,
+    /// ask Gemini to interpret the topic's spread, persist the answer and charge the topic cost.
+    /// </summary>
+    private async Task<Guid> CreateReadingCoreAsync(
+        DeepTarotTopic topic,
+        string locale,
+        IReadOnlyList<AiDeepCardRequest> cards,
+        Guid userId,
+        CancellationToken cancellationToken
+    )
+    {
+        var cost = DeepTarotConstant.GetCost(topic);
 
         var balance = await _walletService.GetBalanceAsync(userId, cancellationToken);
         if (balance.RedCoin < cost)
@@ -57,9 +104,9 @@ public class AIDeepTarotReadingService(
             throw new BadRequestException(WalletErrorCode.InsufficientRedCoin);
         }
 
-        var positions = DeepTarotConstant.GetPositions(request.Topic);
+        var positions = DeepTarotConstant.GetPositions(topic);
 
-        var prompt = BuildPrompt(request, positions);
+        var prompt = BuildPrompt(topic, locale, cards, positions, DateTimeOffset.UtcNow);
         var rawAnswer = await _geminiClient.GenerateContentAsync(prompt, cancellationToken);
 
         DeepTarotAnswerJson answer;
@@ -80,20 +127,18 @@ public class AIDeepTarotReadingService(
         var normalizedAnswer = NormalizeAnswer(
             answer,
             positions,
-            request.Cards.Select(c => c.CardCode).ToList()
+            cards.Select(c => c.CardCode).ToList()
         );
 
         var entity = new AIDeepTarotReading
         {
             UserId = userId,
-            Topic = request.Topic,
+            Topic = topic,
             Title = answer.Title,
             Answer = normalizedAnswer,
             AnswerSummary = Truncate(answer.Overview),
             Cards = JsonSerializer.Serialize(
-                request
-                    .Cards.Select(c => new StoredCard(c.CardCode, c.IsReversed))
-                    .ToList(),
+                cards.Select(c => new StoredCard(c.CardCode, c.IsReversed)).ToList(),
                 JsonOptions
             ),
         };
@@ -114,7 +159,7 @@ public class AIDeepTarotReadingService(
 
         await transaction.CommitAsync(cancellationToken);
 
-        return new CreateAiDeepTarotReadingResult(entity.Id);
+        return entity.Id;
     }
 
     public async Task<GetAiDeepTarotReadingResult> GetAiDeepTarotReadingByIdAsync(
@@ -215,29 +260,50 @@ public class AIDeepTarotReadingService(
     }
 
     private static string BuildPrompt(
-        CreateAiDeepTarotReadingRequest request,
-        IReadOnlyList<DeepTarotPosition> positions
+        DeepTarotTopic topic,
+        string locale,
+        IReadOnlyList<AiDeepCardRequest> cards,
+        IReadOnlyList<DeepTarotPosition> positions,
+        DateTimeOffset createdAt
     )
     {
-        var languageName = request.Locale == "vi" ? "Vietnamese" : "English";
+        var languageName = locale == "vi" ? "Vietnamese" : "English";
+
+        var isTwelveMonths = topic == DeepTarotTopic.TwelveMonths;
 
         var lines = positions
             .Select(
                 (position, index) =>
                 {
-                    var card = request.Cards[index];
+                    var card = cards[index];
                     var name = TarotConstant.GetCardName(card.CardCode) ?? card.CardCode;
                     var orientation = card.IsReversed ? "Reversed" : "Upright";
+                    var monthLabel = isTwelveMonths
+                        ? $" ({DeepTarotConstant.GetMonthLabel(position, createdAt)})"
+                        : string.Empty;
                     return
-                        $"{position.Number}. {position.Name} [{position.Keywords}] -> {name} ({orientation}), key=\"{position.Key}\"";
+                        $"{position.Number}. {position.Name}{monthLabel} [{position.Keywords}] -> {name} ({orientation}), key=\"{position.Key}\"";
                 }
             )
             .ToList();
 
-        return string.Join(
+        var positionCount = positions.Count;
+
+        return isTwelveMonths
+            ? BuildTwelveMonthsPrompt(positions, lines, languageName, positionCount, createdAt)
+            : BuildTwelveHousesPrompt(positions, lines, languageName, positionCount);
+    }
+
+    private static string BuildTwelveHousesPrompt(
+        IReadOnlyList<DeepTarotPosition> positions,
+        IReadOnlyList<string> lines,
+        string languageName,
+        int positionCount
+    ) =>
+        string.Join(
             "\n",
             "You are a professional, empathetic, and intuitive Tarot reader who also understands astrological chart houses.",
-            $"The user asked for a specialized 12-house tarot reading (the {positions.Count} houses of the astrological chart, one card per house).",
+            $"The user asked for a specialized 12-house tarot reading (the {positionCount} houses of the astrological chart, one card per house).",
             "### RULE 1: HOUSE MEANING IS FIXED",
             "Each position is a specific life area of the astrological chart. Never swap houses, never renumber them, and never merge or skip a house.",
             "- The interpretation of a card depends on its house: read the card in the light of the house themes listed below.",
@@ -247,7 +313,7 @@ public class AIDeepTarotReadingService(
             "Style: WEAVE the house meanings naturally into a cohesive narrative. DO NOT mention rule names, house numbers as puzzle pieces, or internal prompt mechanics (e.g., do not say 'According to Rule 2...'). Speak directly to the user's heart.",
             "Quality: Ensure EVERY house is given a thorough analysis. Do not rush or skim through houses near the end.",
             "Structure:",
-            $"+ Write exactly {positions.Count} sections, one per house, in the given order.",
+            $"+ Write exactly {positionCount} sections, one per house, in the given order.",
             "+ Each section: `title` is a short human-readable label of the house life area in {languageName} (3-8 words), `interpretation` explains the card inside that house (~90-130 words).",
             "+ Then `overview` summarises the whole chart arc in ~120-180 words, and `overallAdvice` gives a final takeaway (~60-100 words).",
             "",
@@ -256,6 +322,49 @@ public class AIDeepTarotReadingService(
             "",
             "Interpret the spread and return ONLY one valid JSON string (no other text), according to this exact schema:",
             $$"""{ "title": "short title of the reading (5-8 words, in {{languageName}})", "overview": "overall arc of the chart across the 12 houses", "sections": [ { "key": "the position key given in the spread, e.g. \"{{positions[0].Key}}\"", "title": "short label of the house life area", "cardCode": "the card code", "interpretation": "interpretation of the card in the context of that house" } ], "overallAdvice": "overall advice for the user" }"""
+        );
+
+    private static string BuildTwelveMonthsPrompt(
+        IReadOnlyList<DeepTarotPosition> positions,
+        IReadOnlyList<string> lines,
+        string languageName,
+        int positionCount,
+        DateTimeOffset createdAt
+    )
+    {
+        var readingMonth = new DateTimeOffset(
+            createdAt.Year,
+            createdAt.Month,
+            1,
+            0,
+            0,
+            0,
+            TimeSpan.Zero
+        ).ToString("MM/yyyy", CultureInfo.InvariantCulture);
+
+        return string.Join(
+            "\n",
+            "You are a professional, empathetic, and intuitive Tarot reader who specializes in month-by-month forecasting.",
+            $"The user asked for a specialized 12-month tarot reading: the {positionCount} CONSECUTIVE calendar months that start in the month AFTER the reading month {readingMonth}, one card per month.",
+            "The first month is the month right after the reading month, and the last month is the same calendar month of the following year. Each spread position below carries its exact calendar label in the format MM/yyyy - ALWAYS use that exact label in the section title, never renumber, reorder, merge or skip a month.",
+            "### RULE 1: MONTH MEANING IS FIXED",
+            "- Interpret each card as the energy and events of its own calendar month only. Never let one month bleed into another.",
+            "- Read the card in the light of the month themes listed below, and keep the reading forward-looking and practical.",
+            "- A reversed card shows a blocked, internalized or shadowed expression of the same month themes (it is NOT a separate meaning).",
+            "### RULE 2: TONE & LANGUAGE",
+            $"Language: MUST respond in natural, warm, insightful, and accessible {languageName}.",
+            "Style: WEAVE the months naturally into one continuous year-long story. DO NOT mention rule names, prompt mechanics, or treat the months as unrelated puzzle pieces (e.g., do not say 'According to Rule 2...'). Speak directly to the user's heart.",
+            "Quality: Ensure EVERY month is given a thorough analysis. Do not rush or skim through the final months of the year.",
+            "Structure:",
+            $"+ Write exactly {positionCount} sections, one per month, in the given order.",
+            $"+ Each section: `title` MUST start with the exact calendar label of that month as given in the spread, in the format MM/yyyy, optionally followed by a short theme in {languageName} (e.g. \"10/2026 - Khởi đầu mới\"). `interpretation` explains the card within that month (~90-130 words).",
+            "+ Then `overview` summarises the whole year-long arc in ~120-180 words, and `overallAdvice` gives a final takeaway (~60-100 words).",
+            "",
+            "The spread positions (with their calendar month labels) and the card drawn on each of them:",
+            string.Join("\n", lines),
+            "",
+            "Interpret the spread and return ONLY one valid JSON string (no other text), according to this exact schema:",
+            $$"""{ "title": "short title of the reading (5-8 words, in {{languageName}})", "overview": "overall arc of the year across the 12 months", "sections": [ { "key": "the position key given in the spread, e.g. \"{{positions[0].Key}}\"", "title": "the calendar month label (MM/yyyy) plus a short theme", "cardCode": "the card code", "interpretation": "interpretation of the card within that month" } ], "overallAdvice": "overall advice for the user" }"""
         );
     }
 

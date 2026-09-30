@@ -23,8 +23,6 @@ export const enErrors = {
       generationFailed: "Could not create the AI reading. Please try again.",
     },
     aiDeepTarot: {
-      invalidTopic: "Invalid deep tarot topic.",
-      topicNotSupported: "This topic is not supported yet.",
       invalidCardCount: "Invalid number of cards.",
       invalidCard: "One or more cards are invalid.",
       invalidLocale: "Unsupported language.",

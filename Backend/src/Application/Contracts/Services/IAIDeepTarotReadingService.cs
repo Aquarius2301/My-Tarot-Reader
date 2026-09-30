@@ -10,16 +10,58 @@ namespace MyTarotReader.Application.Contracts.Services;
 public record AiDeepCardRequest(string CardCode, bool IsReversed);
 
 /// <summary>
-/// Request to create a deep tarot reading.
+/// The shape shared by every deep tarot create request: a response language and the drawn cards.
 /// </summary>
-/// <param name="Topic">The specialized topic of the reading.</param>
+/// <remarks>
+/// Implemented by each spread's own request record so a future spread with a different input
+/// (extra fields, a different card list) can declare its own record without changing the
+/// spreads that already exist.
+/// </remarks>
+public interface ICreateDeepTarotReadingRequest
+{
+    /// <summary>
+    /// The response language of the reading ("en" or "vi").
+    /// </summary>
+    string Locale { get; }
+
+    /// <summary>
+    /// The drawn cards of the spread.
+    /// </summary>
+    List<AiDeepCardRequest> Cards { get; }
+}
+
+/// <summary>
+/// Request to create a 12 astrological houses deep tarot reading.
+/// </summary>
 /// <param name="Locale">The response language of the reading ("en" or "vi").</param>
-/// <param name="Cards">The drawn cards, whose count must match the topic's spread size.</param>
-public record CreateAiDeepTarotReadingRequest(
-    DeepTarotTopic Topic,
+/// <param name="Cards">The drawn cards, one per house.</param>
+public record CreateTwelveHousesReadingRequest(
     string Locale,
     List<AiDeepCardRequest> Cards
-);
+) : ICreateDeepTarotReadingRequest;
+
+/// <summary>
+/// Result of creating a 12 astrological houses deep tarot reading.
+/// </summary>
+/// <param name="Id">The ID of the newly created reading.</param>
+public record CreateTwelveHousesReadingResult(Guid Id);
+
+/// <summary>
+/// Request to create a 12 months deep tarot reading.
+/// </summary>
+/// <param name="Locale">The response language of the reading ("en" or "vi").</param>
+/// <param name="Cards">The drawn cards, one per month. The spread runs from the month after
+/// the month the reading is created in.</param>
+public record CreateTwelveMonthsReadingRequest(
+    string Locale,
+    List<AiDeepCardRequest> Cards
+) : ICreateDeepTarotReadingRequest;
+
+/// <summary>
+/// Result of creating a 12 months deep tarot reading.
+/// </summary>
+/// <param name="Id">The ID of the newly created reading.</param>
+public record CreateTwelveMonthsReadingResult(Guid Id);
 
 /// <summary>
 /// A drawn tarot card of an existing deep reading.
@@ -32,8 +74,6 @@ public record AiDeepReadingCard(string CardCode, bool IsReversed);
 /// Result of creating a deep tarot reading.
 /// </summary>
 /// <param name="Id">The ID of the newly created reading.</param>
-public record CreateAiDeepTarotReadingResult(Guid Id);
-
 /// <summary>
 /// Result of retrieving a single deep tarot reading.
 /// </summary>
@@ -79,16 +119,35 @@ public record GetAllAiDeepTarotReadingResult(List<GetAllAiDeepTarotReadingItem> 
 public interface IAIDeepTarotReadingService
 {
     /// <summary>
-    /// Creates a new deep tarot reading by generating the answer with Gemini and persisting it.
+    /// Creates a new 12 astrological houses reading by generating the answer with Gemini
+    /// and persisting it.
     /// </summary>
-    /// <param name="request"><see cref="CreateAiDeepTarotReadingRequest"/> containing the topic, locale and drawn cards.</param>
+    /// <param name="request"><see cref="CreateTwelveHousesReadingRequest"/> containing the locale and the 12 drawn cards.</param>
     /// <param name="userId">The authenticated user's ID.</param>
-    /// <returns><see cref="CreateAiDeepTarotReadingResult"/> with the ID of the created reading.</returns>
+    /// <returns><see cref="CreateTwelveHousesReadingResult"/> with the ID of the created reading.</returns>
     /// <exception cref="BadRequestException">Thrown when the request validation fails or the user does not have enough red coins.</exception>
     /// <exception cref="InternalServerException">Thrown when the Gemini API call fails.</exception>
     /// <remarks>The topic's red coin cost is charged only after the answer has been generated.</remarks>
-    Task<CreateAiDeepTarotReadingResult> CreateAiDeepTarotReadingAsync(
-        CreateAiDeepTarotReadingRequest request,
+    Task<CreateTwelveHousesReadingResult> CreateTwelveHousesReadingAsync(
+        CreateTwelveHousesReadingRequest request,
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Creates a new 12 months reading by generating the answer with Gemini and persisting it.
+    /// </summary>
+    /// <param name="request"><see cref="CreateTwelveMonthsReadingRequest"/> containing the locale and the 12 drawn cards.</param>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <returns><see cref="CreateTwelveMonthsReadingResult"/> with the ID of the created reading.</returns>
+    /// <exception cref="BadRequestException">Thrown when the request validation fails or the user does not have enough red coins.</exception>
+    /// <exception cref="InternalServerException">Thrown when the Gemini API call fails.</exception>
+    /// <remarks>
+    /// The 12 positions cover the consecutive calendar months starting the month after the
+    /// reading is created; the red coin cost is charged only after the answer has been generated.
+    /// </remarks>
+    Task<CreateTwelveMonthsReadingResult> CreateTwelveMonthsReadingAsync(
+        CreateTwelveMonthsReadingRequest request,
         Guid userId,
         CancellationToken cancellationToken = default
     );

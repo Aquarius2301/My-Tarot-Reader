@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -79,7 +79,8 @@ public class AIDeepTarotReadingServiceTests
             db,
             gemini.Object,
             wallet.Object,
-            new CreateAiDeepTarotReadingRequestValidator()
+            new CreateTwelveHousesReadingRequestValidator(),
+            new CreateTwelveMonthsReadingRequestValidator()
         );
         return (service, db, gemini, wallet);
     }
@@ -109,14 +110,23 @@ public class AIDeepTarotReadingServiceTests
         await db.SaveChangesAsync();
     }
 
-    private static CreateAiDeepTarotReadingRequest ValidRequest(string locale = "vi") =>
-        new(
-            DeepTarotTopic.TwelveHouses,
-            locale,
-            TwelveCardCodes
-                .Select((code, index) => new AiDeepCardRequest(code, index % 3 == 0))
-                .ToList()
-        );
+    /// <summary>
+    /// A valid 12-house request, using one of each of the first 12 major arcana.
+    /// </summary>
+    private static CreateTwelveHousesReadingRequest ValidRequest(string locale = "vi") =>
+        new(locale, Cards(12, reversalStep: 3));
+
+    /// <summary>
+    /// A valid 12-months request, using the same cards as the houses spread.
+    /// </summary>
+    private static CreateTwelveMonthsReadingRequest ValidMonthsRequest(string locale = "vi") =>
+        new(locale, Cards(12, reversalStep: 3));
+
+    private static List<AiDeepCardRequest> Cards(int count, int reversalStep) =>
+        TwelveCardCodes
+            .Take(count)
+            .Select((code, index) => new AiDeepCardRequest(code, index % reversalStep == 0))
+            .ToList();
 
     /// <summary>
     /// Builds a Gemini payload with one section per house key, optionally overriding
@@ -175,16 +185,47 @@ public class AIDeepTarotReadingServiceTests
 
     private static JsonElement ParseAnswer(string answer) => JsonDocument.Parse(answer).RootElement;
 
+    /// <summary>
+    /// Builds a Gemini payload with one section per month key, titled with the resolved
+    /// calendar month label.
+    /// </summary>
+    private static string BuildMonthsGeminiJson(string overview, DateTimeOffset createdAt)
+    {
+        var positions = DeepTarotConstant.GetPositions(DeepTarotTopic.TwelveMonths);
+
+        return JsonSerializer.Serialize(
+            new
+            {
+                title = "Vận mệnh 12 tháng tới",
+                overview,
+                sections = positions
+                    .Select(
+                        (position, index) =>
+                            new
+                            {
+                                key = position.Key,
+                                title =
+                                    $"{DeepTarotConstant.GetMonthLabel(position, createdAt)} - Tháng {position.Number}",
+                                cardCode = TwelveCardCodes[index],
+                                interpretation = $"Diễn giải cho tháng {position.Number}.",
+                            }
+                    )
+                    .ToArray(),
+                overallAdvice = "Hãy tin vào trực giác của bạn.",
+            }
+        );
+    }
+
     #endregion
 
-    #region CreateAiDeepTarotReadingAsync
+    #region CreateTwelveHousesReadingAsync
 
     /// <summary>
     /// A valid 12-house request with a successful Gemini response persists the reading
     /// (topic, title, full answer, answer summary, 12 cards) for the correct user.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_ValidRequest_SavesReading()
+    public async Task CreateTwelveHousesReading_ValidRequest_SavesReading()
     {
         var (service, db, gemini, _) = CreateSut();
         var userId = Guid.NewGuid();
@@ -194,7 +235,7 @@ public class AIDeepTarotReadingServiceTests
             .ReturnsAsync(BuildGeminiJson(overview));
         var request = ValidRequest();
 
-        var result = await service.CreateAiDeepTarotReadingAsync(request, userId);
+        var result = await service.CreateTwelveHousesReadingAsync(request, userId);
 
         var entity = Assert.Single(db.AIDeepTarotReadings);
         entity.Id.Should().NotBeEmpty();
@@ -222,7 +263,7 @@ public class AIDeepTarotReadingServiceTests
     /// paired with the card drawn on that house.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_ValidRequest_PromptContainsAllHouseKeysAndCards()
+    public async Task CreateTwelveHousesReading_ValidRequest_PromptContainsAllHouseKeysAndCards()
     {
         var (service, _, gemini, _) = CreateSut();
         var rawPrompt = string.Empty;
@@ -231,7 +272,7 @@ public class AIDeepTarotReadingServiceTests
             .Callback<string, CancellationToken>((prompt, _) => rawPrompt = prompt)
             .ReturnsAsync(BuildGeminiJson("Tổng quan."));
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         for (var i = 1; i <= 12; i++)
         {
@@ -254,7 +295,7 @@ public class AIDeepTarotReadingServiceTests
     [Theory]
     [InlineData("vi", "Vietnamese")]
     [InlineData("en", "English")]
-    public async Task CreateAiDeepTarotReading_Locale_SetsPromptLanguage(string locale, string expected)
+    public async Task CreateTwelveHousesReading_Locale_SetsPromptLanguage(string locale, string expected)
     {
         var (service, _, gemini, _) = CreateSut();
         var rawPrompt = string.Empty;
@@ -263,7 +304,7 @@ public class AIDeepTarotReadingServiceTests
             .Callback<string, CancellationToken>((prompt, _) => rawPrompt = prompt)
             .ReturnsAsync(BuildGeminiJson("Overview."));
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(locale), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(locale), Guid.NewGuid());
 
         rawPrompt.Should().Contain(expected);
     }
@@ -272,7 +313,7 @@ public class AIDeepTarotReadingServiceTests
     /// A long overview is truncated to the summary limit for the list excerpt.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_LongOverview_TruncatesAnswerSummary()
+    public async Task CreateTwelveHousesReading_LongOverview_TruncatesAnswerSummary()
     {
         var (service, db, gemini, _) = CreateSut();
         var longOverview = new string('a', 800);
@@ -280,7 +321,7 @@ public class AIDeepTarotReadingServiceTests
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(BuildGeminiJson(longOverview));
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         var entity = Assert.Single(db.AIDeepTarotReadings);
         entity.AnswerSummary.Should().HaveLength(500);
@@ -292,7 +333,7 @@ public class AIDeepTarotReadingServiceTests
     /// answer's cardCode is rewritten to the matching drawn card's canonical code.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_SectionCardCodeByName_StoresCanonicalCode()
+    public async Task CreateTwelveHousesReading_SectionCardCodeByName_StoresCanonicalCode()
     {
         var (service, db, gemini, _) = CreateSut();
         gemini
@@ -301,7 +342,7 @@ public class AIDeepTarotReadingServiceTests
                 BuildGeminiJson("Tổng quan.", new Dictionary<int, string> { [1] = "the_fool" })
             );
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         var entity = Assert.Single(db.AIDeepTarotReadings);
         ParseAnswer(entity.Answer)
@@ -317,7 +358,7 @@ public class AIDeepTarotReadingServiceTests
     /// deck mapping (e.g. "five_of_wands" -> "min-wands-5").
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_SectionCardCodeNameInDeck_ResolvesToCanonicalCode()
+    public async Task CreateTwelveHousesReading_SectionCardCodeNameInDeck_ResolvesToCanonicalCode()
     {
         var (service, db, gemini, _) = CreateSut();
         gemini
@@ -326,7 +367,7 @@ public class AIDeepTarotReadingServiceTests
                 BuildGeminiJson("Tổng quan.", new Dictionary<int, string> { [1] = "five_of_wands" })
             );
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         var entity = Assert.Single(db.AIDeepTarotReadings);
         ParseAnswer(entity.Answer)
@@ -342,7 +383,7 @@ public class AIDeepTarotReadingServiceTests
     /// never receives an invalid code.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_SectionCardCodeGarbage_FallsBackToDrawnCard()
+    public async Task CreateTwelveHousesReading_SectionCardCodeGarbage_FallsBackToDrawnCard()
     {
         var (service, db, gemini, _) = CreateSut();
         gemini
@@ -351,7 +392,7 @@ public class AIDeepTarotReadingServiceTests
                 BuildGeminiJson("Tổng quan.", new Dictionary<int, string> { [1] = "xyz-123" })
             );
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         var entity = Assert.Single(db.AIDeepTarotReadings);
         ParseAnswer(entity.Answer)
@@ -367,7 +408,7 @@ public class AIDeepTarotReadingServiceTests
     /// index, so every section always maps back to a house.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_SectionKeyUnknown_FallsBackToPositionKey()
+    public async Task CreateTwelveHousesReading_SectionKeyUnknown_FallsBackToPositionKey()
     {
         var (service, db, gemini, _) = CreateSut();
         var rawAnswer = JsonSerializer.Serialize(
@@ -392,7 +433,7 @@ public class AIDeepTarotReadingServiceTests
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(rawAnswer);
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         var entity = Assert.Single(db.AIDeepTarotReadings);
         ParseAnswer(entity.Answer)
@@ -408,7 +449,7 @@ public class AIDeepTarotReadingServiceTests
     /// is persisted.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_GeminiFails_ThrowsInternalServerAndDoesNotSave()
+    public async Task CreateTwelveHousesReading_GeminiFails_ThrowsInternalServerAndDoesNotSave()
     {
         var (service, db, gemini, _) = CreateSut();
         gemini
@@ -421,7 +462,7 @@ public class AIDeepTarotReadingServiceTests
             );
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         await act.Should()
             .ThrowAsync<InternalServerException>()
@@ -434,7 +475,7 @@ public class AIDeepTarotReadingServiceTests
     /// nothing is persisted.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_InvalidGeminiJson_ThrowsInternalServerAndDoesNotSave()
+    public async Task CreateTwelveHousesReading_InvalidGeminiJson_ThrowsInternalServerAndDoesNotSave()
     {
         var (service, db, gemini, _) = CreateSut();
         gemini
@@ -442,7 +483,7 @@ public class AIDeepTarotReadingServiceTests
             .ReturnsAsync("this is not json");
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         await act.Should()
             .ThrowAsync<InternalServerException>()
@@ -455,7 +496,7 @@ public class AIDeepTarotReadingServiceTests
     /// BadRequestException before Gemini is ever called.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_CardCountMismatch_ThrowsBadRequestAndSkipsGemini()
+    public async Task CreateTwelveHousesReading_CardCountMismatch_ThrowsBadRequestAndSkipsGemini()
     {
         var (service, db, gemini, _) = CreateSut();
         var request = ValidRequest() with
@@ -464,7 +505,7 @@ public class AIDeepTarotReadingServiceTests
         };
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(request, Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(request, Guid.NewGuid());
 
         await act.Should()
             .ThrowAsync<BadRequestException>()
@@ -483,44 +524,16 @@ public class AIDeepTarotReadingServiceTests
     }
 
     /// <summary>
-    /// A topic that has no spread definition yet is rejected with BadRequestException
-    /// (topicNotSupported) before Gemini is ever called.
-    /// </summary>
-    [Theory]
-    [InlineData(DeepTarotTopic.TwelveMonths)]
-    [InlineData(DeepTarotTopic.LoveBetweenTwo)]
-    [InlineData(DeepTarotTopic.Crossroads)]
-    public async Task CreateAiDeepTarotReading_UnsupportedTopic_ThrowsBadRequestAndSkipsGemini(
-        DeepTarotTopic topic
-    )
-    {
-        var (service, db, gemini, _) = CreateSut();
-        var request = ValidRequest() with { Topic = topic };
-
-        var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(request, Guid.NewGuid());
-
-        await act.Should()
-            .ThrowAsync<BadRequestException>()
-            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.TopicNotSupported);
-        gemini.Verify(
-            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-        db.AIDeepTarotReadings.Should().BeEmpty();
-    }
-
-    /// <summary>
     /// A request with a locale other than "en"/"vi" is rejected with BadRequestException.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_InvalidLocale_ThrowsBadRequestAndSkipsGemini()
+    public async Task CreateTwelveHousesReading_InvalidLocale_ThrowsBadRequestAndSkipsGemini()
     {
         var (service, db, gemini, _) = CreateSut();
         var request = ValidRequest() with { Locale = "fr" };
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(request, Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(request, Guid.NewGuid());
 
         await act.Should()
             .ThrowAsync<BadRequestException>()
@@ -537,7 +550,7 @@ public class AIDeepTarotReadingServiceTests
     /// Gemini is ever called.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_InvalidCard_ThrowsBadRequestAndSkipsGemini()
+    public async Task CreateTwelveHousesReading_InvalidCard_ThrowsBadRequestAndSkipsGemini()
     {
         var (service, db, gemini, _) = CreateSut();
         var cards = ValidRequest().Cards;
@@ -545,7 +558,7 @@ public class AIDeepTarotReadingServiceTests
         var request = ValidRequest() with { Cards = cards };
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(request, Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(request, Guid.NewGuid());
 
         await act.Should()
             .ThrowAsync<BadRequestException>()
@@ -561,7 +574,7 @@ public class AIDeepTarotReadingServiceTests
     /// A spread drawn with the same card twice is rejected, so every house has its own card.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_DuplicateCard_ThrowsBadRequestAndSkipsGemini()
+    public async Task CreateTwelveHousesReading_DuplicateCard_ThrowsBadRequestAndSkipsGemini()
     {
         var (service, db, gemini, _) = CreateSut();
         var cards = ValidRequest().Cards;
@@ -569,7 +582,7 @@ public class AIDeepTarotReadingServiceTests
         var request = ValidRequest() with { Cards = cards };
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(request, Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(request, Guid.NewGuid());
 
         await act.Should()
             .ThrowAsync<BadRequestException>()
@@ -586,13 +599,13 @@ public class AIDeepTarotReadingServiceTests
     /// throwing a NullReferenceException (which would surface as a 500).
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_NullCards_ThrowsBadRequestAndSkipsGemini()
+    public async Task CreateTwelveHousesReading_NullCards_ThrowsBadRequestAndSkipsGemini()
     {
         var (service, db, gemini, _) = CreateSut();
         var request = ValidRequest() with { Cards = null! };
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(request, Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(request, Guid.NewGuid());
 
         await act.Should()
             .ThrowAsync<BadRequestException>()
@@ -608,13 +621,13 @@ public class AIDeepTarotReadingServiceTests
     /// An empty card list is rejected with BadRequestException.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_EmptyCards_ThrowsBadRequestAndSkipsGemini()
+    public async Task CreateTwelveHousesReading_EmptyCards_ThrowsBadRequestAndSkipsGemini()
     {
         var (service, db, gemini, _) = CreateSut();
         var request = ValidRequest() with { Cards = [] };
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(request, Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(request, Guid.NewGuid());
 
         await act.Should()
             .ThrowAsync<BadRequestException>()
@@ -631,14 +644,14 @@ public class AIDeepTarotReadingServiceTests
     /// an AIDeepTarot order, and the reading is persisted.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_ValidRequest_DeductsThreeRedCoins()
+    public async Task CreateTwelveHousesReading_ValidRequest_DeductsThreeRedCoins()
     {
         var (service, db, gemini, wallet) = CreateSut();
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(BuildGeminiJson("Tổng quan."));
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         wallet.Verify(
             w =>
@@ -656,14 +669,14 @@ public class AIDeepTarotReadingServiceTests
     /// The charged amount is the one declared by the topic's spread definition.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_ValidRequest_ChargesTheTopicCost()
+    public async Task CreateTwelveHousesReading_ValidRequest_ChargesTheTopicCost()
     {
         var (service, _, gemini, wallet) = CreateSut();
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(BuildGeminiJson("Tổng quan."));
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         var cost = DeepTarotConstant.GetCost(DeepTarotTopic.TwelveHouses);
         wallet.Verify(
@@ -683,13 +696,13 @@ public class AIDeepTarotReadingServiceTests
     /// coin is deducted.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_InsufficientRedCoin_ThrowsBadRequestAndSkipsGemini()
+    public async Task CreateTwelveHousesReading_InsufficientRedCoin_ThrowsBadRequestAndSkipsGemini()
     {
         var (service, db, gemini, wallet) = CreateSut();
         SetupRedCoinBalance(wallet, redCoin: 2);
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         await act.Should()
             .ThrowAsync<BadRequestException>()
@@ -714,7 +727,7 @@ public class AIDeepTarotReadingServiceTests
     /// Having exactly the required red coins is enough to read.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_ExactRedCoinBalance_Succeeds()
+    public async Task CreateTwelveHousesReading_ExactRedCoinBalance_Succeeds()
     {
         var (service, db, gemini, wallet) = CreateSut();
         SetupRedCoinBalance(wallet, DeepTarotConstant.GetCost(DeepTarotTopic.TwelveHouses));
@@ -722,7 +735,7 @@ public class AIDeepTarotReadingServiceTests
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(BuildGeminiJson("Tổng quan."));
 
-        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         db.AIDeepTarotReadings.Should().ContainSingle();
         wallet.Verify(
@@ -740,7 +753,7 @@ public class AIDeepTarotReadingServiceTests
     /// A failed Gemini call throws before any coin is deducted.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_GeminiFails_DeductsNoRedCoin()
+    public async Task CreateTwelveHousesReading_GeminiFails_DeductsNoRedCoin()
     {
         var (service, db, gemini, wallet) = CreateSut();
         gemini
@@ -748,7 +761,7 @@ public class AIDeepTarotReadingServiceTests
             .ThrowsAsync(new InvalidOperationException("gemini down"));
 
         var act = async () =>
-            await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+            await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
 
         await act.Should().ThrowAsync<InvalidOperationException>();
         wallet.Verify(
@@ -761,6 +774,366 @@ public class AIDeepTarotReadingServiceTests
             Times.Never
         );
         db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region CreateTwelveHousesReadingAsync - TwelveMonths
+
+    /// <summary>
+    /// A valid 12-months request is accepted and persisted with the months topic, 12 sections
+    /// and the 12 drawn cards.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_SavesReading()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        var overview = "Một năm tới với 12 tháng liên tục.";
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildMonthsGeminiJson(overview, DateTimeOffset.UtcNow));
+
+        var result = await service.CreateTwelveMonthsReadingAsync(
+            ValidMonthsRequest(),
+            userId
+        );
+
+        var entity = Assert.Single(db.AIDeepTarotReadings);
+        entity.Topic.Should().Be(DeepTarotTopic.TwelveMonths);
+        entity.UserId.Should().Be(userId);
+        entity.Title.Should().Be("Vận mệnh 12 tháng tới");
+        entity.AnswerSummary.Should().Be(overview);
+        result.Id.Should().Be(entity.Id);
+        var answer = ParseAnswer(entity.Answer);
+        answer.GetProperty("overview").GetString().Should().Be(overview);
+        var sections = answer.GetProperty("sections").EnumerateArray().ToList();
+        sections.Should().HaveCount(12);
+        sections
+            .Select(s => s.GetProperty("key").GetString())
+            .Should()
+            .Equal(Enumerable.Range(1, 12).Select(i => $"month-{i}"));
+        JsonSerializer
+            .Deserialize<List<AiDeepReadingCard>>(
+                entity.Cards,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            )
+            .Should()
+            .HaveCount(12);
+    }
+
+    /// <summary>
+    /// The 12-months spread is only rejected by the validator once it has no spread definition,
+    /// so the topic now passes validation and reaches Gemini.
+    /// </summary>
+    [Fact]
+    public void TwelveMonthsTopic_HasSpreadDefinition()
+    {
+        DeepTarotConstant.IsSupported(DeepTarotTopic.TwelveMonths).Should().BeTrue();
+        DeepTarotConstant
+            .GetRequiredCardCount(DeepTarotTopic.TwelveMonths)
+            .Should()
+            .Be(12);
+        DeepTarotConstant
+            .GetPositions(DeepTarotTopic.TwelveMonths)
+            .Should()
+            .Equal(DeepTarotConstant.TwelveMonthsPositions);
+    }
+
+    /// <summary>
+    /// The months prompt carries every month position key ("month-1".."month-12") together with
+    /// the resolved calendar month labels, and starts at the month after the reading month.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_PromptContainsMonthKeysAndNextMonthLabels()
+    {
+        var (service, _, gemini, _) = CreateSut();
+        var rawPrompt = string.Empty;
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, CancellationToken>((prompt, _) => rawPrompt = prompt)
+            .ReturnsAsync(BuildMonthsGeminiJson("Tổng quan.", DateTimeOffset.UtcNow));
+
+        await service.CreateTwelveMonthsReadingAsync(ValidMonthsRequest(), Guid.NewGuid());
+
+        for (var i = 1; i <= 12; i++)
+        {
+            rawPrompt.Should().Contain($"month-{i}");
+        }
+
+        var expectedLabels = DeepTarotConstant
+            .TwelveMonthsPositions.Select(p => DeepTarotConstant.GetMonthLabel(p, DateTimeOffset.UtcNow))
+            .ToList();
+        expectedLabels.Should().OnlyHaveUniqueItems();
+        expectedLabels
+            .Select(label => label.ToString())
+            .Should()
+            .AllSatisfy(label => rawPrompt.Should().Contain(label));
+        rawPrompt.Should().Contain("MM/yyyy");
+    }
+
+    /// <summary>
+    /// The first month of the spread is the month right after the reading month, and the last
+    /// month is the same calendar month of the following year.
+    /// </summary>
+    [Fact]
+    public void GetMonthLabel_FirstMonthIsNextMonthAndLastMonthIsNextYear()
+    {
+        var createdAt = new DateTimeOffset(2026, 9, 15, 10, 30, 0, TimeSpan.Zero);
+        var positions = DeepTarotConstant.TwelveMonthsPositions;
+
+        DeepTarotConstant.GetMonthLabel(positions[0], createdAt).Should().Be("10/2026");
+        DeepTarotConstant.GetMonthLabel(positions[1], createdAt).Should().Be("11/2026");
+        DeepTarotConstant.GetMonthLabel(positions[11], createdAt).Should().Be("09/2027");
+    }
+
+    /// <summary>
+    /// A reading created in December rolls the spread over into the next year.
+    /// </summary>
+    [Fact]
+    public void GetMonthLabel_ReadingInDecember_RollsIntoNextYear()
+    {
+        var createdAt = new DateTimeOffset(2026, 12, 31, 23, 59, 0, TimeSpan.Zero);
+        var positions = DeepTarotConstant.TwelveMonthsPositions;
+
+        DeepTarotConstant.GetMonthLabel(positions[0], createdAt).Should().Be("01/2027");
+        DeepTarotConstant.GetMonthLabel(positions[11], createdAt).Should().Be("12/2027");
+    }
+
+    /// <summary>
+    /// The month labels ignore the time of day, so late-evening and early-morning creations
+    /// in the same month produce the same spread.
+    /// </summary>
+    [Fact]
+    public void GetMonthLabel_IsStableAcrossTheWholeReadingMonth()
+    {
+        var positions = DeepTarotConstant.TwelveMonthsPositions;
+        var firstInstant = new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero);
+        var lastInstant = new DateTimeOffset(2026, 3, 31, 23, 59, 59, TimeSpan.Zero);
+
+        DeepTarotConstant
+            .GetMonthLabel(positions[0], firstInstant)
+            .Should()
+            .Be(DeepTarotConstant.GetMonthLabel(positions[0], lastInstant));
+        DeepTarotConstant.GetMonthLabel(positions[0], firstInstant).Should().Be("04/2026");
+    }
+
+    /// <summary>
+    /// The months spread is charged the same 3 red coins as the houses spread.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_DeductsThreeRedCoins()
+    {
+        var (service, db, gemini, wallet) = CreateSut();
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildMonthsGeminiJson("Tổng quan.", DateTimeOffset.UtcNow));
+
+        await service.CreateTwelveMonthsReadingAsync(ValidMonthsRequest(), Guid.NewGuid());
+
+        DeepTarotConstant.GetCost(DeepTarotTopic.TwelveMonths).Should().Be(3);
+        wallet.Verify(
+            w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    new DeductRedCoinRequest(3, OrderType.AIDeepTarot),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+        db.AIDeepTarotReadings.Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// Having exactly 3 red coins is enough to read the months spread.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_ExactRedCoinBalance_Succeeds()
+    {
+        var (service, db, gemini, wallet) = CreateSut();
+        SetupRedCoinBalance(wallet, DeepTarotConstant.GetCost(DeepTarotTopic.TwelveMonths));
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildMonthsGeminiJson("Tổng quan.", DateTimeOffset.UtcNow));
+
+        await service.CreateTwelveMonthsReadingAsync(ValidMonthsRequest(), Guid.NewGuid());
+
+        db.AIDeepTarotReadings.Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// Below 3 red coins the months spread is rejected before Gemini is called and nothing
+    /// is persisted.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_InsufficientRedCoin_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, wallet) = CreateSut();
+        SetupRedCoinBalance(wallet, redCoin: 2);
+
+        var act = async () =>
+            await service.CreateTwelveMonthsReadingAsync(ValidMonthsRequest(), Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == WalletErrorCode.InsufficientRedCoin);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// The months spread is validated by its own validator: a card list that does not match the
+    /// 12-month spread is rejected with BadRequestException before Gemini is ever called.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_CardCountMismatch_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var request = ValidMonthsRequest() with { Cards = Cards(10, reversalStep: 3) };
+
+        var act = async () =>
+            await service.CreateTwelveMonthsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidCardCount);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// The months spread rejects a repeated card so every month gets its own card.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_DuplicateCard_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var cards = ValidMonthsRequest().Cards;
+        cards[5] = new AiDeepCardRequest("maj-00", false);
+        var request = ValidMonthsRequest() with { Cards = cards };
+
+        var act = async () =>
+            await service.CreateTwelveMonthsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidCard);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// The months spread rejects an unsupported locale with BadRequestException.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_InvalidLocale_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var request = ValidMonthsRequest() with { Locale = "fr" };
+
+        var act = async () =>
+            await service.CreateTwelveMonthsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidLocale);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// The months prompt must not leak the astrological 12-house instructions into the
+    /// month-by-month spread.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_PromptDoesNotMentionHouses()
+    {
+        var (service, _, gemini, _) = CreateSut();
+        var rawPrompt = string.Empty;
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, CancellationToken>((prompt, _) => rawPrompt = prompt)
+            .ReturnsAsync(BuildMonthsGeminiJson("Tổng quan.", DateTimeOffset.UtcNow));
+
+        await service.CreateTwelveMonthsReadingAsync(ValidMonthsRequest(), Guid.NewGuid());
+
+        rawPrompt.Should().NotContain("house-");
+        rawPrompt.Should().NotContain("astrological");
+        rawPrompt.Should().Contain("MM/yyyy");
+    }
+
+    /// <summary>
+    /// The houses prompt keeps its astrological wording and carries no calendar month labels.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveHousesReading_PromptDoesNotMentionMonths()
+    {
+        var (service, _, gemini, _) = CreateSut();
+        var rawPrompt = string.Empty;
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, CancellationToken>((prompt, _) => rawPrompt = prompt)
+            .ReturnsAsync(BuildGeminiJson("Tổng quan."));
+
+        await service.CreateTwelveHousesReadingAsync(ValidRequest(), Guid.NewGuid());
+
+        rawPrompt.Should().NotContain("month-");
+        rawPrompt.Should().NotContain("MM/yyyy");
+        rawPrompt.Should().Contain("astrological");
+    }
+
+    /// <summary>
+    /// A Gemini section with an unknown key falls back to the positional month key, so the
+    /// months spread always comes back with 12 month-* sections.
+    /// </summary>
+    [Fact]
+    public async Task CreateTwelveMonthsReading_SectionKeyUnknown_FallsBackToMonthKey()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                JsonSerializer.Serialize(
+                    new
+                    {
+                        title = "Vận mệnh 12 tháng tới",
+                        overview = "Tổng quan.",
+                        sections = Enumerable
+                            .Range(1, 12)
+                            .Select(index => new
+                            {
+                                key = "garbage-key",
+                                title = $"Tháng {index}",
+                                cardCode = TwelveCardCodes[index - 1],
+                                interpretation = $"Diễn giải tháng {index}.",
+                            })
+                            .ToArray(),
+
+                        overallAdvice = "Chúc bạn nhiều may mắn.",
+                    }
+                )
+            );
+
+        await service.CreateTwelveMonthsReadingAsync(ValidMonthsRequest(), Guid.NewGuid());
+
+        var entity = Assert.Single(db.AIDeepTarotReadings);
+        var sections = ParseAnswer(entity.Answer).GetProperty("sections").EnumerateArray().ToList();
+        sections
+            .Select(s => s.GetProperty("key").GetString())
+            .Should()
+            .Equal(Enumerable.Range(1, 12).Select(i => $"month-{i}"));
     }
 
     #endregion

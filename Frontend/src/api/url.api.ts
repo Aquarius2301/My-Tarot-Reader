@@ -24,7 +24,8 @@ export const API_URL = {
     delete: "/api/aiTarot",
   },
   aiDeepTarot: {
-    create: "/api/aiDeepTarot",
+    createTwelveHouses: "/api/aiDeepTarot/twelveHouses",
+    createTwelveMonths: "/api/aiDeepTarot/twelveMonths",
     getById: "/api/aiDeepTarot",
     getAll: "/api/aiDeepTarot",
     delete: "/api/aiDeepTarot",

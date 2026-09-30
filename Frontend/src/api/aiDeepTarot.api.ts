@@ -1,6 +1,8 @@
 import type {
-  CreateAiDeepTarotReadingRequest,
-  CreateAiDeepTarotReadingResult,
+  CreateTwelveHousesReadingRequest,
+  CreateTwelveHousesReadingResult,
+  CreateTwelveMonthsReadingRequest,
+  CreateTwelveMonthsReadingResult,
   GetAiDeepTarotReadingResult,
   GetAllAiDeepTarotReadingResult,
 } from "@/types";
@@ -8,10 +10,15 @@ import axiosClient from "./config.api";
 import { API_URL } from "./url.api";
 
 export const aiDeepTarotApi = {
-  createAiDeepTarotReading: (
-    request: CreateAiDeepTarotReadingRequest,
-  ): Promise<CreateAiDeepTarotReadingResult> =>
-    axiosClient.put(API_URL.aiDeepTarot.create, request),
+  createTwelveHousesReading: (
+    request: CreateTwelveHousesReadingRequest,
+  ): Promise<CreateTwelveHousesReadingResult> =>
+    axiosClient.post(API_URL.aiDeepTarot.createTwelveHouses, request),
+
+  createTwelveMonthsReading: (
+    request: CreateTwelveMonthsReadingRequest,
+  ): Promise<CreateTwelveMonthsReadingResult> =>
+    axiosClient.post(API_URL.aiDeepTarot.createTwelveMonths, request),
 
   getAiDeepTarotReadingById: (
     readingId: string,

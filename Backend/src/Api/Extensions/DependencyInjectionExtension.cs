@@ -82,8 +82,12 @@ public static class DependencyInjectionExtension
         >();
 
         services.AddScoped<
-            IValidator<CreateAiDeepTarotReadingRequest>,
-            CreateAiDeepTarotReadingRequestValidator
+            IValidator<CreateTwelveHousesReadingRequest>,
+            CreateTwelveHousesReadingRequestValidator
+        >();
+        services.AddScoped<
+            IValidator<CreateTwelveMonthsReadingRequest>,
+            CreateTwelveMonthsReadingRequestValidator
         >();
 
         services.AddScoped<IValidator<CreateDevTokenRequest>, CreateDevTokenRequestValidator>();

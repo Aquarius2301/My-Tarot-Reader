@@ -199,7 +199,7 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 - **Errors:** thrown as `BaseException` subtypes (`BadRequestException`, `ValidationException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `InternalServerException`) and mapped by `GlobalExceptionMiddleware` to the envelope with i18n error keys (`error.<domain>.<camelCase>`).
 - **Authentication:** JWT in **HttpOnly cookies** (`accessToken`, `refreshToken`); refresh tokens are rotated on every refresh and bound to the device fingerprint sent in the `X-Device-Id` header. Guest flows use Redis for draw cooldowns. An `Authorization: Bearer <token>` header is also honoured, and takes precedence over the cookie — that is what Swagger's **Authorize** button uses.
 - **Health:** `/health` returns `200 OK` in every environment and bypasses the frontend CORS policy (separate `HealthCors` policy allows any origin). Point Render's health-check / wake-up URL at `https://<api>/health`.
-- **Coins:** AI tarot readings spend **white** coins (`AiTarot:Costs`, drained FIFO from the oldest active `WhiteCoinBatch`). Deep tarot readings spend **red** coins instead — the cost is hardcoded per topic in `DeepTarotConstant` (`TwelveHouses` = 3). The red balance is checked before Gemini is called and charged only once the answer has been generated; a shortfall returns `error.wallet.insufficientRedCoin` (400).
+- **Coins:** AI tarot readings spend **white** coins (`AiTarot:Costs`, drained FIFO from the oldest active `WhiteCoinBatch`). Deep tarot readings spend **red** coins instead — the cost is hardcoded per topic in `DeepTarotConstant` (`TwelveHouses` = 3, `TwelveMonths` = 3). The red balance is checked before Gemini is called and charged only once the answer has been generated; a shortfall returns `error.wallet.insufficientRedCoin` (400).
 
 | Method | Route | Description | Auth |
 | --- | --- | --- | --- |
@@ -216,10 +216,11 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 | `DELETE` | `api/tarot/guest-draw` | Clear last drawn card (guest) — dev-only, never mapped in production | Public |
 | `GET` | `api/tarot` | Reading history | JWT |
 | `DELETE` | `api/tarot/{readingId:guid}` | Delete a reading (soft delete) | JWT |
-| `PUT` | `api/aiTarot` | Create an AI tarot reading (Gemini), persist result | JWT |
+| `POST` | `api/aiTarot` | Create an AI tarot reading (Gemini), persist result | JWT |
 | `GET` | `api/aiTarot/{readingId:guid}` | Get one AI tarot reading | JWT |
 | `GET` | `api/aiTarot` | Get all AI tarot readings (short answer excerpt only) | JWT |
-| `PUT` | `api/aiDeepTarot` | Create a deep tarot reading (topic-specific spread, Gemini), spends 3 red coins | JWT |
+| `POST` | `api/aiDeepTarot/twelveHouses` | Create a 12 astrological houses deep tarot reading (12 cards, Gemini), spends 3 red coins | JWT |
+| `POST` | `api/aiDeepTarot/twelveMonths` | Create a 12 months deep tarot reading (12 cards, Gemini), spends 3 red coins; the spread runs from the month after the current one | JWT |
 | `GET` | `api/aiDeepTarot/{readingId:guid}` | Get one deep tarot reading | JWT |
 | `GET` | `api/aiDeepTarot` | Get all deep tarot readings (short answer excerpt only) | JWT |
 | `DELETE` | `api/aiDeepTarot/{readingId:guid}` | Delete a deep tarot reading (soft delete) | JWT |

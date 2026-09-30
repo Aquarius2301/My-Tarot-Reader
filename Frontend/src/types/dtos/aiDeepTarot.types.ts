@@ -7,17 +7,30 @@ export interface AiDeepCardRequest {
 }
 
 /**
- * Request payload for creating a deep tarot reading.
- * `cards.length` must equal the topic's spread size.
+ * Request payload for creating a 12 astrological houses deep tarot reading.
+ * `cards.length` must be exactly 12.
  */
-export interface CreateAiDeepTarotReadingRequest {
-  topic: AiDeepTarotTopic;
+export interface CreateTwelveHousesReadingRequest {
   locale: string;
   cards: AiDeepCardRequest[];
 }
 
-/** Response of creating a deep tarot reading. */
-export interface CreateAiDeepTarotReadingResult {
+/** Response of creating a 12 astrological houses deep tarot reading. */
+export interface CreateTwelveHousesReadingResult {
+  id: string;
+}
+
+/**
+ * Request payload for creating a 12 months deep tarot reading.
+ * `cards.length` must be exactly 12; card 1 covers the month after the current one.
+ */
+export interface CreateTwelveMonthsReadingRequest {
+  locale: string;
+  cards: AiDeepCardRequest[];
+}
+
+/** Response of creating a 12 months deep tarot reading. */
+export interface CreateTwelveMonthsReadingResult {
   id: string;
 }
 

@@ -21,7 +21,7 @@ public class AiTarotReadingController(IAiTarotReadingService service) : Controll
     /// and the drawn cards (code + reversed status). The AI-generated answer is
     /// persisted only after the AI call succeeds. The ID of the created reading is returned.
     /// </remarks>
-    [HttpPut]
+    [HttpPost]
     [Authorize]
     [ProducesResponseType(
         typeof(ApiResponse<CreateAiTarotReadingResult>),

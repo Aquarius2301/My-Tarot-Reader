@@ -11,7 +11,7 @@ export const aiTarotApi = {
   createAiTarotReading: (
     request: CreateAiTarotReadingRequest,
   ): Promise<CreateAiTarotReadingResult> =>
-    axiosClient.put(API_URL.aiTarot.create, request),
+    axiosClient.post(API_URL.aiTarot.create, request),
 
   getAiTarotReadingById: (
     readingId: string,

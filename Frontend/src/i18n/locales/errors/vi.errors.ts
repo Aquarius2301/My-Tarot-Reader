@@ -23,8 +23,6 @@ export const viErrors = {
       generationFailed: "Không thể tạo trải bài AI. Vui lòng thử lại.",
     },
     aiDeepTarot: {
-      invalidTopic: "Chủ đề trải bài chuyên sâu không hợp lệ.",
-      topicNotSupported: "Chủ đề này chưa được hỗ trợ.",
       invalidCardCount: "Số lá bài không hợp lệ.",
       invalidCard: "Một hoặc nhiều lá bài không hợp lệ.",
       invalidLocale: "Ngôn ngữ không được hỗ trợ.",
