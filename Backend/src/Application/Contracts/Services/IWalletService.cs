@@ -31,6 +31,19 @@ public record DeductCoinRequest(int Amount, OrderType Type);
 public record DeductCoinResult(int WhiteCoin);
 
 /// <summary>
+/// Request to deduct red coins from a user's wallet.
+/// </summary>
+/// <param name="Amount">The number of red coins to deduct.</param>
+/// <param name="Type">The order type describing the transaction.</param>
+public record DeductRedCoinRequest(int Amount, OrderType Type);
+
+/// <summary>
+/// Result of deducting red coins from a user's wallet.
+/// </summary>
+/// <param name="RedCoin">The updated red coin wallet balance.</param>
+public record DeductRedCoinResult(int RedCoin);
+
+/// <summary>
 /// Result of querying a user's wallet balance.
 /// </summary>
 /// <param name="WhiteCoin">The white coin balance, derived from active, non-expired batches.</param>
@@ -118,6 +131,21 @@ public interface IWalletService
     Task<DeductCoinResult> DeductCoinAsync(
         Guid userId,
         DeductCoinRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Deducts red coins from a user's wallet and records the transaction as an order.
+    /// </summary>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="request"><see cref="DeductRedCoinRequest"/> containing the amount and order type.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="BadRequestException">Thrown when the request validation fails or the user does not have enough red coins.</exception>
+    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
+    /// <returns><see cref="DeductRedCoinResult"/> with the updated red coin balance.</returns>
+    Task<DeductRedCoinResult> DeductRedCoinAsync(
+        Guid userId,
+        DeductRedCoinRequest request,
         CancellationToken cancellationToken = default
     );
 

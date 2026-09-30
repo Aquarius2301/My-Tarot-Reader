@@ -47,6 +47,15 @@ public static class DeepTarotConstant
         };
 
     /// <summary>
+    /// The number of red coins charged for reading each topic's spread.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<DeepTarotTopic, int> Costs =
+        new Dictionary<DeepTarotTopic, int>
+        {
+            [DeepTarotTopic.TwelveHouses] = 3,
+        };
+
+    /// <summary>
     /// Determines whether the given topic has a spread definition and can be read.
     /// </summary>
     public static bool IsSupported(DeepTarotTopic topic) => RequiredCardCounts.ContainsKey(topic);
@@ -58,6 +67,19 @@ public static class DeepTarotConstant
     public static int GetRequiredCardCount(DeepTarotTopic topic) =>
         RequiredCardCounts.TryGetValue(topic, out var count)
             ? count
+            : throw new ArgumentOutOfRangeException(
+                nameof(topic),
+                topic,
+                "The topic does not have a spread definition yet."
+            );
+
+    /// <summary>
+    /// Returns the number of red coins charged for reading the given topic's spread.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the topic has no spread definition.</exception>
+    public static int GetCost(DeepTarotTopic topic) =>
+        Costs.TryGetValue(topic, out var cost)
+            ? cost
             : throw new ArgumentOutOfRangeException(
                 nameof(topic),
                 topic,

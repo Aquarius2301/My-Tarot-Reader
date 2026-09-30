@@ -84,8 +84,9 @@ public interface IAIDeepTarotReadingService
     /// <param name="request"><see cref="CreateAiDeepTarotReadingRequest"/> containing the topic, locale and drawn cards.</param>
     /// <param name="userId">The authenticated user's ID.</param>
     /// <returns><see cref="CreateAiDeepTarotReadingResult"/> with the ID of the created reading.</returns>
-    /// <exception cref="BadRequestException">Thrown when the request validation fails.</exception>
+    /// <exception cref="BadRequestException">Thrown when the request validation fails or the user does not have enough red coins.</exception>
     /// <exception cref="InternalServerException">Thrown when the Gemini API call fails.</exception>
+    /// <remarks>The topic's red coin cost is charged only after the answer has been generated.</remarks>
     Task<CreateAiDeepTarotReadingResult> CreateAiDeepTarotReadingAsync(
         CreateAiDeepTarotReadingRequest request,
         Guid userId,

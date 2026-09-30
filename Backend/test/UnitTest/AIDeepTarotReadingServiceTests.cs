@@ -52,17 +52,47 @@ public class AIDeepTarotReadingServiceTests
         return new AppDbContext(options);
     }
 
-    private static (AIDeepTarotReadingService Service, AppDbContext Db, Mock<IGeminiClient> Gemini) CreateSut()
+    private static (
+        AIDeepTarotReadingService Service,
+        AppDbContext Db,
+        Mock<IGeminiClient> Gemini,
+        Mock<IWalletService> Wallet
+    ) CreateSut()
     {
         var db = CreateInMemoryContext();
         var gemini = new Mock<IGeminiClient>();
+        var wallet = new Mock<IWalletService>();
+        SetupRedCoinBalance(wallet, redCoin: 10);
+        wallet
+            .Setup(w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<DeductRedCoinRequest>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(
+                (Guid _, DeductRedCoinRequest request, CancellationToken _) =>
+                    new DeductRedCoinResult(10 - request.Amount)
+            );
         var service = new AIDeepTarotReadingService(
             db,
             gemini.Object,
+            wallet.Object,
             new CreateAiDeepTarotReadingRequestValidator()
         );
-        return (service, db, gemini);
+        return (service, db, gemini, wallet);
     }
+
+    /// <summary>
+    /// Overrides the red coin balance reported by the mocked wallet service.
+    /// </summary>
+    private static void SetupRedCoinBalance(Mock<IWalletService> wallet, int redCoin) =>
+        wallet
+            .Setup(w =>
+                w.GetBalanceAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(new GetWalletBalanceResult(WhiteCoin: 0, RedCoin: redCoin));
 
     private static async Task SeedUserAsync(AppDbContext db, Guid userId)
     {
@@ -156,7 +186,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_ValidRequest_SavesReading()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var userId = Guid.NewGuid();
         var overview = "Toàn bộ cung chiêm tinh đi từ bản thân đến tiềm thức.";
         gemini
@@ -194,7 +224,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_ValidRequest_PromptContainsAllHouseKeysAndCards()
     {
-        var (service, _, gemini) = CreateSut();
+        var (service, _, gemini, _) = CreateSut();
         var rawPrompt = string.Empty;
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -226,7 +256,7 @@ public class AIDeepTarotReadingServiceTests
     [InlineData("en", "English")]
     public async Task CreateAiDeepTarotReading_Locale_SetsPromptLanguage(string locale, string expected)
     {
-        var (service, _, gemini) = CreateSut();
+        var (service, _, gemini, _) = CreateSut();
         var rawPrompt = string.Empty;
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -244,7 +274,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_LongOverview_TruncatesAnswerSummary()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var longOverview = new string('a', 800);
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -264,7 +294,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_SectionCardCodeByName_StoresCanonicalCode()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(
@@ -289,7 +319,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_SectionCardCodeNameInDeck_ResolvesToCanonicalCode()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(
@@ -314,7 +344,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_SectionCardCodeGarbage_FallsBackToDrawnCard()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(
@@ -339,7 +369,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_SectionKeyUnknown_FallsBackToPositionKey()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var rawAnswer = JsonSerializer.Serialize(
             new
             {
@@ -380,7 +410,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_GeminiFails_ThrowsInternalServerAndDoesNotSave()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(
@@ -406,7 +436,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_InvalidGeminiJson_ThrowsInternalServerAndDoesNotSave()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync("this is not json");
@@ -427,7 +457,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_CardCountMismatch_ThrowsBadRequestAndSkipsGemini()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var request = ValidRequest() with
         {
             Cards = requestCards(10),
@@ -464,7 +494,7 @@ public class AIDeepTarotReadingServiceTests
         DeepTarotTopic topic
     )
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var request = ValidRequest() with { Topic = topic };
 
         var act = async () =>
@@ -486,7 +516,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_InvalidLocale_ThrowsBadRequestAndSkipsGemini()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var request = ValidRequest() with { Locale = "fr" };
 
         var act = async () =>
@@ -509,7 +539,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_InvalidCard_ThrowsBadRequestAndSkipsGemini()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var cards = ValidRequest().Cards;
         cards[5] = new AiDeepCardRequest("fake-card", false);
         var request = ValidRequest() with { Cards = cards };
@@ -533,7 +563,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_DuplicateCard_ThrowsBadRequestAndSkipsGemini()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var cards = ValidRequest().Cards;
         cards[5] = new AiDeepCardRequest("maj-00", false);
         var request = ValidRequest() with { Cards = cards };
@@ -558,7 +588,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_NullCards_ThrowsBadRequestAndSkipsGemini()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var request = ValidRequest() with { Cards = null! };
 
         var act = async () =>
@@ -580,7 +610,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task CreateAiDeepTarotReading_EmptyCards_ThrowsBadRequestAndSkipsGemini()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, _) = CreateSut();
         var request = ValidRequest() with { Cards = [] };
 
         var act = async () =>
@@ -597,12 +627,97 @@ public class AIDeepTarotReadingServiceTests
     }
 
     /// <summary>
-    /// Deep readings are not charged yet, so no order is written on a successful create.
+    /// A deep reading is charged the topic's red coin cost (3 for the 12 houses) exactly once as
+    /// an AIDeepTarot order, and the reading is persisted.
     /// </summary>
     [Fact]
-    public async Task CreateAiDeepTarotReading_ValidRequest_WritesNoOrder()
+    public async Task CreateAiDeepTarotReading_ValidRequest_DeductsThreeRedCoins()
     {
-        var (service, db, gemini) = CreateSut();
+        var (service, db, gemini, wallet) = CreateSut();
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildGeminiJson("Tổng quan."));
+
+        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+
+        wallet.Verify(
+            w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    new DeductRedCoinRequest(3, OrderType.AIDeepTarot),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+        db.AIDeepTarotReadings.Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// The charged amount is the one declared by the topic's spread definition.
+    /// </summary>
+    [Fact]
+    public async Task CreateAiDeepTarotReading_ValidRequest_ChargesTheTopicCost()
+    {
+        var (service, _, gemini, wallet) = CreateSut();
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildGeminiJson("Tổng quan."));
+
+        await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+
+        var cost = DeepTarotConstant.GetCost(DeepTarotTopic.TwelveHouses);
+        wallet.Verify(
+            w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    It.Is<DeductRedCoinRequest>(r => r.Amount == cost),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    /// <summary>
+    /// When the red coin balance is below the reading cost, a BadRequestException with the
+    /// insufficientRedCoin code is thrown before Gemini is called, nothing is persisted and no
+    /// coin is deducted.
+    /// </summary>
+    [Fact]
+    public async Task CreateAiDeepTarotReading_InsufficientRedCoin_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, wallet) = CreateSut();
+        SetupRedCoinBalance(wallet, redCoin: 2);
+
+        var act = async () =>
+            await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == WalletErrorCode.InsufficientRedCoin);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        wallet.Verify(
+            w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<DeductRedCoinRequest>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Having exactly the required red coins is enough to read.
+    /// </summary>
+    [Fact]
+    public async Task CreateAiDeepTarotReading_ExactRedCoinBalance_Succeeds()
+    {
+        var (service, db, gemini, wallet) = CreateSut();
+        SetupRedCoinBalance(wallet, DeepTarotConstant.GetCost(DeepTarotTopic.TwelveHouses));
         gemini
             .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(BuildGeminiJson("Tổng quan."));
@@ -610,7 +725,42 @@ public class AIDeepTarotReadingServiceTests
         await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
 
         db.AIDeepTarotReadings.Should().ContainSingle();
-        db.Orders.Should().BeEmpty();
+        wallet.Verify(
+            w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<DeductRedCoinRequest>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    /// <summary>
+    /// A failed Gemini call throws before any coin is deducted.
+    /// </summary>
+    [Fact]
+    public async Task CreateAiDeepTarotReading_GeminiFails_DeductsNoRedCoin()
+    {
+        var (service, db, gemini, wallet) = CreateSut();
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("gemini down"));
+
+        var act = async () =>
+            await service.CreateAiDeepTarotReadingAsync(ValidRequest(), Guid.NewGuid());
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        wallet.Verify(
+            w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<DeductRedCoinRequest>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
     }
 
     #endregion
@@ -623,7 +773,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAiDeepTarotReading_Exists_ReturnsFullReading()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userId = Guid.NewGuid();
         await SeedUserAsync(db, userId);
         var reading = await SeedReadingAsync(
@@ -652,7 +802,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAiDeepTarotReading_StoredAnswerWithNameCode_ReturnsCanonicalCode()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userId = Guid.NewGuid();
         await SeedUserAsync(db, userId);
         var reading = new AIDeepTarotReading
@@ -688,7 +838,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAiDeepTarotReading_NotFound_ThrowsNotFound()
     {
-        var (service, _, _) = CreateSut();
+        var (service, _, _, _) = CreateSut();
         var userId = Guid.NewGuid();
 
         var act = async () =>
@@ -705,7 +855,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAiDeepTarotReading_BelongsToOtherUser_ThrowsNotFound()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userA = Guid.NewGuid();
         var userB = Guid.NewGuid();
         await SeedUserAsync(db, userA);
@@ -730,7 +880,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAiDeepTarotReading_SoftDeleted_ThrowsNotFound()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userId = Guid.NewGuid();
         await SeedUserAsync(db, userId);
         var reading = await SeedReadingAsync(
@@ -759,7 +909,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAllAiDeepTarotReadings_HasReadings_ReturnsItemsWithoutFullAnswer()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userId = Guid.NewGuid();
         await SeedUserAsync(db, userId);
         var newest = await SeedReadingAsync(
@@ -794,7 +944,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAllAiDeepTarotReadings_NoReadings_ReturnsEmptyList()
     {
-        var (service, _, _) = CreateSut();
+        var (service, _, _, _) = CreateSut();
 
         var result = await service.GetAllAiDeepTarotReadingsAsync(Guid.NewGuid());
 
@@ -808,7 +958,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAllAiDeepTarotReadings_OnlyReturnsOwnReadings()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userA = Guid.NewGuid();
         var userB = Guid.NewGuid();
         await SeedUserAsync(db, userA);
@@ -828,7 +978,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAllAiDeepTarotReadings_ExcludesSoftDeletedRecords()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userId = Guid.NewGuid();
         await SeedUserAsync(db, userId);
         await SeedReadingAsync(db, userId, """[{"cardCode":"maj-00","isReversed":false}]""");
@@ -851,7 +1001,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task GetAllAiDeepTarotReadings_ReturnsOrderedByCreatedAtDescending()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userId = Guid.NewGuid();
         await SeedUserAsync(db, userId);
         var oldest = await SeedReadingAsync(
@@ -884,7 +1034,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task DeleteAiDeepTarotReading_ExistingReading_SoftDeletes()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userId = Guid.NewGuid();
         await SeedUserAsync(db, userId);
         var reading = await SeedReadingAsync(
@@ -911,7 +1061,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task DeleteAiDeepTarotReading_ReadingNotFound_ThrowsNotFound()
     {
-        var (service, _, _) = CreateSut();
+        var (service, _, _, _) = CreateSut();
         var userId = Guid.NewGuid();
 
         var act = async () =>
@@ -929,7 +1079,7 @@ public class AIDeepTarotReadingServiceTests
     [Fact]
     public async Task DeleteAiDeepTarotReading_BelongsToOtherUser_ThrowsNotFound()
     {
-        var (service, db, _) = CreateSut();
+        var (service, db, _, _) = CreateSut();
         var userA = Guid.NewGuid();
         var userB = Guid.NewGuid();
         await SeedUserAsync(db, userA);

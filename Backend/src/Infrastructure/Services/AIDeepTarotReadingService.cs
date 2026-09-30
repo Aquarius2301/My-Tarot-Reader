@@ -20,6 +20,7 @@ namespace MyTarotReader.Infrastructure.Services;
 public class AIDeepTarotReadingService(
     IAppDbContext context,
     IGeminiClient geminiClient,
+    IWalletService walletService,
     IValidator<CreateAiDeepTarotReadingRequest> createAiDeepTarotReadingValidator
 ) : IAIDeepTarotReadingService
 {
@@ -36,6 +37,7 @@ public class AIDeepTarotReadingService(
 
     private readonly IAppDbContext _context = context;
     private readonly IGeminiClient _geminiClient = geminiClient;
+    private readonly IWalletService _walletService = walletService;
     private readonly IValidator<CreateAiDeepTarotReadingRequest> _createAiDeepTarotReadingValidator =
         createAiDeepTarotReadingValidator;
 
@@ -46,6 +48,14 @@ public class AIDeepTarotReadingService(
     )
     {
         ValidationHelper.ValidateOrThrow(_createAiDeepTarotReadingValidator, request);
+
+        var cost = DeepTarotConstant.GetCost(request.Topic);
+
+        var balance = await _walletService.GetBalanceAsync(userId, cancellationToken);
+        if (balance.RedCoin < cost)
+        {
+            throw new BadRequestException(WalletErrorCode.InsufficientRedCoin);
+        }
 
         var positions = DeepTarotConstant.GetPositions(request.Topic);
 
@@ -89,7 +99,20 @@ public class AIDeepTarotReadingService(
         };
 
         _context.AIDeepTarotReadings.Add(entity);
+
+        await using var transaction = await _context.Database.BeginTransactionAsync(
+            cancellationToken
+        );
+
         await _context.SaveChangesAsync(cancellationToken);
+
+        await _walletService.DeductRedCoinAsync(
+            userId,
+            new DeductRedCoinRequest(cost, OrderType.AIDeepTarot),
+            cancellationToken
+        );
+
+        await transaction.CommitAsync(cancellationToken);
 
         return new CreateAiDeepTarotReadingResult(entity.Id);
     }

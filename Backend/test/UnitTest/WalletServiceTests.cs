@@ -46,6 +46,7 @@ public class WalletServiceTests
             Options.Create(DefaultWallet),
             new AddCoinRequestValidator(),
             new DeductCoinRequestValidator(),
+            new DeductRedCoinRequestValidator(),
             new ConvertRedToWhiteRequestValidator()
         );
 
@@ -606,6 +607,153 @@ public class WalletServiceTests
             .RemainingAmount
             .Should()
             .Be(5);
+    }
+
+    #endregion
+
+    #region DeductRedCoinAsync
+
+    /// <summary>
+    /// Deducting red coins decreases the wallet balance, records an order of the requested type
+    /// with a single OrderDetail that is not linked to any white coin batch, and returns the
+    /// remaining red balance. White coin batches are left untouched.
+    /// </summary>
+    [Fact]
+    public async Task DeductRedCoin_SufficientBalance_DeductsAndRecordsOrder()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+        var (user, _) = await SeedUserAsync(
+            db,
+            redCoin: 5,
+            batches:
+            [
+                new()
+                {
+                    Amount = 2,
+                    RemainingAmount = 2,
+                    ExpiredAt = DateTimeOffset.UtcNow.AddDays(10),
+                },
+            ]
+        );
+
+        var result = await service.DeductRedCoinAsync(
+            user.Id,
+            new DeductRedCoinRequest(3, OrderType.AIDeepTarot)
+        );
+
+        var wallet = db.Wallets.Include(w => w.WhiteCoinBatches).Single();
+        wallet.RedCoin.Should().Be(2);
+        var batch = Assert.Single(wallet.WhiteCoinBatches);
+        batch.RemainingAmount.Should().Be(2); // white coins are untouched
+
+        var order = db.Orders.Include(o => o.OrderDetails).Single();
+        order.UserId.Should().Be(user.Id);
+        order.Amount.Should().Be(3);
+        order.Type.Should().Be(OrderType.AIDeepTarot);
+        order.Description.Should().StartWith("Spend red coins");
+        var detail = Assert.Single(order.OrderDetails);
+        detail.WhiteCoinBatchId.Should().BeNull();
+        detail.Amount.Should().Be(3);
+
+        result.RedCoin.Should().Be(2);
+    }
+
+    /// <summary>
+    /// Spending the exact balance is allowed and empties the wallet.
+    /// </summary>
+    [Fact]
+    public async Task DeductRedCoin_ExactBalance_LeavesZero()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+        var (user, _) = await SeedUserAsync(db, redCoin: 3);
+
+        var result = await service.DeductRedCoinAsync(
+            user.Id,
+            new DeductRedCoinRequest(3, OrderType.AIDeepTarot)
+        );
+
+        db.Wallets.Single().RedCoin.Should().Be(0);
+        db.Orders.Should().ContainSingle();
+        result.RedCoin.Should().Be(0);
+    }
+
+    /// <summary>
+    /// When the red balance is below the requested amount, a BadRequestException with the
+    /// insufficientRedCoin code is thrown and neither the balance nor the orders change.
+    /// </summary>
+    [Fact]
+    public async Task DeductRedCoin_InsufficientBalance_ThrowsBadRequest()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+        var (user, _) = await SeedUserAsync(db, redCoin: 2);
+
+        var act = async () =>
+            await service.DeductRedCoinAsync(
+                user.Id,
+                new DeductRedCoinRequest(3, OrderType.AIDeepTarot)
+            );
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == WalletErrorCode.InsufficientRedCoin);
+
+        db.Wallets.Single().RedCoin.Should().Be(2);
+        db.Orders.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// A non-positive amount or an invalid order type is rejected as a BadRequestException
+    /// before any persistence.
+    /// </summary>
+    [Fact]
+    public async Task DeductRedCoin_InvalidRequest_ThrowsBadRequest()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+        var (user, _) = await SeedUserAsync(db, redCoin: 10);
+
+        var requests = new[]
+        {
+            new DeductRedCoinRequest(0, OrderType.AIDeepTarot),
+            new DeductRedCoinRequest(-1, OrderType.AIDeepTarot),
+            new DeductRedCoinRequest(2, (OrderType)99),
+        };
+
+        foreach (var request in requests)
+        {
+            var act = async () => await service.DeductRedCoinAsync(user.Id, request);
+
+            await act.Should()
+                .ThrowAsync<BadRequestException>()
+                .Where(e => e.ErrorCode == WalletErrorCode.InvalidAmount);
+        }
+
+        db.Wallets.Single().RedCoin.Should().Be(10);
+        db.Orders.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// A user without a wallet cannot spend red coins.
+    /// </summary>
+    [Fact]
+    public async Task DeductRedCoin_NoWallet_ThrowsNotFound()
+    {
+        var db = CreateInMemoryContext();
+        var service = CreateService(db);
+
+        var act = async () =>
+            await service.DeductRedCoinAsync(
+                Guid.NewGuid(),
+                new DeductRedCoinRequest(3, OrderType.AIDeepTarot)
+            );
+
+        await act.Should()
+            .ThrowAsync<NotFoundException>()
+            .Where(e => e.ErrorCode == WalletErrorCode.WalletNotFound);
+        db.Orders.Should().BeEmpty();
     }
 
     #endregion
