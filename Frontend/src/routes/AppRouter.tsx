@@ -19,8 +19,17 @@ const GuestDrawTarotPage = lazy(() => import("@/pages/guest/TarotPage"));
 const DrawTarotPage = lazy(() => import("@/pages/auth/DrawPage/TarotPage"));
 const AiTarotPage = lazy(() => import("@/pages/auth/DrawPage/AiTarotPage"));
 const AiTarotResultPage = lazy(() => import("@/pages/auth/AiTarotResultPage"));
+const AiDeepTarotPage = lazy(
+  () => import("@/pages/auth/DrawPage/AiDeepTarotPage"),
+);
+const AiDeepTarotResultPage = lazy(
+  () => import("@/pages/auth/AiDeepTarotResultPage"),
+);
 const HistoryAiTarotPage = lazy(
   () => import("@/pages/auth/HistoryPage/HistoryAiTarotPage"),
+);
+const HistoryAiDeepTarotPage = lazy(
+  () => import("@/pages/auth/HistoryPage/HistoryAiDeepTarotPage"),
 );
 const LibraryPage = lazy(() => import("@/pages/auth/LibraryPage"));
 const HistoryTarotPage = lazy(
@@ -78,9 +87,24 @@ const protectedRoutes: AppRoute[] = [
     component: AiTarotResultPage,
   },
   {
+    titleKey: "page.aiDeepTarot.twelveHouses.title",
+    path: WEB_URL.aiDeepTarotTwelveHouses,
+    component: AiDeepTarotPage,
+  },
+  {
+    titleKey: "page.aiDeepTarot.result.title",
+    path: `${WEB_URL.aiDeepTarotResult}/:readingId`,
+    component: AiDeepTarotResultPage,
+  },
+  {
     titleKey: "page.historyAiTarot.title",
     path: WEB_URL.aiTarotHistory,
     component: HistoryAiTarotPage,
+  },
+  {
+    titleKey: "page.historyAiDeepTarot.title",
+    path: WEB_URL.aiDeepTarotHistory,
+    component: HistoryAiDeepTarotPage,
   },
   {
     titleKey: "page.library.title",

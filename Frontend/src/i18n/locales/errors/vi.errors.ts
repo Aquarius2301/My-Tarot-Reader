@@ -22,9 +22,19 @@ export const viErrors = {
       readingNotFound: "Không tìm thấy trải bài AI này.",
       generationFailed: "Không thể tạo trải bài AI. Vui lòng thử lại.",
     },
+    aiDeepTarot: {
+      invalidTopic: "Chủ đề trải bài chuyên sâu không hợp lệ.",
+      topicNotSupported: "Chủ đề này chưa được hỗ trợ.",
+      invalidCardCount: "Số lá bài không hợp lệ.",
+      invalidCard: "Một hoặc nhiều lá bài không hợp lệ.",
+      invalidLocale: "Ngôn ngữ không được hỗ trợ.",
+      readingNotFound: "Không tìm thấy trải bài chuyên sâu này.",
+      generationFailed:
+        "Không thể tạo trải bài chuyên sâu. Vui lòng thử lại.",
+    },
     wallet: {
       insufficientCoins: "Bạn không đủ xu trắng để thực hiện hành động này.",
-      insufficientRedCoin: "Bạn không đủ xu đỏ để đổi.",
+      insufficientRedCoin: "Bạn không đủ xu đỏ để thực hiện hành động này.",
       invalidAmount: "Số xu không hợp lệ.",
       walletNotFound: "Không tìm thấy ví của bạn.",
     },

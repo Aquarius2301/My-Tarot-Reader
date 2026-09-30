@@ -8,8 +8,11 @@ export const WEB_URL = {
   tarot: "/draw",
   aiTarot: "/draw/ai",
   aiTarotResult: "/result/ai",
+  aiDeepTarotTwelveHouses: "/draw/deep/twelve-houses",
+  aiDeepTarotResult: "/result/deep",
   tarotHistory: "/history",
   aiTarotHistory: "/history/ai",
+  aiDeepTarotHistory: "/history/deep",
   library: "/library",
   wallet: "/wallet",
 } as const;

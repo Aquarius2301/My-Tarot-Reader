@@ -23,6 +23,12 @@ export const API_URL = {
     getAll: "/api/aiTarot",
     delete: "/api/aiTarot",
   },
+  aiDeepTarot: {
+    create: "/api/aiDeepTarot",
+    getById: "/api/aiDeepTarot",
+    getAll: "/api/aiDeepTarot",
+    delete: "/api/aiDeepTarot",
+  },
   wallet: {
     getWallet: "/api/wallet",
     convertRedToWhite: "/api/wallet/convert",

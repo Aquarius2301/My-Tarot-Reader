@@ -90,6 +90,77 @@ export const viPages = {
         drawAgain: "Rút bài mới",
       },
     },
+    aiDeepTarot: {
+      parentTitle: "Tarot chuyên sâu",
+      twelveHouses: {
+        title: "Trải bài 12 nhà",
+        subtitle:
+          "12 lá bài lần lượt ngồi vào từng ngôi nhà, phản ánh năng lượng và trạng thái hiện tại của bạn ở từng khía cạnh.",
+        what: {
+          title: "12 Nhà trong Tarot là gì?",
+          body: "Trong Chiêm tinh, cuộc sống của mỗi người được chia thành 12 mảnh ghép đại diện cho 12 lĩnh vực: từ bản thân, tiền bạc, tình cảm, gia đình cho đến sự nghiệp và tâm linh. Khi chọn trải bài 12 Nhà, các lá Tarot sẽ lần lượt ngồi vào từng ngôi nhà này để phản ánh năng lượng và trạng thái hiện tại của bạn ở từng khía cạnh.",
+        },
+        why: {
+          title: "Trải bài này để làm gì?",
+          items: {
+            overview:
+              "Cung cấp góc nhìn toàn cảnh: Thay vì chỉ trả lời một câu hỏi lẻ (như \"Người ấy có thích tôi không?\"), trải bài này giúp bạn thấy được bức tranh lớn về mọi mặt trong đời sống.",
+            blockage:
+              "Tìm ra điểm nghẽn: Nhận diện nhanh lĩnh vực nào đang phát triển thuận lợi và khía cạnh nào đang gặp rắc rối cần bạn tập trung xử lý.",
+            forecast:
+              "Dự báo năng lượng: Giúp bạn chuẩn bị tâm lý và hướng đi phù hợp cho các sự kiện sắp tới.",
+          },
+        },
+        when: {
+          title: "Khi nào bạn nên xem 12 Nhà?",
+          items: {
+            milestone:
+              "Vào các cột mốc mới: Dịp đầu năm mới, sinh nhật, hoặc khởi đầu một chu kỳ mới trong cuộc sống.",
+            lost:
+              "Khi mất phương hướng: Bạn cảm thấy mọi thứ không ổn nhưng không chỉ ra được cụ thể vấn đề nằm ở đâu (là do công việc, tình cảm, hay sức khỏe tinh thần).",
+            selfReview:
+              "Khi muốn đánh giá lại bản thân: Dành cho những lúc bạn muốn dừng lại, soi rọi lại toàn bộ cuộc sống để lên kế hoạch cân bằng lại mọi thứ.",
+          },
+        },
+      },
+      houses: {
+        title: "12 ngôi nhà trong trải bài của bạn",
+        hint: "Mỗi lá bài bạn chọn sẽ được giải nghĩa theo đúng ngôi nhà tương ứng.",
+      },
+      house: {
+        "house-1": "Nhà 1 · Bản thân & danh tính",
+        "house-2": "Nhà 2 · Tiền bạc & giá trị bản thân",
+        "house-3": "Nhà 3 · Tư duy & giao tiếp",
+        "house-4": "Nhà 4 · Gia đình & cội nguồn",
+        "house-5": "Nhà 5 · Sáng tạo & niềm vui",
+        "house-6": "Nhà 6 · Sức khỏe & đời sống hằng ngày",
+        "house-7": "Nhà 7 · Đối tác & hôn nhân",
+        "house-8": "Nhà 8 · Thay đổi & thân mật",
+        "house-9": "Nhà 9 · Niềm tin & mở rộng",
+        "house-10": "Nhà 10 · Sự nghiệp & danh tiếng",
+        "house-11": "Nhà 11 · Cộng đồng & mục tiêu chung",
+        "house-12": "Nhà 12 · Tiềm thức & nội tâm",
+      },
+      draw: {
+        subtitle:
+          "Hãy để tâm trí thư thái, tập trung vào câu hỏi của bạn rồi chọn đủ 12 lá bài — mỗi lá sẽ đi vào một ngôi nhà theo thứ tự bạn rút.",
+      },
+      cardCount: "Số lá bài: {{count}} lá · {{houses}} nhà",
+      cost: "Chi phí: {{cost}} xu đỏ",
+      balance: "Xu đỏ hiện có: {{balance}}",
+      insufficientCoins:
+        "Bạn cần tối thiểu {{cost}} xu đỏ để tiếp tục. Hãy điểm danh hằng ngày để nhận thêm xu.",
+      continue: "Tiếp tục",
+      back: "Quay lại",
+      saving: "Đang tạo trải bài chuyên sâu của bạn…",
+      result: {
+        title: "Kết quả giải bài chuyên sâu",
+        overview: "Tổng quan",
+        advice: "Lời khuyên tổng thể",
+        noAnswer: "Đang cập nhật nội dung giải bài.",
+        drawAgain: "Rút bài mới",
+      },
+    },
     library: {
       title: "Kho bài Tarot",
       subtitle: "Tất cả 78 lá bài cùng ý nghĩa xuôi & ngược",
@@ -121,6 +192,16 @@ export const viPages = {
         "Bài giải AI này sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa không?",
       deleteConfirm: "Xóa bài giải",
       deleteSuccess: "Đã xóa bài giải AI",
+    },
+    historyAiDeepTarot: {
+      title: "Lịch sử Tarot chuyên sâu",
+      subtitle: "Xem lại các trải bài chuyên sâu đã qua",
+      empty: "Chưa có trải bài chuyên sâu nào",
+      deleteTitle: "Xóa trải bài này?",
+      deleteDescription:
+        "Trải bài chuyên sâu này sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa không?",
+      deleteConfirm: "Xóa trải bài",
+      deleteSuccess: "Đã xóa trải bài chuyên sâu",
     },
     login: {
       title: "Đăng nhập",
