@@ -26,6 +26,7 @@ export const API_URL = {
   aiDeepTarot: {
     createTwelveHouses: "/api/aiDeepTarot/twelveHouses",
     createTwelveMonths: "/api/aiDeepTarot/twelveMonths",
+    createCrossroads: "/api/aiDeepTarot/crossroads",
     getById: "/api/aiDeepTarot",
     getAll: "/api/aiDeepTarot",
     delete: "/api/aiDeepTarot",

@@ -83,6 +83,42 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     }
 
     /// <summary>
+    /// Creates a new crossroads deep tarot reading by generating a reading with Gemini and
+    /// saving it.
+    /// </summary>
+    /// <remarks>
+    /// The request contains the locale, the decision question, the 2 to 4 options being
+    /// compared, the optional decision timeframe and the drawn cards: three cards per option
+    /// plus one closing summary card, so the card count must be <c>options.Count * 3 + 1</c>.
+    /// The reading costs one red coin per option, charged only after the AI call succeeds.
+    /// The ID of the created reading is returned.
+    /// </remarks>
+    [HttpPost("crossroads")]
+    [Authorize]
+    [ProducesResponseType(
+        typeof(ApiResponse<CreateCrossroadsReadingResult>),
+        StatusCodes.Status200OK
+    )]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CreateCrossroadsReadingAsync(
+        [FromBody] CreateCrossroadsReadingRequest request,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = JwtHelper.GetUserId(HttpContext);
+
+        var result = await _service.CreateCrossroadsReadingAsync(
+            request,
+            userId,
+            cancellationToken
+        );
+
+        return Ok(ApiResponse.Success(result));
+    }
+
+    /// <summary>
     /// Retrieves a single deep tarot reading for the authenticated user.
     /// </summary>
     [HttpGet("{readingId:guid}")]

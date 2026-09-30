@@ -24,7 +24,8 @@ public class AIDeepTarotReadingService(
     IGeminiClient geminiClient,
     IWalletService walletService,
     IValidator<CreateTwelveHousesReadingRequest> createTwelveHousesReadingValidator,
-    IValidator<CreateTwelveMonthsReadingRequest> createTwelveMonthsReadingValidator
+    IValidator<CreateTwelveMonthsReadingRequest> createTwelveMonthsReadingValidator,
+    IValidator<CreateCrossroadsReadingRequest> createCrossroadsReadingValidator
 ) : IAIDeepTarotReadingService
 {
     private const int AnswerSummaryMaxLength = 500;
@@ -45,6 +46,8 @@ public class AIDeepTarotReadingService(
         createTwelveHousesReadingValidator;
     private readonly IValidator<CreateTwelveMonthsReadingRequest> _createTwelveMonthsReadingValidator =
         createTwelveMonthsReadingValidator;
+    private readonly IValidator<CreateCrossroadsReadingRequest> _createCrossroadsReadingValidator =
+        createCrossroadsReadingValidator;
 
     public async Task<CreateTwelveHousesReadingResult> CreateTwelveHousesReadingAsync(
         CreateTwelveHousesReadingRequest request,
@@ -84,6 +87,50 @@ public class AIDeepTarotReadingService(
         return new CreateTwelveMonthsReadingResult(readingId);
     }
 
+    public async Task<CreateCrossroadsReadingResult> CreateCrossroadsReadingAsync(
+        CreateCrossroadsReadingRequest request,
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ValidationHelper.ValidateOrThrow(_createCrossroadsReadingValidator, request);
+
+        var optionCount = request.Options.Count;
+        var positions = DeepTarotConstant.GetCrossroadsPositions(optionCount);
+
+        var cost = DeepTarotConstant.GetCost(DeepTarotTopic.Crossroads, optionCount);
+
+        var balance = await _walletService.GetBalanceAsync(userId, cancellationToken);
+        if (balance.RedCoin < cost)
+        {
+            throw new BadRequestException(WalletErrorCode.InsufficientRedCoin);
+        }
+
+        var prompt = BuildCrossroadsPrompt(
+            request.Locale,
+            request.Question,
+            request.Options,
+            request.TimeFrame,
+            request.Cards,
+            positions
+        );
+
+        var readingId = await CreateReadingCoreAsync(
+            DeepTarotTopic.Crossroads,
+            prompt,
+            positions,
+            cost,
+            request.Cards,
+            userId,
+            cancellationToken,
+            question: request.Question,
+            options: request.Options,
+            timeFrame: request.TimeFrame
+        );
+
+        return new CreateCrossroadsReadingResult(readingId);
+    }
+
     /// <summary>
     /// The shared create pipeline behind every deep tarot topic: check the red coin balance,
     /// ask Gemini to interpret the topic's spread, persist the answer and charge the topic cost.
@@ -107,6 +154,39 @@ public class AIDeepTarotReadingService(
         var positions = DeepTarotConstant.GetPositions(topic);
 
         var prompt = BuildPrompt(topic, locale, cards, positions, DateTimeOffset.UtcNow);
+
+        return await CreateReadingCoreAsync(
+            topic,
+            prompt,
+            positions,
+            cost,
+            cards,
+            userId,
+            cancellationToken
+        );
+    }
+
+    /// <summary>
+    /// The write half of the create pipeline, shared by every topic: ask Gemini, normalize the
+    /// answer, persist it and charge the cost inside a single transaction.
+    /// </summary>
+    /// <remarks>
+    /// The red coin balance is checked by the caller before Gemini is called, so a request that
+    /// cannot be paid for never burns AI tokens.
+    /// </remarks>
+    private async Task<Guid> CreateReadingCoreAsync(
+        DeepTarotTopic topic,
+        string prompt,
+        IReadOnlyList<DeepTarotPosition> positions,
+        int cost,
+        IReadOnlyList<AiDeepCardRequest> cards,
+        Guid userId,
+        CancellationToken cancellationToken,
+        string? question = null,
+        List<string>? options = null,
+        CrossroadsTimeFrame? timeFrame = null
+    )
+    {
         var rawAnswer = await _geminiClient.GenerateContentAsync(prompt, cancellationToken);
 
         DeepTarotAnswerJson answer;
@@ -141,6 +221,9 @@ public class AIDeepTarotReadingService(
                 cards.Select(c => new StoredCard(c.CardCode, c.IsReversed)).ToList(),
                 JsonOptions
             ),
+            Question = question,
+            Options = options is null ? null : JsonSerializer.Serialize(options, JsonOptions),
+            TimeFrame = timeFrame,
         };
 
         _context.AIDeepTarotReadings.Add(entity);
@@ -179,12 +262,16 @@ public class AIDeepTarotReadingService(
                     r.Title,
                     r.Answer,
                     r.Cards,
+                    r.Question,
+                    r.Options,
+                    r.TimeFrame,
                     r.CreatedAt,
                 })
                 .FirstOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException(AiDeepTarotErrorCode.ReadingNotFound);
 
         var cards = DeserializeCards(reading.Cards);
+        var options = DeserializeOptions(reading.Options);
 
         var answerJson = reading.Answer;
         if (
@@ -194,7 +281,7 @@ public class AIDeepTarotReadingService(
         {
             answerJson = NormalizeAnswer(
                 parsedAnswer,
-                DeepTarotConstant.GetPositions(reading.Topic),
+                DeepTarotConstant.GetPositions(reading.Topic, options.Count),
                 [.. cards.Select(c => c.CardCode)]
             );
         }
@@ -205,7 +292,10 @@ public class AIDeepTarotReadingService(
             reading.Title,
             answerJson,
             cards,
-            reading.CreatedAt
+            reading.CreatedAt,
+            reading.Question,
+            options.Count > 0 ? options : null,
+            reading.TimeFrame
         );
     }
 
@@ -225,6 +315,7 @@ public class AIDeepTarotReadingService(
                 r.Title,
                 r.AnswerSummary,
                 r.Cards,
+                r.Question,
                 r.CreatedAt,
             })
             .ToListAsync(cancellationToken);
@@ -236,7 +327,8 @@ public class AIDeepTarotReadingService(
                 r.Title,
                 r.AnswerSummary,
                 DeserializeCards(r.Cards),
-                r.CreatedAt
+                r.CreatedAt,
+                r.Question
             ))
             .ToList();
 
@@ -275,13 +367,10 @@ public class AIDeepTarotReadingService(
             .Select(
                 (position, index) =>
                 {
-                    var card = cards[index];
-                    var name = TarotConstant.GetCardName(card.CardCode) ?? card.CardCode;
-                    var orientation = card.IsReversed ? "Reversed" : "Upright";
                     var monthLabel = isTwelveMonths
                         ? $" ({DeepTarotConstant.GetMonthLabel(position, createdAt)})"
                         : string.Empty;
-                    return $"{position.Number}. {position.Name}{monthLabel} [{position.Keywords}] -> {name} ({orientation}), key=\"{position.Key}\"";
+                    return BuildCardLine(position, cards[index], monthLabel);
                 }
             )
             .ToList();
@@ -292,6 +381,128 @@ public class AIDeepTarotReadingService(
             ? BuildTwelveMonthsPrompt(positions, lines, languageName, positionCount, createdAt)
             : BuildTwelveHousesPrompt(positions, lines, languageName, positionCount);
     }
+
+    /// <summary>
+    /// Renders one spread position and the card drawn on it as a prompt line.
+    /// </summary>
+    private static string BuildCardLine(
+        DeepTarotPosition position,
+        AiDeepCardRequest card,
+        string suffix = ""
+    )
+    {
+        var name = TarotConstant.GetCardName(card.CardCode) ?? card.CardCode;
+        var orientation = card.IsReversed ? "Reversed" : "Upright";
+
+        return $"{position.Number}. {position.Name}{suffix} [{position.Keywords}] -> {name} ({orientation}), key=\"{position.Key}\"";
+    }
+
+    /// <summary>
+    /// Builds the prompt of the crossroads spread: the user's question, the options they are
+    /// choosing between, three cards per option and one closing summary card.
+    /// </summary>
+    private static string BuildCrossroadsPrompt(
+        string locale,
+        string question,
+        IReadOnlyList<string> options,
+        CrossroadsTimeFrame? timeFrame,
+        IReadOnlyList<AiDeepCardRequest> cards,
+        IReadOnlyList<DeepTarotPosition> positions
+    )
+    {
+        var languageName = locale == "vi" ? "Vietnamese" : "English";
+
+        var optionCount = options.Count;
+        var aspectCount = DeepTarotConstant.CrossroadsCardsPerOption;
+
+        var lines = positions
+            .Select(
+                (position, index) =>
+                    BuildCardLine(position, cards[index], DescribeCrossroadsOption(position, options))
+            )
+            .ToList();
+
+        return string.Join(
+            "\n",
+            "You are a professional, empathetic, and intuitive Tarot reader who specializes in guiding people through a difficult decision.",
+            $"The user asked for a specialized crossroads tarot reading: they are deciding between {optionCount} options, and each option is read on {aspectCount} cards (current energy, how it develops, outcome), followed by one closing card that summarises the whole decision and gives the advice.",
+            "",
+            "### THE DECISION",
+            $"The user's question: \"{question}\"",
+            "The options the user is choosing between (use these EXACT texts when you name an option, never paraphrase or number them differently):",
+            string.Join(
+                "\n",
+                options.Select((option, index) => $"{index + 1}. {option}")
+            ),
+            $"The decision timeframe: {DescribeTimeFrame(timeFrame)}",
+            "",
+            "### RULE 1: OPTION MEANING IS FIXED",
+            "- Each option owns exactly 3 cards in the given order (current energy -> how it develops -> outcome). Never swap options, never renumber them, never merge or skip one.",
+            "- The LAST card of the spread is the closing summary of the whole decision and the advice the user should follow. It is not part of any option.",
+            "- Interpret each card only in the light of the option and aspect it is attached to. Do not let one option's energy bleed into another.",
+            "- A reversed card shows a blocked, internalized or shadowed expression of the same option and aspect (it is NOT a separate meaning).",
+            "### RULE 2: COMPARE, DO NOT JUST LIST",
+            "- The whole point of this spread is the COMPARISON between the options. Reference the other options where it helps, so the user sees how they rank against each other.",
+            "- In `overview`, state plainly which option the cards favour and which one they warn against, and why. Be honest and direct: if two options are close, say so instead of forcing a false winner.",
+            "### RULE 3: TONE & LANGUAGE",
+            $"Language: MUST respond in natural, warm, insightful, and accessible {languageName}.",
+            "Style: WEAVE the options naturally into one coherent reading. DO NOT mention rule names, prompt mechanics, or treat the options as unrelated puzzle pieces (e.g., do not say 'According to Rule 2...'). Speak directly to the user's heart.",
+            "Quality: Ensure EVERY option is given a thorough analysis across all 3 of its cards. Do not rush the last options.",
+            "Structure:",
+            $"+ Write exactly {positions.Count} sections: {aspectCount} per option, then the closing summary section, in the given order.",
+            $"+ Each section: `title` is a short human-readable label in {languageName} (3-8 words). `interpretation` explains the card within that option and aspect (~70-100 words).",
+            "+ Then `overview` compares the options and gives the verdict (~120-180 words), and `overallAdvice` is the concrete recommendation for the user (~60-100 words).",
+            "",
+            "The spread positions and the card drawn on each of them:",
+            string.Join("\n", lines),
+            "",
+            "Interpret the spread and return ONLY one valid JSON string (no other text), according to this exact schema:",
+            $$"""{ "title": "short title of the reading (5-8 words, in {{languageName}})", "overview": "how the options compare and which one the cards favour", "sections": [ { "key": "the position key given in the spread, e.g. \"{{positions[0].Key}}\"", "title": "short label of the option and its aspect", "cardCode": "the card code", "interpretation": "interpretation of the card in the context of that option and aspect" } ], "overallAdvice": "the recommendation the user should follow" }"""
+        );
+    }
+
+    /// <summary>
+    /// Resolves the option a crossroads position belongs to, by parsing its machine key.
+    /// </summary>
+    /// <returns>The 1-based option index, or 0 for the closing summary card.</returns>
+    private static int GetCrossroadsOptionIndex(DeepTarotPosition position)
+    {
+        if (position.Key == DeepTarotConstant.CrossroadsSummaryKey)
+        {
+            return 0;
+        }
+
+        var segments = position.Key.Split('-');
+
+        return segments.Length >= 2 && int.TryParse(segments[1], out var index) ? index : 0;
+    }
+
+    /// <summary>
+    /// Renders the option text a crossroads position belongs to, so the AI never has to guess
+    /// which option "Option 2" refers to.
+    /// </summary>
+    private static string DescribeCrossroadsOption(
+        DeepTarotPosition position,
+        IReadOnlyList<string> options
+    )
+    {
+        var index = GetCrossroadsOptionIndex(position);
+
+        return index >= 1 && index <= options.Count ? $" = \"{options[index - 1]}\"" : string.Empty;
+    }
+
+    private static string DescribeTimeFrame(CrossroadsTimeFrame? timeFrame) =>
+        timeFrame switch
+        {
+            CrossroadsTimeFrame.Now =>
+                "right now - the decision cannot wait, so read every option in the present moment",
+            CrossroadsTimeFrame.OneToThreeMonths =>
+                "within the next 1 to 3 months - read every option over the coming weeks",
+            CrossroadsTimeFrame.OverSixMonths =>
+                "more than 6 months away - read every option as a long-term path",
+            _ =>
+                "not specified by the user - read the options on a general, medium-term horizon",
+        };
 
     private static string BuildTwelveHousesPrompt(
         IReadOnlyList<DeepTarotPosition> positions,
@@ -373,6 +584,27 @@ public class AIDeepTarotReadingService(
         {
             var cards = JsonSerializer.Deserialize<List<AiDeepReadingCard>>(cardsJson, JsonOptions);
             return cards ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    /// <summary>
+    /// Reads back the options of a crossroads reading, tolerating a missing or malformed column
+    /// by falling back to an empty list, exactly like <see cref="DeserializeCards"/>.
+    /// </summary>
+    private static List<string> DeserializeOptions(string? optionsJson)
+    {
+        if (string.IsNullOrWhiteSpace(optionsJson))
+        {
+            return [];
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(optionsJson, JsonOptions) ?? [];
         }
         catch (JsonException)
         {

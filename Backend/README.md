@@ -221,6 +221,7 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 | `GET` | `api/aiTarot` | Get all AI tarot readings (short answer excerpt only) | JWT |
 | `POST` | `api/aiDeepTarot/twelveHouses` | Create a 12 astrological houses deep tarot reading (12 cards, Gemini), spends 3 red coins | JWT |
 | `POST` | `api/aiDeepTarot/twelveMonths` | Create a 12 months deep tarot reading (12 cards, Gemini), spends 3 red coins; the spread runs from the month after the current one | JWT |
+| `POST` | `api/aiDeepTarot/crossroads` | Create a crossroads deep tarot reading (2–4 options, Gemini), spends 1 red coin per option; the spread holds 3 cards per option + 1 closing card | JWT |
 | `GET` | `api/aiDeepTarot/{readingId:guid}` | Get one deep tarot reading | JWT |
 | `GET` | `api/aiDeepTarot` | Get all deep tarot readings (short answer excerpt only) | JWT |
 | `DELETE` | `api/aiDeepTarot/{readingId:guid}` | Delete a deep tarot reading (soft delete) | JWT |

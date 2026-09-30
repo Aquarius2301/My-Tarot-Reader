@@ -1,13 +1,15 @@
 import { CopyButton, ErrorComponent } from "@/components";
-import { AI_DEEP_TAROT_POSITIONS, type AiDeepTarotTopic } from "@/constants";
+import type { AiDeepTarotTopic } from "@/constants";
 import { useGetAiDeepTarotReadingById } from "@/hooks/api";
 import { WEB_URL } from "@/routes";
 import {
+  getCrossroadsTimeFrameLabelKey,
+  getDeepTarotPositionKeys,
   getDeepTarotPositionLabel,
   matchDeepAnswerSections,
   parseAiDeepTarotAnswer,
 } from "@/utils";
-import { Button, Card, Flex, Spin, Typography, theme } from "antd";
+import { Button, Card, Flex, Spin, Tag, Typography, theme } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { PositionSectionCard } from "./components";
@@ -18,11 +20,13 @@ const { Title, Text, Paragraph } = Typography;
 const DRAW_URL_BY_TOPIC = {
   twelveHouses: WEB_URL.aiDeepTarotTwelveHouses,
   twelveMonths: WEB_URL.aiDeepTarotTwelveMonths,
+  crossroads: WEB_URL.aiDeepTarotCrossroads,
 } as const satisfies Record<AiDeepTarotTopic, string>;
 
 /**
  * Shows a created deep tarot reading, whichever spread it belongs to: the
- * title, then one card per position (a house name, or a calendar month).
+ * title, then one card per position (a house name, a calendar month, or one
+ * aspect of one of the options the user compared).
  */
 export default function AiDeepTarotResultPage() {
   const { readingId } = useParams<{ readingId: string }>();
@@ -43,7 +47,9 @@ export default function AiDeepTarotResultPage() {
     return <ErrorComponent type="server" onRetry={refetch} />;
   }
 
-  const positions = AI_DEEP_TAROT_POSITIONS[data.topic] ?? [];
+  const isCrossroads = data.topic === "crossroads";
+  const options = data.options ?? [];
+  const positions = getDeepTarotPositionKeys(data.topic, options.length);
   const answer = parseAiDeepTarotAnswer(data.answer);
   const matchedSections = answer
     ? matchDeepAnswerSections(answer, data.cards, positions)
@@ -59,6 +65,7 @@ export default function AiDeepTarotResultPage() {
       positions[index] ?? "",
       data.createdAt,
       t,
+      options,
     ) || t(`tarot.meaning.${data.cards[index].cardCode}.name`);
 
   const buildCopyText = () => {
@@ -109,6 +116,35 @@ export default function AiDeepTarotResultPage() {
           {answer && <CopyButton text={buildCopyText()} size="small" />}
         </Flex>
       </div>
+
+      {isCrossroads && (data.question || options.length > 0) && (
+        <Card style={{ marginBottom: token.marginLG }}>
+          {data.question && (
+            <Paragraph style={{ margin: 0 }}>
+              <Text strong>{t("page.aiDeepTarot.result.yourQuestion")}</Text>{" "}
+              {data.question}
+            </Paragraph>
+          )}
+          {options.length > 0 && (
+            <Paragraph style={{ margin: 0 }}>
+              <Text strong>{t("page.aiDeepTarot.result.yourOptions")}</Text>
+              <Flex gap={token.marginXS} wrap style={{ marginTop: token.marginXS }}>
+                {options.map((option, index) => (
+                  <Tag key={`${option}-${index}`} color="purple">
+                    {option}
+                  </Tag>
+                ))}
+              </Flex>
+            </Paragraph>
+          )}
+          {data.timeFrame && (
+            <Paragraph style={{ margin: token.marginXS + "px 0 0" }}>
+              <Text strong>{t("page.aiDeepTarot.result.yourTimeFrame")}</Text>{" "}
+              {t(getCrossroadsTimeFrameLabelKey(data.timeFrame))}
+            </Paragraph>
+          )}
+        </Card>
+      )}
 
       {answer ? (
         <Flex vertical gap={token.marginLG}>

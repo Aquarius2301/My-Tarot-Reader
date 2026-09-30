@@ -15,6 +15,9 @@ public class AIDeepTarotReadingConfiguration : IEntityTypeConfiguration<AIDeepTa
         builder.Property(x => x.Answer).IsRequired();
         builder.Property(x => x.AnswerSummary).IsRequired().HasMaxLength(500);
         builder.Property(x => x.Cards).IsRequired().HasMaxLength(2000);
+        builder.Property(x => x.Question).HasMaxLength(500);
+        builder.Property(x => x.Options).HasMaxLength(2000);
+        builder.Property(x => x.TimeFrame).HasConversion<string>().HasMaxLength(30);
 
         builder
             .HasOne(a => a.User)

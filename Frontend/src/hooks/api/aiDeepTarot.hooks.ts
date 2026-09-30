@@ -1,5 +1,6 @@
 import { aiDeepTarotApi } from "@/api";
 import type {
+  CreateCrossroadsReadingRequest,
   CreateTwelveHousesReadingRequest,
   CreateTwelveMonthsReadingRequest,
 } from "@/types";
@@ -42,6 +43,16 @@ export const useCreateTwelveMonthsReading = () => {
   return useMutation({
     mutationFn: async (request: CreateTwelveMonthsReadingRequest) =>
       aiDeepTarotApi.createTwelveMonthsReading(request),
+    onSuccess,
+  });
+};
+
+export const useCreateCrossroadsReading = () => {
+  const onSuccess = useInvalidateAfterCreate();
+
+  return useMutation({
+    mutationFn: async (request: CreateCrossroadsReadingRequest) =>
+      aiDeepTarotApi.createCrossroadsReading(request),
     onSuccess,
   });
 };

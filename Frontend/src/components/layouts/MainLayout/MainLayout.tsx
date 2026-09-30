@@ -103,6 +103,11 @@ export default function MainLayout({
               label: t("page.aiDeepTarot.spreads.twelveMonths.title"),
               href: WEB_URL.aiDeepTarotTwelveMonths,
             },
+            {
+              key: "aiDeepTarotCrossroads",
+              label: t("page.aiDeepTarot.spreads.crossroads.title"),
+              href: WEB_URL.aiDeepTarotCrossroads,
+            },
           ],
         },
       ].filter(Boolean) as NavItem[],

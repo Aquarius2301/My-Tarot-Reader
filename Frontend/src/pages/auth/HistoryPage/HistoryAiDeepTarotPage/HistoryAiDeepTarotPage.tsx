@@ -11,6 +11,7 @@ import { WEB_URL } from "@/routes";
 import { convertISOToDate, getErrorMessage } from "@/utils";
 import type { GetAllAiDeepTarotReadingItem } from "@/types";
 import {
+  BranchesOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
   DeleteOutlined,
@@ -36,6 +37,7 @@ import { DeleteAiDeepTarotModal } from "./components";
 const TOPIC_ICONS = {
   twelveHouses: <HomeOutlined />,
   twelveMonths: <CalendarOutlined />,
+  crossroads: <BranchesOutlined />,
 } as const satisfies Record<AiDeepTarotTopic, ReactNode>;
 
 const { Title, Text, Paragraph } = Typography;
@@ -222,6 +224,16 @@ function HistoryAiDeepTarotItem({
           <Text type="secondary">{time}</Text>
         </Flex>
       </Flex>
+
+      {item.question && (
+        <Paragraph
+          type="secondary"
+          ellipsis={{ rows: 2 }}
+          style={{ margin: 0, fontStyle: "italic" }}
+        >
+          {item.question}
+        </Paragraph>
+      )}
 
       <Paragraph type="secondary" ellipsis={{ rows: 3 }} style={{ margin: 0 }}>
         {item.answerSummary}

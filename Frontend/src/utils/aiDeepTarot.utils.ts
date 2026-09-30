@@ -1,4 +1,10 @@
-import type { AiDeepTarotTopic } from "@/constants";
+import {
+  AI_DEEP_TAROT_POSITIONS,
+  getCrossroadsPositionKeys,
+  type AiDeepTarotTopic,
+  type CrossroadsAspect,
+  type CrossroadsTimeFrame,
+} from "@/constants";
 import type {
   AiDeepReadingCard,
   AiDeepTarotAnswer,
@@ -10,6 +16,25 @@ import type {
  * i18next while still being able to resolve localized position labels.
  */
 type Translate = (key: string) => string;
+
+/**
+ * Parses a crossroads position key of the form `option-{n}-{aspect}`.
+ *
+ * @returns the 1-based option index and its aspect, or null when the key is
+ * not an option position (i.e. it is the closing `summary` card)
+ */
+export function parseCrossroadsPositionKey(
+  positionKey: string,
+): { optionIndex: number; aspect: CrossroadsAspect } | null {
+  const segments = positionKey.split("-");
+  if (segments.length !== 3 || segments[0] !== "option") return null;
+
+  const optionIndex = Number(segments[1]);
+  const aspect = segments[2] as CrossroadsAspect;
+  if (!Number.isInteger(optionIndex) || optionIndex < 1) return null;
+
+  return { optionIndex, aspect };
+}
 
 /** Parses the stored answer JSON into a typed structure, or null if invalid. */
 export function parseAiDeepTarotAnswer(
@@ -92,15 +117,36 @@ export function getDeepTarotMonthLabel(
 }
 
 /**
+ * Resolves the position keys of a topic's spread, in drawn order. The 12 houses
+ * and 12 months spreads have a fixed size and are listed in
+ * `AI_DEEP_TAROT_POSITIONS`; the crossroads spread is sized by the number of
+ * options, so its keys are derived instead.
+ *
+ * @param topic the topic of the spread
+ * @param optionCount the number of options, only used by the crossroads spread
+ * @returns the position keys in drawn order, or an empty list for an unknown topic
+ */
+export function getDeepTarotPositionKeys(
+  topic: AiDeepTarotTopic,
+  optionCount = 0,
+): readonly string[] {
+  if (topic === "crossroads") return getCrossroadsPositionKeys(optionCount);
+  return AI_DEEP_TAROT_POSITIONS[topic] ?? [];
+}
+
+/**
  * Resolves the display label of a spread position, whichever topic it belongs
  * to. The 12 houses labels are static translations; the 12 months labels are
- * calendar values derived from the reading date, so they are not i18n keys.
+ * calendar values derived from the reading date, so they are not i18n keys; the
+ * crossroads labels combine the user's own option text with a translated aspect
+ * name, so they are not i18n keys either.
  *
  * @param topic the topic the reading belongs to
  * @param positionIndex the 0-based index of the position in drawn order
  * @param positionKey the machine key of the position, e.g. `house-3` / `month-3`
  * @param createdAt the ISO date the reading was created at
  * @param t the translation function
+ * @param options the compared options, only used by the crossroads spread
  * @returns the position label, or an empty string when the position is unknown
  */
 export function getDeepTarotPositionLabel(
@@ -109,10 +155,43 @@ export function getDeepTarotPositionLabel(
   positionKey: string,
   createdAt: string,
   t: Translate,
+  options: readonly string[] = [],
 ): string {
   if (!positionKey) return "";
 
-  return topic === "twelveMonths"
-    ? getDeepTarotMonthLabel(createdAt, positionIndex + 1)
-    : t(`page.aiDeepTarot.spreads.twelveHouses.position.${positionKey}`);
+  if (topic === "twelveMonths") {
+    return getDeepTarotMonthLabel(createdAt, positionIndex + 1);
+  }
+
+  if (topic === "crossroads") {
+    return getCrossroadsPositionLabel(positionKey, t, options);
+  }
+
+  return t(`page.aiDeepTarot.spreads.twelveHouses.position.${positionKey}`);
+}
+
+/**
+ * Resolves the label of one crossroads position: the user's option text followed
+ * by the translated aspect name, or the translated summary label for the closing
+ * card.
+ */
+export function getCrossroadsPositionLabel(
+  positionKey: string,
+  t: Translate,
+  options: readonly string[] = [],
+): string {
+  const parsed = parseCrossroadsPositionKey(positionKey);
+  if (!parsed) return t("page.aiDeepTarot.spreads.crossroads.summaryLabel");
+
+  const option = options[parsed.optionIndex - 1] ?? "";
+  return `${option} · ${t(
+    `page.aiDeepTarot.spreads.crossroads.aspects.${parsed.aspect}`,
+  )}`;
+}
+
+/** Resolves the i18n key of a crossroads timeframe label. */
+export function getCrossroadsTimeFrameLabelKey(
+  timeFrame: CrossroadsTimeFrame,
+): string {
+  return `page.aiDeepTarot.spreads.crossroads.timeFrames.${timeFrame}`;
 }

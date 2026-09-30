@@ -80,3 +80,60 @@ public class CreateTwelveMonthsReadingRequestValidator
 {
     public CreateTwelveMonthsReadingRequestValidator() => RequireCardCount(DeepTarotTopic.TwelveMonths);
 }
+
+/// <summary>
+/// Validates the crossroads create request. The topic is fixed by the route, so the client
+/// cannot ask for a different spread; the option count is not, because it sizes the spread.
+/// </summary>
+public class CreateCrossroadsReadingRequestValidator
+    : CreateDeepTarotReadingRequestValidatorBase<CreateCrossroadsReadingRequest>
+{
+    public CreateCrossroadsReadingRequestValidator()
+    {
+        RuleFor(x => x.Question)
+            .NotEmpty()
+            .WithMessage(AiDeepTarotErrorCode.InvalidQuestion)
+            .MaximumLength(DeepTarotConstant.CrossroadsQuestionMaxLength)
+            .WithMessage(AiDeepTarotErrorCode.InvalidQuestion);
+
+        RuleFor(x => x.Options)
+            .NotNull()
+            .WithMessage(AiDeepTarotErrorCode.InvalidOption)
+            .Must(options =>
+                options is not null && DeepTarotConstant.IsValidCrossroadsOptionCount(options.Count)
+            )
+            .WithMessage(AiDeepTarotErrorCode.InvalidOption);
+
+        RuleForEach(x => x.Options)
+            .NotEmpty()
+            .WithMessage(AiDeepTarotErrorCode.InvalidOption)
+            .MaximumLength(DeepTarotConstant.CrossroadsOptionMaxLength)
+            .WithMessage(AiDeepTarotErrorCode.InvalidOption);
+
+        // Two options that differ only by casing or surrounding whitespace are the same choice.
+        RuleFor(x => x.Options)
+            .Must(options =>
+                options is null
+                || options
+                    .Select(option => option?.Trim().ToLowerInvariant())
+                    .Distinct()
+                    .Count()
+                    == options.Count
+            )
+            .WithMessage(AiDeepTarotErrorCode.InvalidOption);
+
+        RuleFor(x => x.TimeFrame)
+            .IsInEnum()
+            .WithMessage(AiDeepTarotErrorCode.InvalidTimeFrame)
+            .When(timeFrame => timeFrame is not null);
+
+        // The spread is sized by the options, so the count cannot come from the topic alone.
+        RuleFor(x => x.Cards)
+            .Must((x, cards) =>
+                cards is not null
+                && cards.Count
+                    == DeepTarotConstant.GetCrossroadsCardCount(x.Options?.Count ?? 0)
+            )
+            .WithMessage(AiDeepTarotErrorCode.InvalidCardCount);
+    }
+}

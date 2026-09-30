@@ -40,6 +40,20 @@ public class AIDeepTarotReadingServiceTests
         "maj-11",
     ];
 
+    /// <summary>
+    /// The full pool the spread fixtures draw from. Its first 12 entries are
+    /// <see cref="TwelveCardCodes"/>, so the 12-card spreads are unaffected; the extra majors
+    /// are only needed by the 13-card crossroads spread (4 options).
+    /// </summary>
+    private static readonly string[] SpreadCardCodes =
+    [
+        .. TwelveCardCodes,
+        "maj-12",
+        "maj-13",
+        "maj-14",
+        "maj-15",
+    ];
+
     #region Helpers
 
     private static AppDbContext CreateInMemoryContext()
@@ -80,7 +94,8 @@ public class AIDeepTarotReadingServiceTests
             gemini.Object,
             wallet.Object,
             new CreateTwelveHousesReadingRequestValidator(),
-            new CreateTwelveMonthsReadingRequestValidator()
+            new CreateTwelveMonthsReadingRequestValidator(),
+            new CreateCrossroadsReadingRequestValidator()
         );
         return (service, db, gemini, wallet);
     }
@@ -122,8 +137,66 @@ public class AIDeepTarotReadingServiceTests
     private static CreateTwelveMonthsReadingRequest ValidMonthsRequest(string locale = "vi") =>
         new(locale, Cards(12, reversalStep: 3));
 
+    /// <summary>
+    /// A valid crossroads request comparing the given options, with the matching
+    /// <c>options.Count * 3 + 1</c> cards.
+    /// </summary>
+    private static CreateCrossroadsReadingRequest ValidCrossroadsRequest(
+        string[]? options = null,
+        string locale = "vi",
+        CrossroadsTimeFrame? timeFrame = CrossroadsTimeFrame.OneToThreeMonths
+    )
+    {
+        var resolvedOptions = options ?? DefaultCrossroadsOptions;
+
+        return new CreateCrossroadsReadingRequest(
+            locale,
+            "Tôi nên chọn công việc nào?",
+            [.. resolvedOptions],
+            timeFrame,
+            Cards(DeepTarotConstant.GetCrossroadsCardCount(resolvedOptions.Length), reversalStep: 3)
+        );
+    }
+
+    private static readonly string[] DefaultCrossroadsOptions =
+        ["Ở lại công ty hiện tại", "Nhảy sang công ty mới"];
+
+    /// <summary>
+    /// Builds a Gemini payload with one section per crossroads position (three per option plus
+    /// the closing summary), using the drawn cards.
+    /// </summary>
+    private static string BuildCrossroadsGeminiJson(
+        string overview,
+        IReadOnlyList<string> options,
+        IReadOnlyList<AiDeepCardRequest> cards
+    )
+    {
+        var positions = DeepTarotConstant.GetCrossroadsPositions(options.Count);
+
+        return JsonSerializer.Serialize(
+            new
+            {
+                title = "Ngã rẽ quyết định",
+                overview,
+                sections = positions
+                    .Select(
+                        (position, index) =>
+                            new
+                            {
+                                key = position.Key,
+                                title = position.Name,
+                                cardCode = cards[index].CardCode,
+                                interpretation = $"Diễn giải cho {position.Name}.",
+                            }
+                    )
+                    .ToArray(),
+                overallAdvice = "Hãy chọn con đường ít hối tiếc nhất.",
+            }
+        );
+    }
+
     private static List<AiDeepCardRequest> Cards(int count, int reversalStep) =>
-        TwelveCardCodes
+        SpreadCardCodes
             .Take(count)
             .Select((code, index) => new AiDeepCardRequest(code, index % reversalStep == 0))
             .ToList();
@@ -1134,6 +1207,478 @@ public class AIDeepTarotReadingServiceTests
             .Select(s => s.GetProperty("key").GetString())
             .Should()
             .Equal(Enumerable.Range(1, 12).Select(i => $"month-{i}"));
+    }
+
+    #endregion
+
+    #region CreateCrossroadsReadingAsync
+
+    /// <summary>
+    /// The spread is sized by the options: two options take 7 cards, four options take 13, and
+    /// the position keys are "option-{n}-{aspect}" plus a closing "summary".
+    /// </summary>
+    [Theory]
+    [InlineData(2, 7)]
+    [InlineData(3, 10)]
+    [InlineData(4, 13)]
+    public void CrossroadsSpread_CardCountAndKeysFollowTheOptionCount(int optionCount, int expectedCards)
+    {
+        var positions = DeepTarotConstant.GetCrossroadsPositions(optionCount);
+
+        positions.Should().HaveCount(expectedCards);
+        DeepTarotConstant.GetCrossroadsCardCount(optionCount).Should().Be(expectedCards);
+
+        positions
+            .Select((position, index) => position.Number)
+            .Should()
+            .Equal(Enumerable.Range(1, expectedCards));
+
+        positions.Take(optionCount * 3).Select(p => p.Key).Should().AllSatisfy(key =>
+            key.Should().MatchRegex(@"^option-[1-4]-(current|evolution|outcome)$")
+        );
+        positions[0].Key.Should().Be("option-1-current");
+        positions[2].Key.Should().Be("option-1-outcome");
+        positions[3].Key.Should().Be("option-2-current");
+        positions[^1].Key.Should().Be("summary");
+        positions[^1].Number.Should().Be(expectedCards);
+    }
+
+    /// <summary>
+    /// The reading costs one red coin per option.
+    /// </summary>
+    [Theory]
+    [InlineData(2, 2)]
+    [InlineData(3, 3)]
+    [InlineData(4, 4)]
+    public void CrossroadsSpread_CostIsOneRedCoinPerOption(int optionCount, int expectedCost)
+    {
+        DeepTarotConstant.GetCost(DeepTarotTopic.Crossroads, optionCount).Should().Be(expectedCost);
+    }
+
+    /// <summary>
+    /// A valid crossroads request is persisted with the crossroads topic, the user's question,
+    /// the compared options, the timeframe, and one section per position.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_ValidRequest_SavesReadingWithInputs()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        var request = ValidCrossroadsRequest();
+        var overview = "Công ty mới mở ra một hướng đi rõ ràng hơn.";
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                BuildCrossroadsGeminiJson(overview, request.Options, request.Cards)
+            );
+
+        var result = await service.CreateCrossroadsReadingAsync(request, userId);
+
+        var entity = Assert.Single(db.AIDeepTarotReadings);
+        result.Id.Should().Be(entity.Id);
+        entity.UserId.Should().Be(userId);
+        entity.Topic.Should().Be(DeepTarotTopic.Crossroads);
+        entity.Question.Should().Be("Tôi nên chọn công việc nào?");
+        entity.TimeFrame.Should().Be(CrossroadsTimeFrame.OneToThreeMonths);
+        JsonSerializer
+            .Deserialize<List<string>>(
+                entity.Options!,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            )
+            .Should()
+            .Equal(request.Options);
+
+        var sections = ParseAnswer(entity.Answer).GetProperty("sections").EnumerateArray().ToList();
+        sections.Should().HaveCount(7);
+        sections.Select(s => s.GetProperty("key").GetString()).Should().Equal(
+            "option-1-current",
+            "option-1-evolution",
+            "option-1-outcome",
+            "option-2-current",
+            "option-2-evolution",
+            "option-2-outcome",
+            "summary"
+        );
+        ParseAnswer(entity.Answer)
+            .GetProperty("overview")
+            .GetString()
+            .Should()
+            .Be(overview);
+    }
+
+    /// <summary>
+    /// The options, the question, the timeframe and every position key with its card reach the
+    /// prompt, so the model can map each card back to the right option.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_PromptContainsQuestionOptionsAndKeys()
+    {
+        var (service, _, gemini, _) = CreateSut();
+        var request = ValidCrossroadsRequest(
+            ["Ở lại công ty hiện tại", "Nhảy sang công ty mới", "Mở công ty của riêng mình"]
+        );
+        var rawPrompt = string.Empty;
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, CancellationToken>((prompt, _) => rawPrompt = prompt)
+            .ReturnsAsync(BuildCrossroadsGeminiJson("Tổng quan.", request.Options, request.Cards));
+
+        await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        rawPrompt.Should().Contain("Tôi nên chọn công việc nào?");
+        request.Options.Should().AllSatisfy(option => rawPrompt.Should().Contain(option));
+        rawPrompt.Should().Contain("option-1-current");
+        rawPrompt.Should().Contain("option-3-outcome");
+        rawPrompt.Should().Contain("summary");
+        request.Cards
+            .Select(c => TarotConstant.GetCardName(c.CardCode))
+            .Should()
+            .AllSatisfy(name => rawPrompt.Should().Contain(name));
+    }
+
+    /// <summary>
+    /// The chosen timeframe is described to the model, and a missing timeframe is allowed.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_TimeFrame_ReachesThePrompt()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var request = ValidCrossroadsRequest(timeFrame: CrossroadsTimeFrame.OverSixMonths);
+        var rawPrompt = string.Empty;
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, CancellationToken>((prompt, _) => rawPrompt = prompt)
+            .ReturnsAsync(BuildCrossroadsGeminiJson("Tổng quan.", request.Options, request.Cards));
+
+        await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        rawPrompt.Should().Contain("more than 6 months");
+        Assert.Single(db.AIDeepTarotReadings).TimeFrame.Should().Be(
+            CrossroadsTimeFrame.OverSixMonths
+        );
+    }
+
+    /// <summary>
+    /// A reading without a timeframe is accepted and stores a null timeframe.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_NoTimeFrame_SucceedsAndStoresNull()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var request = ValidCrossroadsRequest(timeFrame: null);
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildCrossroadsGeminiJson("Tổng quan.", request.Options, request.Cards));
+
+        await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        Assert.Single(db.AIDeepTarotReadings).TimeFrame.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Each extra option raises the cost by exactly one red coin.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_ValidRequest_DeductsOneRedCoinPerOption()
+    {
+        var (service, db, gemini, wallet) = CreateSut();
+        var options = new[] { "A", "B", "C", "D" };
+        var request = ValidCrossroadsRequest(options);
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildCrossroadsGeminiJson("Tổng quan.", request.Options, request.Cards));
+
+        await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        wallet.Verify(
+            w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    new DeductRedCoinRequest(4, OrderType.AIDeepTarot),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+        db.AIDeepTarotReadings.Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// Fewer than 2 options is rejected before Gemini is called.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_TooFewOptions_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var request = ValidCrossroadsRequest() with { Options = ["Chỉ một lựa chọn"] };
+
+        var act = async () =>
+            await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidOption);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// More than 4 options is rejected before Gemini is called.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_TooManyOptions_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var request = ValidCrossroadsRequest() with
+        {
+            Options = ["A", "B", "C", "D", "E"],
+        };
+
+        var act = async () =>
+            await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidOption);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// An empty question is rejected before Gemini is called.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_EmptyQuestion_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var request = ValidCrossroadsRequest() with { Question = "   " };
+
+        var act = async () =>
+            await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidQuestion);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// A question longer than the declared limit is rejected before Gemini is called.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_QuestionTooLong_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, _, gemini, _) = CreateSut();
+        var request = ValidCrossroadsRequest() with
+        {
+            Question = new string('a', DeepTarotConstant.CrossroadsQuestionMaxLength + 1),
+        };
+
+        var act = async () =>
+            await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidQuestion);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    /// <summary>
+    /// Two options that only differ by casing or padding are the same choice, so the request
+    /// is rejected before Gemini is called.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_DuplicateOptions_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, _, gemini, _) = CreateSut();
+        var request = ValidCrossroadsRequest() with
+        {
+            Options = ["Ở lại công ty hiện tại", "  Ở lại công ty hiện tại  "],
+        };
+
+        var act = async () =>
+            await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidOption);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    /// <summary>
+    /// A card list that does not match <c>options.Count * 3 + 1</c> is rejected, so the spread
+    /// and the drawn cards cannot drift apart.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_CardCountMismatch_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var request = ValidCrossroadsRequest() with { Cards = Cards(3, reversalStep: 3) };
+
+        var act = async () =>
+            await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidCardCount);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// The spread must not repeat a card, so every option aspect gets its own card.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_DuplicateCard_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var cards = ValidCrossroadsRequest().Cards;
+        cards[4] = new AiDeepCardRequest(cards[0].CardCode, false);
+        var request = ValidCrossroadsRequest() with { Cards = cards };
+
+        var act = async () =>
+            await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == AiDeepTarotErrorCode.InvalidCard);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Below the per-option cost the reading is rejected before Gemini is called and no coin
+    /// is deducted.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_InsufficientRedCoin_ThrowsBadRequestAndSkipsGemini()
+    {
+        var (service, db, gemini, wallet) = CreateSut();
+        SetupRedCoinBalance(wallet, redCoin: 1);
+        var request = ValidCrossroadsRequest(["A", "B", "C"]);
+
+        var act = async () =>
+            await service.CreateCrossroadsReadingAsync(request, Guid.NewGuid());
+
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .Where(e => e.ErrorCode == WalletErrorCode.InsufficientRedCoin);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        wallet.Verify(
+            w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<DeductRedCoinRequest>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// A failed Gemini call throws before any coin is deducted and nothing is persisted.
+    /// </summary>
+    [Fact]
+    public async Task CreateCrossroadsReading_GeminiFails_DeductsNoRedCoin()
+    {
+        var (service, db, gemini, wallet) = CreateSut();
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("gemini down"));
+
+        var act = async () =>
+            await service.CreateCrossroadsReadingAsync(ValidCrossroadsRequest(), Guid.NewGuid());
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        wallet.Verify(
+            w =>
+                w.DeductRedCoinAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<DeductRedCoinRequest>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+        db.AIDeepTarotReadings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// The stored answer of a crossroads reading is re-normalized against the same positions
+    /// when it is read back, so the client always receives one section per position.
+    /// </summary>
+    [Fact]
+    public async Task GetAiDeepTarotReading_Crossroads_ReturnsInputsAndFullSpread()
+    {
+        var (service, db, gemini, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        var request = ValidCrossroadsRequest(["A", "B", "C"]);
+        gemini
+            .Setup(g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                BuildCrossroadsGeminiJson("Tổng quan.", request.Options, request.Cards)
+            );
+        var created = await service.CreateCrossroadsReadingAsync(request, userId);
+
+        var result = await service.GetAiDeepTarotReadingByIdAsync(userId, created.Id);
+
+        result.Topic.Should().Be(DeepTarotTopic.Crossroads);
+        result.Question.Should().Be("Tôi nên chọn công việc nào?");
+        result.Options.Should().Equal(request.Options);
+        result.TimeFrame.Should().Be(CrossroadsTimeFrame.OneToThreeMonths);
+        result.Cards.Should().HaveCount(10);
+        ParseAnswer(result.Answer)
+            .GetProperty("sections")
+            .EnumerateArray()
+            .Should()
+            .HaveCount(10);
+    }
+
+    /// <summary>
+    /// A reading of another topic is returned without the crossroads-only fields.
+    /// </summary>
+    [Fact]
+    public async Task GetAiDeepTarotReading_TwelveHouses_ReturnsNullCrossroadsFields()
+    {
+        var (service, db, _, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        var reading = await SeedReadingAsync(
+            db,
+            userId,
+            """[{"cardCode":"maj-00","isReversed":false}]"""
+        );
+
+        var result = await service.GetAiDeepTarotReadingByIdAsync(userId, reading.Id);
+
+        result.Question.Should().BeNull();
+        result.Options.Should().BeNull();
+        result.TimeFrame.Should().BeNull();
     }
 
     #endregion

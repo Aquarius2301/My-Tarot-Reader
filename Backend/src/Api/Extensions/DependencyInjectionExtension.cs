@@ -89,6 +89,10 @@ public static class DependencyInjectionExtension
             IValidator<CreateTwelveMonthsReadingRequest>,
             CreateTwelveMonthsReadingRequestValidator
         >();
+        services.AddScoped<
+            IValidator<CreateCrossroadsReadingRequest>,
+            CreateCrossroadsReadingRequestValidator
+        >();
 
         services.AddScoped<IValidator<CreateDevTokenRequest>, CreateDevTokenRequestValidator>();
 

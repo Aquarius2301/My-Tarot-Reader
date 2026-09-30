@@ -107,6 +107,9 @@ export const enPages = {
         advice: "Overall advice",
         noAnswer: "The reading content is being updated.",
         drawAgain: "Draw again",
+        yourQuestion: "Your question:",
+        yourOptions: "Your options:",
+        yourTimeFrame: "Timeframe:",
       },
       spreads: {
         twelveHouses: {
@@ -219,6 +222,84 @@ export const enPages = {
           draw: {
             subtitle:
               "Clear your mind, focus on the 12-month cycle ahead, then pick all 12 cards — each one fills a month in the order you draw it.",
+          },
+        },
+        crossroads: {
+          title: "Crossroads spread",
+          subtitle:
+            "Two or more paths are opening up in front of you? This spread compares each option so you can clearly see which one fits you best.",
+          what: {
+            title: "What is the Crossroads spread?",
+            body: "The Crossroads spread is a comparison spread: every option is read through 3 aspects (current energy, how it develops, outcome) so you see both the promise and the risk of each path, and a closing card then gives you the overall advice.",
+          },
+          why: {
+            title: "What is this spread for?",
+            items: {
+              compare:
+                "Side by side: instead of analysing each option in isolation, you see them next to each other and can truly compare them.",
+              clarify:
+                "Clarify ups and downs: every path has what you gain and what you lose; this spread lets you look straight at both without emotion clouding the view.",
+              direction:
+                "Find the direction that fits: the closing card gives you practical advice, so you can decide with fewer regrets.",
+            },
+          },
+          when: {
+            title: "When should you read the Crossroads?",
+            items: {
+              career:
+                "Changing jobs: stay where you are, move to a new company, or start your own?",
+              life:
+                "Life and love: choosing where to live, continuing or ending a relationship, or starting something new?",
+              timing:
+                "A decision with a deadline: when you are torn between two and four options and need clear guidance.",
+            },
+          },
+          guide: {
+            title: "How to read the Crossroads spread",
+            body: "Each option has 3 cards in this order: current energy, how it develops, outcome. The last card is the \"Summary & advice\" — it belongs to no option, it reflects the whole picture and guides your decision.",
+          },
+          options: {
+            title: "The options you are torn between",
+            hint: "How many options are you weighing up? At least 2, at most 4. Keep each one short and clear (100 characters max).",
+            label: "Option {{index}}",
+            placeholder: "e.g. Stay at my current company",
+            add: "Add an option",
+            remove: "Remove this option",
+          },
+          question: {
+            title: "Your question",
+            hint: "Phrase your question as clearly as you can (500 characters max).",
+            placeholder:
+              "e.g. Which path should I take to grow my career in the long run?",
+          },
+          timeFrame: {
+            title: "Decision timeframe",
+            hint: "If you want a time angle on the reading (optional), pick the timeframe that fits best.",
+            none: "Not specified",
+          },
+          timeFrames: {
+            now: "Right now (an urgent decision)",
+            oneToThreeMonths: "Within 1–3 months",
+            overSixMonths: "More than 6 months away",
+          },
+          aspects: {
+            current: "Current energy",
+            evolution: "How it develops",
+            outcome: "Outcome",
+          },
+          summaryLabel: "Summary & advice",
+          draw: {
+            subtitle:
+              "Clear your mind and focus on your question and your options. Each option gets 3 cards, followed by one closing summary card.",
+          },
+          errors: {
+            tooFewOptions: "You need at least 2 options to compare.",
+            tooManyOptions: "You can compare at most 4 options.",
+            duplicateOptions: "Your options must not repeat.",
+            emptyOption: "Each option cannot be empty.",
+            optionTooLong: "Each option can be at most 100 characters.",
+            questionEmpty: "Please enter your question.",
+            questionTooLong: "Your question can be at most 500 characters.",
           },
         },
       },

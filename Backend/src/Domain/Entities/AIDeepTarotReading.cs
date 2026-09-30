@@ -31,6 +31,26 @@ public class AIDeepTarotReading : BaseEntity
     /// </remarks>
     public string Cards { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The question the user asked, only set by spreads that accept free text.
+    /// </summary>
+    public string? Question { get; set; }
+
+    /// <summary>
+    /// The options the user is choosing between, represented as a string.
+    /// </summary>
+    /// <remarks>
+    /// This property stores the options by JSON serialization and is only set by
+    /// <see cref="DeepTarotTopic.Crossroads"/>, whose spread is sized by their count.
+    /// </remarks>
+    public string? Options { get; set; }
+
+    /// <summary>
+    /// The horizon over which the decision is evaluated, only set by
+    /// <see cref="DeepTarotTopic.Crossroads"/>.
+    /// </summary>
+    public CrossroadsTimeFrame? TimeFrame { get; set; }
+
     #region Navigation Properties
     public User User { get; set; } = null!;
 

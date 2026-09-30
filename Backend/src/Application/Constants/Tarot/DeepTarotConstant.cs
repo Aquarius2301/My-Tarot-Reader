@@ -13,15 +13,59 @@ namespace MyTarotReader.Application.Constants.Tarot;
 public record DeepTarotPosition(int Number, string Key, string Name, string Keywords);
 
 /// <summary>
+/// One of the fixed aspects every option of a dynamically sized spread is read on.
+/// </summary>
+/// <param name="Key">The machine key suffix of the aspect, used to build the position key.</param>
+/// <param name="Name">The English name of the aspect, used when prompting the AI.</param>
+/// <param name="Keywords">The themes of the aspect, used when prompting the AI.</param>
+public record DeepTarotAspect(string Key, string Name, string Keywords);
+
+/// <summary>
 /// Contains the spread definitions of the specialized (deep) tarot reading topics.
 /// </summary>
 /// <remarks>
 /// <see cref="DeepTarotTopic.TwelveHouses"/> and <see cref="DeepTarotTopic.TwelveMonths"/>
-/// are implemented; the remaining topics are declared on the enum but rejected until
-/// their spread is added here.
+/// have a fixed size; <see cref="DeepTarotTopic.Crossroads"/> is sized by the number of
+/// options the user submits. The remaining topics are declared on the enum but rejected
+/// until their spread is added here.
 /// </remarks>
 public static class DeepTarotConstant
 {
+    /// <summary>
+    /// The fewest options a crossroads reading can compare.
+    /// </summary>
+    public const int CrossroadsMinOptions = 2;
+
+    /// <summary>
+    /// The most options a crossroads reading can compare.
+    /// </summary>
+    public const int CrossroadsMaxOptions = 4;
+
+    /// <summary>
+    /// The number of cards drawn for each option of the crossroads spread.
+    /// </summary>
+    public const int CrossroadsCardsPerOption = 3;
+
+    /// <summary>
+    /// The extra closing card of the crossroads spread, carrying the overall advice.
+    /// </summary>
+    public const int CrossroadsSummaryCards = 1;
+
+    /// <summary>
+    /// The maximum length of the question a crossroads reading accepts.
+    /// </summary>
+    public const int CrossroadsQuestionMaxLength = 500;
+
+    /// <summary>
+    /// The maximum length of a single option a crossroads reading accepts.
+    /// </summary>
+    public const int CrossroadsOptionMaxLength = 100;
+
+    /// <summary>
+    /// The machine key of the closing card of the crossroads spread.
+    /// </summary>
+    public const string CrossroadsSummaryKey = "summary";
+
     /**
      * The 12 astrological houses of the "12 houses" spread, in drawn order:
      * one card per house, from the self (house 1) to the subconscious (house 12).
@@ -63,6 +107,54 @@ public static class DeepTarotConstant
         new(12, "month-12", "Month 12", "closing the cycle, integration, what to carry forward"),
     ];
 
+    /**
+     * The three aspects each option of the crossroads spread is read on, in drawn order.
+     */
+    private static readonly IReadOnlyList<DeepTarotAspect> CrossroadsAspects =
+    [
+        new("current", "Current energy", "the energy this option carries right now"),
+        new("evolution", "How it develops", "how this option unfolds over the given timeframe"),
+        new("outcome", "Outcome", "where this option leads if it is chosen"),
+    ];
+
+    /// <summary>
+    /// Builds the positions of the crossroads spread: three cards per option followed by
+    /// one closing summary card.
+    /// </summary>
+    /// <param name="optionCount">The number of options being compared.</param>
+    /// <returns>The positions of the spread, in drawn order.</returns>
+    public static IReadOnlyList<DeepTarotPosition> GetCrossroadsPositions(int optionCount)
+    {
+        var positions = new List<DeepTarotPosition>(optionCount * CrossroadsCardsPerOption + 1);
+        var number = 1;
+
+        for (var option = 1; option <= optionCount; option++)
+        {
+            foreach (var aspect in CrossroadsAspects)
+            {
+                positions.Add(
+                    new(
+                        number++,
+                        $"option-{option}-{aspect.Key}",
+                        $"Option {option} - {aspect.Name}",
+                        aspect.Keywords
+                    )
+                );
+            }
+        }
+
+        positions.Add(
+            new(
+                number,
+                CrossroadsSummaryKey,
+                "Summary and advice",
+                "how the options compare overall, which one the cards favour, and the practical next step"
+            )
+        );
+
+        return positions;
+    }
+
     private static readonly IReadOnlyDictionary<DeepTarotTopic, int> RequiredCardCounts =
         new Dictionary<DeepTarotTopic, int>
         {
@@ -83,43 +175,81 @@ public static class DeepTarotConstant
     /// <summary>
     /// Determines whether the given topic has a spread definition and can be read.
     /// </summary>
-    public static bool IsSupported(DeepTarotTopic topic) => RequiredCardCounts.ContainsKey(topic);
+    public static bool IsSupported(DeepTarotTopic topic) =>
+        topic == DeepTarotTopic.Crossroads || RequiredCardCounts.ContainsKey(topic);
+
+    /// <summary>
+    /// Determines whether the given number of options is within the crossroads spread's range.
+    /// </summary>
+    public static bool IsValidCrossroadsOptionCount(int optionCount) =>
+        optionCount is >= CrossroadsMinOptions and <= CrossroadsMaxOptions;
 
     /// <summary>
     /// Returns the number of cards the given topic's spread requires.
     /// </summary>
+    /// <param name="topic">The topic to resolve.</param>
+    /// <param name="optionCount">
+    /// The number of options, only used by <see cref="DeepTarotTopic.Crossroads"/>.
+    /// </param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the topic has no spread definition.</exception>
-    public static int GetRequiredCardCount(DeepTarotTopic topic) =>
-        RequiredCardCounts.TryGetValue(topic, out var count)
-            ? count
-            : throw new ArgumentOutOfRangeException(
-                nameof(topic),
-                topic,
-                "The topic does not have a spread definition yet."
-            );
+    public static int GetRequiredCardCount(DeepTarotTopic topic, int optionCount = 0) =>
+        topic switch
+        {
+            DeepTarotTopic.Crossroads => GetCrossroadsCardCount(optionCount),
+            _ => RequiredCardCounts.TryGetValue(topic, out var count)
+                ? count
+                : throw new ArgumentOutOfRangeException(
+                    nameof(topic),
+                    topic,
+                    "The topic does not have a spread definition yet."
+                ),
+        };
+
+    /// <summary>
+    /// Returns the number of cards the crossroads spread requires for the given options.
+    /// </summary>
+    public static int GetCrossroadsCardCount(int optionCount) =>
+        optionCount * CrossroadsCardsPerOption + CrossroadsSummaryCards;
 
     /// <summary>
     /// Returns the number of red coins charged for reading the given topic's spread.
     /// </summary>
+    /// <param name="topic">The topic to resolve.</param>
+    /// <param name="optionCount">
+    /// The number of options, only used by <see cref="DeepTarotTopic.Crossroads"/> which
+    /// charges one red coin per option.
+    /// </param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the topic has no spread definition.</exception>
-    public static int GetCost(DeepTarotTopic topic) =>
-        Costs.TryGetValue(topic, out var cost)
-            ? cost
-            : throw new ArgumentOutOfRangeException(
-                nameof(topic),
-                topic,
-                "The topic does not have a spread definition yet."
-            );
+    public static int GetCost(DeepTarotTopic topic, int optionCount = 0) =>
+        topic switch
+        {
+            DeepTarotTopic.Crossroads => optionCount,
+            _ => Costs.TryGetValue(topic, out var cost)
+                ? cost
+                : throw new ArgumentOutOfRangeException(
+                    nameof(topic),
+                    topic,
+                    "The topic does not have a spread definition yet."
+                ),
+        };
 
     /// <summary>
     /// Returns the spread positions of the given topic, in drawn order.
     /// </summary>
+    /// <param name="topic">The topic to resolve.</param>
+    /// <param name="optionCount">
+    /// The number of options, only used by <see cref="DeepTarotTopic.Crossroads"/>.
+    /// </param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the topic has no spread definition.</exception>
-    public static IReadOnlyList<DeepTarotPosition> GetPositions(DeepTarotTopic topic) =>
+    public static IReadOnlyList<DeepTarotPosition> GetPositions(
+        DeepTarotTopic topic,
+        int optionCount = 0
+    ) =>
         topic switch
         {
             DeepTarotTopic.TwelveHouses => TwelveHousesPositions,
             DeepTarotTopic.TwelveMonths => TwelveMonthsPositions,
+            DeepTarotTopic.Crossroads => GetCrossroadsPositions(optionCount),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(topic),
                 topic,

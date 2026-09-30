@@ -26,6 +26,9 @@ export const viErrors = {
       invalidCardCount: "Số lá bài không hợp lệ.",
       invalidCard: "Một hoặc nhiều lá bài không hợp lệ.",
       invalidLocale: "Ngôn ngữ không được hỗ trợ.",
+      invalidQuestion: "Câu hỏi của bạn không hợp lệ.",
+      invalidOption: "Các lựa chọn không hợp lệ.",
+      invalidTimeFrame: "Khung thời gian không được hỗ trợ.",
       readingNotFound: "Không tìm thấy trải bài chuyên sâu này.",
       generationFailed:
         "Không thể tạo trải bài chuyên sâu. Vui lòng thử lại.",

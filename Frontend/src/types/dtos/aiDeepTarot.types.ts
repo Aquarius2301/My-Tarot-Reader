@@ -1,4 +1,8 @@
-import type { AiDeepTarotTopic, TarotCardCode } from "@/constants";
+import type {
+  AiDeepTarotTopic,
+  CrossroadsTimeFrame,
+  TarotCardCode,
+} from "@/constants";
 
 /** A single drawn card sent to the backend when creating a deep tarot reading. */
 export interface AiDeepCardRequest {
@@ -34,6 +38,34 @@ export interface CreateTwelveMonthsReadingResult {
   id: string;
 }
 
+/**
+ * The inputs the user submitted with a crossroads reading, returned by the
+ * backend so the result page can show what was actually interpreted.
+ */
+export interface CrossroadsReadingInput {
+  question?: string | null;
+  options?: string[] | null;
+  timeFrame?: CrossroadsTimeFrame | null;
+}
+
+/**
+ * Request payload for creating a crossroads deep tarot reading.
+ * `options.length` must be 2..4 and `cards.length` must be
+ * `options.length * 3 + 1` (three cards per option plus one closing card).
+ */
+export interface CreateCrossroadsReadingRequest {
+  locale: string;
+  question: string;
+  options: string[];
+  timeFrame?: CrossroadsTimeFrame;
+  cards: AiDeepCardRequest[];
+}
+
+/** Response of creating a crossroads deep tarot reading. */
+export interface CreateCrossroadsReadingResult {
+  id: string;
+}
+
 /** A drawn tarot card of an existing deep tarot reading. */
 export interface AiDeepReadingCard {
   cardCode: TarotCardCode;
@@ -57,7 +89,7 @@ export interface AiDeepTarotAnswer {
 }
 
 /** Result of retrieving a single deep tarot reading. */
-export interface GetAiDeepTarotReadingResult {
+export interface GetAiDeepTarotReadingResult extends CrossroadsReadingInput {
   id: string;
   topic: AiDeepTarotTopic;
   title: string;
@@ -74,6 +106,7 @@ export interface GetAllAiDeepTarotReadingItem {
   answerSummary: string;
   cards: AiDeepReadingCard[];
   createdAt: string;
+  question?: string | null;
 }
 
 /** Result of retrieving all deep tarot readings for a user. */

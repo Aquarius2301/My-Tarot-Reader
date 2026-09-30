@@ -1,4 +1,6 @@
 import type {
+  CreateCrossroadsReadingRequest,
+  CreateCrossroadsReadingResult,
   CreateTwelveHousesReadingRequest,
   CreateTwelveHousesReadingResult,
   CreateTwelveMonthsReadingRequest,
@@ -19,6 +21,11 @@ export const aiDeepTarotApi = {
     request: CreateTwelveMonthsReadingRequest,
   ): Promise<CreateTwelveMonthsReadingResult> =>
     axiosClient.post(API_URL.aiDeepTarot.createTwelveMonths, request),
+
+  createCrossroadsReading: (
+    request: CreateCrossroadsReadingRequest,
+  ): Promise<CreateCrossroadsReadingResult> =>
+    axiosClient.post(API_URL.aiDeepTarot.createCrossroads, request),
 
   getAiDeepTarotReadingById: (
     readingId: string,

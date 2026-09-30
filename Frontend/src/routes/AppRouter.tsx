@@ -27,6 +27,9 @@ const TwelveHousesPage = lazy(
 const TwelveMonthsPage = lazy(
   () => import("@/pages/auth/DrawPage/AiDeepTarotPage/TwelveMonths"),
 );
+const CrossroadsPage = lazy(
+  () => import("@/pages/auth/DrawPage/AiDeepTarotPage/Crossroads"),
+);
 const AiDeepTarotResultPage = lazy(
   () => import("@/pages/auth/ResultPage/AiDeepTarotResultPage"),
 );
@@ -100,6 +103,11 @@ const protectedRoutes: AppRoute[] = [
     titleKey: "page.aiDeepTarot.spreads.twelveMonths.title",
     path: WEB_URL.aiDeepTarotTwelveMonths,
     component: TwelveMonthsPage,
+  },
+  {
+    titleKey: "page.aiDeepTarot.spreads.crossroads.title",
+    path: WEB_URL.aiDeepTarotCrossroads,
+    component: CrossroadsPage,
   },
   {
     titleKey: "page.aiDeepTarot.result.title",

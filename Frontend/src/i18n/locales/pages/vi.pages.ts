@@ -108,6 +108,9 @@ export const viPages = {
         advice: "Lời khuyên tổng thể",
         noAnswer: "Đang cập nhật nội dung giải bài.",
         drawAgain: "Rút bài mới",
+        yourQuestion: "Câu hỏi của bạn:",
+        yourOptions: "Các lựa chọn:",
+        yourTimeFrame: "Thời hạn:",
       },
       spreads: {
         twelveHouses: {
@@ -220,6 +223,84 @@ export const viPages = {
           draw: {
             subtitle:
               "Hãy để tâm trí thư thái, tập trung vào chu kỳ 12 tháng tới rồi chọn đủ 12 lá bài — mỗi lá sẽ đi vào một tháng theo thứ tự bạn rút.",
+          },
+        },
+        crossroads: {
+          title: "Trải bài Ngã rẽ",
+          subtitle:
+            "Hai hoặc nhiều con đường đang mở ra trước bạn? Trải bài này giúp so sánh từng lựa chọn để bạn thấy rõ con đường nào phù hợp nhất.",
+          what: {
+            title: "Trải bài Ngã rẽ là gì?",
+            body: "Trải bài Ngã rẽ là một trải bài so sánh: mỗi lựa chọn sẽ được xem qua 3 khía cạnh (Năng lượng hiện tại, Sự phát triển, Kết quả) để bạn thấy rõ cả ưu điểm và rủi ro của từng con đường, rồi nhận lời khuyên tổng thể từ một lá bài kết luận.",
+          },
+          why: {
+            title: "Trải bài này để làm gì?",
+            items: {
+              compare:
+                "So sánh rõ ràng: Thay vì phân tích lẻ tẻ từng lựa chọn, bạn sẽ thấy chúng được đặt cạnh nhau để dễ so sánh.",
+              clarify:
+                "Làm rõ ưu – nhược: Mỗi con đường đều có mặt được và mất đi; trải bài này giúp bạn nhìn thẳng vào chúng mà không bị cảm xúc che lấp.",
+              direction:
+                "Tìm hướng đi phù hợp: Lá bài kết luận sẽ đưa ra lời khuyên thực tế, giúp bạn đưa ra quyết định với ít hối tiếc hơn.",
+            },
+          },
+          when: {
+            title: "Khi nào bạn nên xem Ngã rẽ?",
+            items: {
+              career:
+                "Chuyển việc: Ở lại hay nhảy sang công ty mới, hay mở công ty riêng?",
+              life:
+                "Cuộc sống & tình cảm: Chọn nơi sinh sống, tiếp tục hay kết thúc một mối quan hệ, hay bắt đầu điều gì mới?",
+              timing:
+                "Quyết định cần thời hạn: Khi bạn đang phân vân giữa hai đến bốn lựa chọn và cần một hướng dẫn rõ ràng.",
+            },
+          },
+          guide: {
+            title: "Cách đọc trải bài Ngã rẽ",
+            body: "Mỗi lựa chọn sẽ có 3 lá bài theo thứ tự: Năng lượng hiện tại, Sự phát triển, Kết quả. Lá bài cuối cùng là \"Tóm tắt & lời khuyên\" — lá này không thuộc về bất kỳ lựa chọn nào, mà phản ánh bức tranh tổng thể và hướng dẫn bạn đưa ra quyết định.",
+          },
+          options: {
+            title: "Lựa chọn đang phân vân",
+            hint: "Bạn đang cân nhắc giữa bao nhiêu lựa chọn? Tối thiểu 2, tối đa 4. Hãy viết ngắn gọn, rõ ràng (mỗi lựa chọn tối đa 100 ký tự).",
+            label: "Lựa chọn {{index}}",
+            placeholder: "VD: Ở lại công ty hiện tại",
+            add: "Thêm lựa chọn",
+            remove: "Xoá lựa chọn",
+          },
+          question: {
+            title: "Câu hỏi của bạn",
+            hint: "Hãy diễn đạt câu hỏi của bạn một cách rõ ràng nhất có thể (tối đa 500 ký tự).",
+            placeholder:
+              "Ví dụ: Tôi nên chọn con đường nào để phát triển sự nghiệp lâu dài?",
+          },
+          timeFrame: {
+            title: "Thời hạn quyết định",
+            hint: "Nếu bạn muốn có góc nhìn về thời gian (không bắt buộc), hãy chọn khung thời gian phù hợp nhất.",
+            none: "Không chỉ định",
+          },
+          timeFrames: {
+            now: "Ngay bây giờ (quyết định cấp bách)",
+            oneToThreeMonths: "1–3 tháng tới",
+            overSixMonths: "Hơn 6 tháng tới",
+          },
+          aspects: {
+            current: "Năng lượng hiện tại",
+            evolution: "Sự phát triển",
+            outcome: "Kết quả",
+          },
+          summaryLabel: "Tóm tắt & lời khuyên",
+          draw: {
+            subtitle:
+              "Hãy để tâm trí thư thái, tập trung vào câu hỏi và các lựa chọn của bạn. Mỗi lựa chọn sẽ có 3 lá bài, tiếp theo là lá bài tổng kết.",
+          },
+          errors: {
+            tooFewOptions: "Cần ít nhất 2 lựa chọn để so sánh.",
+            tooManyOptions: "Chỉ được tối đa 4 lựa chọn.",
+            duplicateOptions: "Các lựa chọn không được trùng lặp.",
+            emptyOption: "Mỗi lựa chọn không được để trống.",
+            optionTooLong: "Mỗi lựa chọn không được vượt quá 100 ký tự.",
+            questionEmpty: "Vui lòng nhập câu hỏi của bạn.",
+            questionTooLong: "Câu hỏi không được vượt quá 500 ký tự.",
           },
         },
       },
