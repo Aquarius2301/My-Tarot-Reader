@@ -29,6 +29,10 @@ export const enErrors = {
       invalidQuestion: "Your question is not valid.",
       invalidOption: "Your options are not valid.",
       invalidTimeFrame: "Unsupported timeframe.",
+      unsafeContent:
+        "A tarot reading cannot cover this topic. If you are struggling with thoughts of harming yourself, please talk to someone you trust or contact a crisis hotline in your country.",
+      questionNotSupported:
+        "Your question is not a decision we can read. Please describe the real choice you are facing in your own words.",
       readingNotFound: "This deep tarot reading was not found.",
       generationFailed: "Could not create the deep tarot reading. Try again.",
     },

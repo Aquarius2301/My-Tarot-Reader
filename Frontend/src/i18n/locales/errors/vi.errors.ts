@@ -29,6 +29,10 @@ export const viErrors = {
       invalidQuestion: "Câu hỏi của bạn không hợp lệ.",
       invalidOption: "Các lựa chọn không hợp lệ.",
       invalidTimeFrame: "Khung thời gian không được hỗ trợ.",
+      unsafeContent:
+        "Trải bài không thể đọc cho nội dung này. Nếu bạn đang có suy nghĩ tự làm hại mình, hãy nói chuyện với người bạn tin tưởng hoặc liên hệ đường dây nóng hỗ trợ khủng hoảng tại nơi bạn sống.",
+      questionNotSupported:
+        "Câu hỏi của bạn chưa phải là một quyết định có thể đọc trải bài. Vui lòng mô tả rõ lựa chọn bạn đang phân vân bằng ngôn ngữ của bạn.",
       readingNotFound: "Không tìm thấy trải bài chuyên sâu này.",
       generationFailed:
         "Không thể tạo trải bài chuyên sâu. Vui lòng thử lại.",

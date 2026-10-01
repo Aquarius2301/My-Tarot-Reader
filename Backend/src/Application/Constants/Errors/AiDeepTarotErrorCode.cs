@@ -10,6 +10,8 @@ public class AiDeepTarotErrorCode
     public const string InvalidQuestion = $"{Prefix}invalidQuestion";
     public const string InvalidOption = $"{Prefix}invalidOption";
     public const string InvalidTimeFrame = $"{Prefix}invalidTimeFrame";
+    public const string UnsafeContent = $"{Prefix}unsafeContent";
+    public const string QuestionNotSupported = $"{Prefix}questionNotSupported";
     public const string ReadingNotFound = $"{Prefix}readingNotFound";
     public const string GenerationFailed = $"{Prefix}generationFailed";
 }
