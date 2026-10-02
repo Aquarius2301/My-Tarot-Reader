@@ -1,14 +1,23 @@
 namespace MyTarotReader.Application.Settings;
 
 /// <summary>
-/// Configuration for Google Gemini API credentials. Bound from the <c>Gemini</c> appsettings
-/// section. May hold many entries; a single call only tries up to three.
+/// Configuration for the Google Gemini API keys and models, bound from the <c>Gemini</c> appsettings section.
+/// Every key is paired with every model, and each pair is retried before the client fails over.
 /// </summary>
 public class GeminiSetting
 {
-    /// <summary>
-    /// Ordered fallback list of Gemini credentials. May contain any number of entries,
-    /// but <c>GeminiClient</c> uses only the first three valid ones per call.
-    /// </summary>
-    public List<GeminiApiSetting> Apis { get; set; } = [];
+    /// <summary>Extra attempts made on the same (api, model) pair before failing over (0 = single attempt).</summary>
+    public int MaxRetries { get; set; } = 2;
+
+    /// <summary>Base delay of the exponential backoff between two attempts, in milliseconds.</summary>
+    public int RetryDelayMilliseconds { get; set; } = 1000;
+
+    /// <summary>Total seconds spent retrying before giving up; 0 means no limit.</summary>
+    public int MaxTotalWaitSeconds { get; set; } = 30;
+
+    /// <summary>Ordered Gemini API keys, tried from the first one on every call.</summary>
+    public List<string> Apis { get; set; } = [];
+
+    /// <summary>Ordered Gemini models, each one tried against every key in <see cref="Apis"/>.</summary>
+    public List<GeminiModelSetting> Models { get; set; } = [];
 }

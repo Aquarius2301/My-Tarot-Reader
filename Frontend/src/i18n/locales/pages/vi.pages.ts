@@ -90,6 +90,221 @@ export const viPages = {
         drawAgain: "Rút bài mới",
       },
     },
+    aiDeepTarot: {
+      parentTitle: "Tarot chuyên sâu",
+      common: {
+        cardCount: "Số lá bài: {{count}} lá · {{positions}} vị trí",
+        cost: "Chi phí: {{cost}} xu đỏ",
+        balance: "Xu đỏ hiện có: {{balance}}",
+        insufficientCoins:
+          "Bạn cần tối thiểu {{cost}} xu đỏ để tiếp tục. Hãy điểm danh hằng ngày để nhận thêm xu.",
+        continue: "Tiếp tục",
+        back: "Quay lại",
+        saving: "Đang tạo trải bài chuyên sâu của bạn…",
+      },
+      result: {
+        title: "Kết quả giải bài chuyên sâu",
+        overview: "Tổng quan",
+        advice: "Lời khuyên tổng thể",
+        noAnswer: "Đang cập nhật nội dung giải bài.",
+        drawAgain: "Rút bài mới",
+        yourQuestion: "Câu hỏi của bạn:",
+        yourOptions: "Các lựa chọn:",
+        yourTimeFrame: "Thời hạn:",
+      },
+      spreads: {
+        twelveHouses: {
+          title: "Trải bài 12 nhà",
+          subtitle:
+            "12 lá bài lần lượt ngồi vào từng ngôi nhà, phản ánh năng lượng và trạng thái hiện tại của bạn ở từng khía cạnh.",
+          what: {
+            title: "12 Nhà trong Tarot là gì?",
+            body: "Trong Chiêm tinh, cuộc sống của mỗi người được chia thành 12 mảnh ghép đại diện cho 12 lĩnh vực: từ bản thân, tiền bạc, tình cảm, gia đình cho đến sự nghiệp và tâm linh. Khi chọn trải bài 12 Nhà, các lá Tarot sẽ lần lượt ngồi vào từng ngôi nhà này để phản ánh năng lượng và trạng thái hiện tại của bạn ở từng khía cạnh.",
+          },
+          why: {
+            title: "Trải bài này để làm gì?",
+            items: {
+              overview:
+                "Cung cấp góc nhìn toàn cảnh: Thay vì chỉ trả lời một câu hỏi lẻ (như \"Người ấy có thích tôi không?\"), trải bài này giúp bạn thấy được bức tranh lớn về mọi mặt trong đời sống.",
+              blockage:
+                "Tìm ra điểm nghẽn: Nhận diện nhanh lĩnh vực nào đang phát triển thuận lợi và khía cạnh nào đang gặp rắc rối cần bạn tập trung xử lý.",
+              forecast:
+                "Dự báo năng lượng: Giúp bạn chuẩn bị tâm lý và hướng đi phù hợp cho các sự kiện sắp tới.",
+            },
+          },
+          when: {
+            title: "Khi nào bạn nên xem 12 Nhà?",
+            items: {
+              milestone:
+                "Vào các cột mốc mới: Dịp đầu năm mới, sinh nhật, hoặc khởi đầu một chu kỳ mới trong cuộc sống.",
+              lost:
+                "Khi mất phương hướng: Bạn cảm thấy mọi thứ không ổn nhưng không chỉ ra được cụ thể vấn đề nằm ở đâu (là do công việc, tình cảm, hay sức khỏe tinh thần).",
+              selfReview:
+                "Khi muốn đánh giá lại bản thân: Dành cho những lúc bạn muốn dừng lại, soi rọi lại toàn bộ cuộc sống để lên kế hoạch cân bằng lại mọi thứ.",
+            },
+          },
+          positions: {
+            title: "12 ngôi nhà trong trải bài của bạn",
+            hint: "Mỗi lá bài bạn chọn sẽ được giải nghĩa theo đúng ngôi nhà tương ứng.",
+          },
+          position: {
+            "house-1": "Nhà 1 · Bản thân & danh tính",
+            "house-2": "Nhà 2 · Tiền bạc & giá trị bản thân",
+            "house-3": "Nhà 3 · Tư duy & giao tiếp",
+            "house-4": "Nhà 4 · Gia đình & cội nguồn",
+            "house-5": "Nhà 5 · Sáng tạo & niềm vui",
+            "house-6": "Nhà 6 · Sức khỏe & đời sống hằng ngày",
+            "house-7": "Nhà 7 · Đối tác & hôn nhân",
+            "house-8": "Nhà 8 · Thay đổi & thân mật",
+            "house-9": "Nhà 9 · Niềm tin & mở rộng",
+            "house-10": "Nhà 10 · Sự nghiệp & danh tiếng",
+            "house-11": "Nhà 11 · Cộng đồng & mục tiêu chung",
+            "house-12": "Nhà 12 · Tiềm thức & nội tâm",
+          },
+          draw: {
+            subtitle:
+              "Hãy để tâm trí thư thái, tập trung vào câu hỏi của bạn rồi chọn đủ 12 lá bài — mỗi lá sẽ đi vào một ngôi nhà theo thứ tự bạn rút.",
+          },
+        },
+        twelveMonths: {
+          title: "Trải bài 12 tháng",
+          subtitle:
+            "12 lá bài lần lượt ngồi vào 12 tháng liên tiếp, phản ánh năng lượng và diễn biến của bạn trong từng tháng sắp tới.",
+          what: {
+            title: "Trải bài 12 tháng là gì?",
+            body: "Trong trải bài 12 tháng, 12 lá bài được rút ra sẽ tương ứng với 12 tháng liên tiếp tính từ tháng ngay sau khi bạn trải bài. Tháng đầu tiên là tháng kế tiếp, tháng cuối cùng là cùng tháng đó của năm sau, tạo thành một chu kỳ 12 tháng trọn vẹn để bạn lên kế hoạch cho cả năm tới.",
+          },
+          why: {
+            title: "Trải bài này để làm gì?",
+            items: {
+              forecast:
+                "Dự báo theo từng tháng: Thấy rõ năng lượng của từng tháng sẽ tăng hay giảm, thay vì một dự báo chung chung cho cả năm.",
+              timing:
+                "Chọn đúng thời điểm: Biết tháng nào nên bắt đầu dự án, ký kết, ứng tuyển hoặc nghỉ ngơi để giảm rủi ro.",
+              prepare:
+                "Chuẩn bị tinh thần: Chuẩn bị sẵn tinh thần và nguồn lực cho những tháng được báo là khó khăn.",
+            },
+          },
+          when: {
+            title: "Khi nào bạn nên xem 12 tháng?",
+            items: {
+              milestone:
+                "Khi bước vào một năm mới hoặc một chu kỳ mới: Đầu năm, sinh nhật, hoặc khi bạn muốn lên kế hoạch dài hạn.",
+              decision:
+                "Khi phải đưa ra quyết định lớn: Chuyển việc, đầu tư, khởi nghiệp, hoặc thay đổi mối quan hệ.",
+              quiet:
+                "Khi muốn nhìn trước một năm: Dành cho lúc bạn cần sự chắc chắn thay vì phản ứng theo từng sự kiện.",
+            },
+          },
+          positions: {
+            title: "12 tháng trong trải bài của bạn",
+            hint: "Mỗi lá bài bạn chọn sẽ được giải nghĩa cho đúng tháng tương ứng.",
+          },
+          preview: {
+            title: "Bạn sẽ xem 12 tháng nào?",
+            hint: "Tháng đầu tiên là tháng ngay sau tháng bạn trải bài, tháng cuối cùng là cùng tháng đó của năm sau.",
+            currentMonth: "Tháng trải bài: {{month}}",
+            range: "Tháng 1 · {{first}} → Tháng 12 · {{last}}",
+          },
+          monthThemes: {
+            "month-1": "Khởi đầu, mở màn, năng lượng mới",
+            "month-2": "Tiến triển sớm, điều chỉnh cho quen",
+            "month-3": "Tăng tốc, kết quả đầu tiên",
+            "month-4": "Ổn định, củng cố quý đầu",
+            "month-5": "Mở rộng, niềm vui, sáng tạo & tình cảm",
+            "month-6": "Cân bằng, nhịp sống, sức khỏe",
+            "month-7": "Đối tác, hợp tác, cam kết",
+            "month-8": "Thay đổi sâu, tài nguyên chung",
+            "month-9": "Tăng trưởng, học tập, mở rộng tầm nhìn",
+            "month-10": "Đỉnh cao sự nghiệp, danh tiếng",
+            "month-11": "Cộng đồng, bạn bè, mục tiêu chung",
+            "month-12": "Khép lại chu kỳ, tích hợp bài học",
+          },
+          draw: {
+            subtitle:
+              "Hãy để tâm trí thư thái, tập trung vào chu kỳ 12 tháng tới rồi chọn đủ 12 lá bài — mỗi lá sẽ đi vào một tháng theo thứ tự bạn rút.",
+          },
+        },
+        crossroads: {
+          title: "Trải bài Ngã rẽ",
+          subtitle:
+            "Hai hoặc nhiều con đường đang mở ra trước bạn? Trải bài này giúp so sánh từng lựa chọn để bạn thấy rõ con đường nào phù hợp nhất.",
+          what: {
+            title: "Trải bài Ngã rẽ là gì?",
+            body: "Trải bài Ngã rẽ là một trải bài so sánh: mỗi lựa chọn sẽ được xem qua 3 khía cạnh (Năng lượng hiện tại, Sự phát triển, Kết quả) để bạn thấy rõ cả ưu điểm và rủi ro của từng con đường, rồi nhận lời khuyên tổng thể từ một lá bài kết luận.",
+          },
+          why: {
+            title: "Trải bài này để làm gì?",
+            items: {
+              compare:
+                "So sánh rõ ràng: Thay vì phân tích lẻ tẻ từng lựa chọn, bạn sẽ thấy chúng được đặt cạnh nhau để dễ so sánh.",
+              clarify:
+                "Làm rõ ưu – nhược: Mỗi con đường đều có mặt được và mất đi; trải bài này giúp bạn nhìn thẳng vào chúng mà không bị cảm xúc che lấp.",
+              direction:
+                "Tìm hướng đi phù hợp: Lá bài kết luận sẽ đưa ra lời khuyên thực tế, giúp bạn đưa ra quyết định với ít hối tiếc hơn.",
+            },
+          },
+          when: {
+            title: "Khi nào bạn nên xem Ngã rẽ?",
+            items: {
+              career:
+                "Chuyển việc: Ở lại hay nhảy sang công ty mới, hay mở công ty riêng?",
+              life:
+                "Cuộc sống & tình cảm: Chọn nơi sinh sống, tiếp tục hay kết thúc một mối quan hệ, hay bắt đầu điều gì mới?",
+              timing:
+                "Quyết định cần thời hạn: Khi bạn đang phân vân giữa hai đến bốn lựa chọn và cần một hướng dẫn rõ ràng.",
+            },
+          },
+          guide: {
+            title: "Cách đọc trải bài Ngã rẽ",
+            body: "Mỗi lựa chọn sẽ có 3 lá bài theo thứ tự: Năng lượng hiện tại, Sự phát triển, Kết quả. Lá bài cuối cùng là \"Tóm tắt & lời khuyên\" — lá này không thuộc về bất kỳ lựa chọn nào, mà phản ánh bức tranh tổng thể và hướng dẫn bạn đưa ra quyết định.",
+          },
+          options: {
+            title: "Lựa chọn đang phân vân",
+            hint: "Bạn đang cân nhắc giữa bao nhiêu lựa chọn? Tối thiểu 2, tối đa 4. Hãy viết ngắn gọn, rõ ràng (mỗi lựa chọn tối đa 100 ký tự).",
+            label: "Lựa chọn {{index}}",
+            placeholder: "VD: Ở lại công ty hiện tại",
+            add: "Thêm lựa chọn",
+            remove: "Xoá lựa chọn",
+          },
+          question: {
+            title: "Câu hỏi của bạn",
+            hint: "Hãy diễn đạt câu hỏi của bạn một cách rõ ràng nhất có thể (tối đa 500 ký tự).",
+            placeholder:
+              "Ví dụ: Tôi nên chọn con đường nào để phát triển sự nghiệp lâu dài?",
+          },
+          timeFrame: {
+            title: "Thời hạn quyết định",
+            hint: "Nếu bạn muốn có góc nhìn về thời gian (không bắt buộc), hãy chọn khung thời gian phù hợp nhất.",
+            none: "Không chỉ định",
+          },
+          timeFrames: {
+            now: "Ngay bây giờ (quyết định cấp bách)",
+            oneToThreeMonths: "1–3 tháng tới",
+            overSixMonths: "Hơn 6 tháng tới",
+          },
+          aspects: {
+            current: "Năng lượng hiện tại",
+            evolution: "Sự phát triển",
+            outcome: "Kết quả",
+          },
+          summaryLabel: "Tóm tắt & lời khuyên",
+          draw: {
+            subtitle:
+              "Hãy để tâm trí thư thái, tập trung vào câu hỏi và các lựa chọn của bạn. Mỗi lựa chọn sẽ có 3 lá bài, tiếp theo là lá bài tổng kết.",
+          },
+          errors: {
+            tooFewOptions: "Cần ít nhất 2 lựa chọn để so sánh.",
+            tooManyOptions: "Chỉ được tối đa 4 lựa chọn.",
+            duplicateOptions: "Các lựa chọn không được trùng lặp.",
+            emptyOption: "Mỗi lựa chọn không được để trống.",
+            optionTooLong: "Mỗi lựa chọn không được vượt quá 100 ký tự.",
+            questionEmpty: "Vui lòng nhập câu hỏi của bạn.",
+            questionTooLong: "Câu hỏi không được vượt quá 500 ký tự.",
+          },
+        },
+      },
+    },
     library: {
       title: "Kho bài Tarot",
       subtitle: "Tất cả 78 lá bài cùng ý nghĩa xuôi & ngược",
@@ -121,6 +336,16 @@ export const viPages = {
         "Bài giải AI này sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa không?",
       deleteConfirm: "Xóa bài giải",
       deleteSuccess: "Đã xóa bài giải AI",
+    },
+    historyAiDeepTarot: {
+      title: "Lịch sử Tarot chuyên sâu",
+      subtitle: "Xem lại các trải bài chuyên sâu đã qua",
+      empty: "Chưa có trải bài chuyên sâu nào",
+      deleteTitle: "Xóa trải bài này?",
+      deleteDescription:
+        "Trải bài chuyên sâu này sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa không?",
+      deleteConfirm: "Xóa trải bài",
+      deleteSuccess: "Đã xóa trải bài chuyên sâu",
     },
     login: {
       title: "Đăng nhập",

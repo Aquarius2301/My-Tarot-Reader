@@ -17,6 +17,7 @@ public class WalletService(
     IOptions<WalletSetting> walletSetting,
     IValidator<AddCoinRequest> addCoinValidator,
     IValidator<DeductCoinRequest> deductCoinValidator,
+    IValidator<DeductRedCoinRequest> deductRedCoinValidator,
     IValidator<ConvertRedToWhiteRequest> convertRedToWhiteValidator
 ) : IWalletService
 {
@@ -24,6 +25,8 @@ public class WalletService(
     private readonly WalletSetting _walletSetting = walletSetting.Value;
     private readonly IValidator<AddCoinRequest> _addCoinValidator = addCoinValidator;
     private readonly IValidator<DeductCoinRequest> _deductCoinValidator = deductCoinValidator;
+    private readonly IValidator<DeductRedCoinRequest> _deductRedCoinValidator =
+        deductRedCoinValidator;
     private readonly IValidator<ConvertRedToWhiteRequest> _convertRedToWhiteValidator =
         convertRedToWhiteValidator;
 
@@ -198,6 +201,52 @@ public class WalletService(
         await _context.SaveChangesAsync(cancellationToken);
 
         return new DeductCoinResult(activeBatches.Sum(b => b.RemainingAmount));
+    }
+
+    /// <summary>
+    /// Deducts red coins from a user's wallet and records the transaction as an order.
+    /// </summary>
+    /// <param name="userId">The authenticated user's ID.</param>
+    /// <param name="request"><see cref="DeductRedCoinRequest"/> containing the amount and order type.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="BadRequestException">Thrown when the request validation fails or the user does not have enough red coins.</exception>
+    /// <exception cref="NotFoundException">Thrown when no wallet exists for the user.</exception>
+    /// <returns><see cref="DeductRedCoinResult"/> with the updated red coin balance.</returns>
+    public async Task<DeductRedCoinResult> DeductRedCoinAsync(
+        Guid userId,
+        DeductRedCoinRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ValidationHelper.ValidateOrThrow(_deductRedCoinValidator, request);
+
+        var wallet =
+            await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId, cancellationToken)
+            ?? throw new NotFoundException(WalletErrorCode.WalletNotFound);
+
+        if (wallet.RedCoin < request.Amount)
+        {
+            throw new BadRequestException(WalletErrorCode.InsufficientRedCoin);
+        }
+
+        wallet.RedCoin -= request.Amount;
+
+        _context.Orders.Add(
+            new Order
+            {
+                UserId = userId,
+                Amount = request.Amount,
+                Description = $"Spend red coins ({request.Type})",
+                Type = request.Type,
+                OrderDetails = [new OrderDetail { Amount = request.Amount }],
+            }
+        );
+
+        wallet.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return new DeductRedCoinResult(wallet.RedCoin);
     }
 
     /// <summary>

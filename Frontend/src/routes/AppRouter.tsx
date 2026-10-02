@@ -18,9 +18,26 @@ const LoginCallbackPage = lazy(() => import("@/pages/guest/LoginCallbackPage"));
 const GuestDrawTarotPage = lazy(() => import("@/pages/guest/TarotPage"));
 const DrawTarotPage = lazy(() => import("@/pages/auth/DrawPage/TarotPage"));
 const AiTarotPage = lazy(() => import("@/pages/auth/DrawPage/AiTarotPage"));
-const AiTarotResultPage = lazy(() => import("@/pages/auth/AiTarotResultPage"));
+const AiTarotResultPage = lazy(
+  () => import("@/pages/auth/ResultPage/AiTarotResultPage"),
+);
+const TwelveHousesPage = lazy(
+  () => import("@/pages/auth/DrawPage/AiDeepTarotPage/TwelveHouses"),
+);
+const TwelveMonthsPage = lazy(
+  () => import("@/pages/auth/DrawPage/AiDeepTarotPage/TwelveMonths"),
+);
+const CrossroadsPage = lazy(
+  () => import("@/pages/auth/DrawPage/AiDeepTarotPage/Crossroads"),
+);
+const AiDeepTarotResultPage = lazy(
+  () => import("@/pages/auth/ResultPage/AiDeepTarotResultPage"),
+);
 const HistoryAiTarotPage = lazy(
   () => import("@/pages/auth/HistoryPage/HistoryAiTarotPage"),
+);
+const HistoryAiDeepTarotPage = lazy(
+  () => import("@/pages/auth/HistoryPage/HistoryAiDeepTarotPage"),
 );
 const LibraryPage = lazy(() => import("@/pages/auth/LibraryPage"));
 const HistoryTarotPage = lazy(
@@ -78,9 +95,34 @@ const protectedRoutes: AppRoute[] = [
     component: AiTarotResultPage,
   },
   {
+    titleKey: "page.aiDeepTarot.spreads.twelveHouses.title",
+    path: WEB_URL.aiDeepTarotTwelveHouses,
+    component: TwelveHousesPage,
+  },
+  {
+    titleKey: "page.aiDeepTarot.spreads.twelveMonths.title",
+    path: WEB_URL.aiDeepTarotTwelveMonths,
+    component: TwelveMonthsPage,
+  },
+  {
+    titleKey: "page.aiDeepTarot.spreads.crossroads.title",
+    path: WEB_URL.aiDeepTarotCrossroads,
+    component: CrossroadsPage,
+  },
+  {
+    titleKey: "page.aiDeepTarot.result.title",
+    path: `${WEB_URL.aiDeepTarotResult}/:readingId`,
+    component: AiDeepTarotResultPage,
+  },
+  {
     titleKey: "page.historyAiTarot.title",
     path: WEB_URL.aiTarotHistory,
     component: HistoryAiTarotPage,
+  },
+  {
+    titleKey: "page.historyAiDeepTarot.title",
+    path: WEB_URL.aiDeepTarotHistory,
+    component: HistoryAiDeepTarotPage,
   },
   {
     titleKey: "page.library.title",

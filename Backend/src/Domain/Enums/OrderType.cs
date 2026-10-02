@@ -13,6 +13,9 @@ public enum OrderType
     /// <summary> Deduct coins for AI chat follow-up conversation. </summary>
     AIChatFollowUp,
 
+    /// <summary> Deduct red coins for a deep (topic-specific) tarot reading. </summary>
+    AIDeepTarot,
+
     /// <summary> Deduct coins for expired coins. </summary>
     Expired,
 

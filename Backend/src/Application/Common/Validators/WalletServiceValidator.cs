@@ -37,6 +37,18 @@ public class DeductCoinRequestValidator : AbstractValidator<DeductCoinRequest>
     }
 }
 
+public class DeductRedCoinRequestValidator : AbstractValidator<DeductRedCoinRequest>
+{
+    public DeductRedCoinRequestValidator()
+    {
+        RuleFor(x => x.Amount)
+            .GreaterThan(0)
+            .WithMessage(WalletErrorCode.InvalidAmount);
+
+        RuleFor(x => x.Type).IsInEnum().WithMessage(WalletErrorCode.InvalidAmount);
+    }
+}
+
 public class ConvertRedToWhiteRequestValidator : AbstractValidator<ConvertRedToWhiteRequest>
 {
     public ConvertRedToWhiteRequestValidator()

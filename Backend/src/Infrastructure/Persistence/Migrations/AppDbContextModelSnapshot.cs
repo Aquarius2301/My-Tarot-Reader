@@ -93,6 +93,63 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.ToTable("AIChatTarotReadings");
                 });
 
+            modelBuilder.Entity("MyTarotReader.Domain.Entities.AIDeepTarotReading", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AnswerSummary")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Cards")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Options")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Question")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("TimeFrame")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AIDeepTarotReadings");
+                });
+
             modelBuilder.Entity("MyTarotReader.Domain.Entities.AITarotReading", b =>
                 {
                     b.Property<Guid>("Id")
@@ -449,6 +506,17 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MyTarotReader.Domain.Entities.AIDeepTarotReading", b =>
+                {
+                    b.HasOne("MyTarotReader.Domain.Entities.User", "User")
+                        .WithMany("AIDeepTarotReadings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MyTarotReader.Domain.Entities.AITarotReading", b =>
                 {
                     b.HasOne("MyTarotReader.Domain.Entities.User", "User")
@@ -557,6 +625,8 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("MyTarotReader.Domain.Entities.User", b =>
                 {
                     b.Navigation("AIChatTarotReadings");
+
+                    b.Navigation("AIDeepTarotReadings");
 
                     b.Navigation("AITarotReadings");
 

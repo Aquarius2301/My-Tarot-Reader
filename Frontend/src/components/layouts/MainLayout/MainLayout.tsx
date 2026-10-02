@@ -89,6 +89,27 @@ export default function MainLayout({
           label: t("page.aiTarot.title"),
           href: WEB_URL.aiTarot,
         },
+        user && {
+          key: "aiDeepTarot",
+          label: t("page.aiDeepTarot.parentTitle"),
+          children: [
+            {
+              key: "aiDeepTarotTwelveHouses",
+              label: t("page.aiDeepTarot.spreads.twelveHouses.title"),
+              href: WEB_URL.aiDeepTarotTwelveHouses,
+            },
+            {
+              key: "aiDeepTarotTwelveMonths",
+              label: t("page.aiDeepTarot.spreads.twelveMonths.title"),
+              href: WEB_URL.aiDeepTarotTwelveMonths,
+            },
+            {
+              key: "aiDeepTarotCrossroads",
+              label: t("page.aiDeepTarot.spreads.crossroads.title"),
+              href: WEB_URL.aiDeepTarotCrossroads,
+            },
+          ],
+        },
       ].filter(Boolean) as NavItem[],
     },
     user && {
@@ -104,6 +125,11 @@ export default function MainLayout({
           key: "aiTarotHistory",
           label: t("page.historyAiTarot.title"),
           href: WEB_URL.aiTarotHistory,
+        },
+        user && {
+          key: "aiDeepTarotHistory",
+          label: t("page.historyAiDeepTarot.title"),
+          href: WEB_URL.aiDeepTarotHistory,
         },
       ],
     },

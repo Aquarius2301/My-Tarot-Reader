@@ -11,6 +11,7 @@ public interface IAppDbContext
 {
     DbSet<AIChatMessage> AIChatMessages { get; set; }
     DbSet<AIChatTarotReading> AIChatTarotReadings { get; set; }
+    DbSet<AIDeepTarotReading> AIDeepTarotReadings { get; set; }
     DbSet<AITarotReading> AITarotReadings { get; set; }
     DbSet<Order> Orders { get; set; }
     DbSet<OrderDetail> OrderDetails { get; set; }

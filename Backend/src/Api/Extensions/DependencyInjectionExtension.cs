@@ -21,6 +21,10 @@ public static class DependencyInjectionExtension
     /// and domain services (auth, tarot reading, history) with scoped lifetime.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
+    /// <remarks>
+    /// <see cref="DevAuthService"/> is registered unconditionally, but its controller
+    /// is marked <c>[DevelopmentOnly]</c> so the endpoint only exists in Development.
+    /// </remarks>
     public static IServiceCollection AddRegister(this IServiceCollection services)
     {
         // Database context
@@ -43,6 +47,8 @@ public static class DependencyInjectionExtension
         services.AddScoped<ITarotReadingService, TarotReadingService>();
         services.AddScoped<IWalletService, WalletService>();
         services.AddScoped<IAiTarotReadingService, AiTarotReadingService>();
+        services.AddScoped<IAIDeepTarotReadingService, AIDeepTarotReadingService>();
+        services.AddScoped<IDevAuthService, DevAuthService>();
 
         // External clients
         services.AddHttpClient<IEmailSender, EmailSender>();
@@ -63,6 +69,8 @@ public static class DependencyInjectionExtension
 
         services.AddScoped<IValidator<DeductCoinRequest>, DeductCoinRequestValidator>();
 
+        services.AddScoped<IValidator<DeductRedCoinRequest>, DeductRedCoinRequestValidator>();
+
         services.AddScoped<
             IValidator<ConvertRedToWhiteRequest>,
             ConvertRedToWhiteRequestValidator
@@ -72,6 +80,21 @@ public static class DependencyInjectionExtension
             IValidator<CreateAiTarotReadingRequest>,
             CreateAiTarotReadingRequestValidator
         >();
+
+        services.AddScoped<
+            IValidator<CreateTwelveHousesReadingRequest>,
+            CreateTwelveHousesReadingRequestValidator
+        >();
+        services.AddScoped<
+            IValidator<CreateTwelveMonthsReadingRequest>,
+            CreateTwelveMonthsReadingRequestValidator
+        >();
+        services.AddScoped<
+            IValidator<CreateCrossroadsReadingRequest>,
+            CreateCrossroadsReadingRequestValidator
+        >();
+
+        services.AddScoped<IValidator<CreateDevTokenRequest>, CreateDevTokenRequestValidator>();
 
         return services;
     }

@@ -31,6 +31,17 @@ export const GET_ALL_AI_TAROT_QUERY_KEY = [
   "getAll",
 ] as const;
 
+// aiDeepTarot.hooks.ts
+export const AI_DEEP_TAROT_QUERY_KEY = ["aiDeepTarot"] as const;
+export const GET_AI_DEEP_TAROT_BY_ID_QUERY_KEY = [
+  ...AI_DEEP_TAROT_QUERY_KEY,
+  "getById",
+] as const;
+export const GET_ALL_AI_DEEP_TAROT_QUERY_KEY = [
+  ...AI_DEEP_TAROT_QUERY_KEY,
+  "getAll",
+] as const;
+
 // wallet.hooks.ts
 export const WALLET_QUERY_KEY = ["wallet"] as const;
 export const GET_WALLET_QUERY_KEY = [...WALLET_QUERY_KEY, "getWallet"] as const;
