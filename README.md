@@ -1,12 +1,12 @@
 # My Tarot Reader
 
-> An AI-assisted tarot reading web app. Draw a daily card, explore the full 78-card Rider–Waite library, build check-in streaks, and get AI-generated readings — with a bilingual (English / Vietnamese) UI.
+> An AI-assisted tarot reading web app. Draw a daily card, explore the full 78-card Rider–Waite library, build check-in streaks, and get AI-generated readings — from a single spread up to full multi-card deep spreads — with a bilingual (English / Vietnamese) UI.
 
 > **Status:** The app is under active development — new features are being added regularly, and the screenshots below reflect the current state.
 
 ## Live Demo
 
-- **Live demo:** https://my-tarot-reader.vercel.app/
+- **Live demo:** https://mytarotreader.io.vn/
 - The API runs on Render's free tier and sleeps when idle — the first request may take 10–30 s to cold-start.
 
 ![Home page](docs/homepage.png)
@@ -24,13 +24,13 @@
 ## Key Features
 
 - **Daily tarot card draw** — guest users with a Redis cooldown + device fingerprint, or signed-in users with full history
-- **Complete 78-card Rider–Waite library**, reversed cards included
-- **AI tarot readings** powered by Google Gemini
+- **AI tarot readings** powered by Google Gemini, with input screening against unsafe content and prompt injection
+- **AI Deep Tarot** — multi-card spreads beyond a single draw: **12 astrological houses** (12 cards), **12 months** (12 cards, starting from the month after the current one) and **crossroads** (2–4 options, 3 cards per option plus a closing card). Each spread has its own result and history view and is paid for with **red** coins
 - **Daily check-in** with a 7-day streak cycle and white/red coin rewards
-- **Wallet & coin economy** with per-user balances
+- **Wallet & coin economy** — white and red balances, red → white conversion, and white-coin batches with their own expiry dates
 - **Google OAuth login** — HttpOnly cookies, device-bound refresh tokens with rotation
-- **Reading history** — browse past readings and delete them
-- **Card library** with upright/reversed meanings and detail modals
+- **Reading history** — browse and delete readings across all three flows: card draws, AI tarot and AI deep tarot
+- **78-card Rider–Waite library** with upright/reversed meanings and detail modals
 - **Bilingual UI** (English / Vietnamese)
 - **Role-based themes** with dark / light modes
 
@@ -39,7 +39,7 @@
 - **Backend:** ASP.NET Core 8 Web API — Clean Architecture, EF Core 8 + PostgreSQL (Npgsql), Redis, JWT (HttpOnly cookies), Google OAuth, Resend API (email), Google Gemini
 - **Frontend:** React 19 + Vite 8 + TypeScript 6, Ant Design v6, TanStack Query v5, react-router v7, Zustand, react-i18next, axios, FingerprintJS, oxlint
 - **Database:** PostgreSQL + Redis
-- **CI/CD:** GitHub Actions (build + deploy), Render (API), Vercel (SPA), Dockerfile
+- **CI/CD:** GitHub Actions (lint + build on push/PR targeting `main`, then Render / Vercel deploy hooks), Render (API), Vercel (SPA), `Backend/dockerfile`
 - **Testing:** xUnit + Moq + EF Core InMemory + FluentAssertions (backend)
 
 ## Project Structure
@@ -65,7 +65,7 @@ cd My-Tarot-Reader
 
 **2. Configure and run the backend**
 
-Set your local values in `Backend/src/Api/appsettings.json` (PostgreSQL connection, Redis, Google Client ID, Gemini API key — see the [Backend README](./Backend/README.md) for the full table). Then:
+Configure the backend's local settings or environment variables (PostgreSQL connection, Redis, Google Client ID, Gemini API key — see the [Backend README](./Backend/README.md) for the full table). Then:
 
 ```bash
 cd Backend
@@ -98,3 +98,4 @@ The SPA runs at http://localhost:5173.
 3. Backend operations always go through `Backend/scripts/*.{sh,cmd}` — never raw `dotnet run` / `dotnet ef`.
 4. Never commit real secrets — `appsettings*.json` keep placeholders / local-only values.
 5. Run `npm run lint` and `npm run build` for frontend changes before finishing.
+6. Run `dotnet test Backend/test/UnitTest/UnitTest.csproj` for backend changes — CI only builds the solution, it does not run the suite.

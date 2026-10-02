@@ -1,0 +1,34 @@
+# ---------- Build output ----------
+# dockerfile copies the whole context after `dotnet restore`, so locally built artifacts
+# would otherwise overwrite the restored Linux ones and break `dotnet publish --no-restore`.
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+
+# ---------- Secrets / local config ----------
+*.Development.json
+*.Production.json
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+
+# ---------- Logs ----------
+logs/
+*.log
+
+# ---------- Tooling / OS ----------
+.vs/
+.vscode/
+.idea/
+.git/
+.gitignore
+.DS_Store
+Thumbs.db
+
+# ---------- Docs / plans ----------
+README.md
+docs/
