@@ -22,7 +22,7 @@ const AiTarotResultPage = lazy(
   () => import("@/pages/auth/ResultPage/AiTarotResultPage"),
 );
 const TwelveHousesPage = lazy(
-  () => import("@/pages/auth/DrawPage/AiDeepTarotPage/TwelveHouses"),
+  () => import("@/pages/auth/DrawPage/AiDeepTarotPage/twelveHouses"),
 );
 const TwelveMonthsPage = lazy(
   () => import("@/pages/auth/DrawPage/AiDeepTarotPage/TwelveMonths"),
