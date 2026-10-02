@@ -95,8 +95,7 @@ export const enPages = {
         cardCount: "{{count}} cards · {{positions}} positions",
         cost: "Cost: {{cost}} red coins",
         balance: "Your balance: {{balance}} red coins",
-        insufficientCoins:
-          "You need at least {{cost}} red coins to continue. Check in daily to earn more.",
+        insufficientCoins: "You need at least {{cost}} red coins to continue.",
         continue: "Continue",
         back: "Back",
         saving: "Creating your deep tarot reading…",
@@ -124,7 +123,7 @@ export const enPages = {
             title: "What is this spread for?",
             items: {
               overview:
-                "A complete point of view: instead of answering a single isolated question (like \"Do they like me?\"), this spread shows you the big picture of every side of life.",
+                'A complete point of view: instead of answering a single isolated question (like "Do they like me?"), this spread shows you the big picture of every side of life.',
               blockage:
                 "Find the bottleneck: quickly spot which area is growing well and which one is stuck and needs your attention.",
               forecast:
@@ -136,8 +135,7 @@ export const enPages = {
             items: {
               milestone:
                 "At a new milestone: the start of a new year, your birthday, or the beginning of a new cycle in life.",
-              lost:
-                "When you feel directionless: everything feels off but you cannot pin down what is actually wrong (work, love, or your mental health).",
+              lost: "When you feel directionless: everything feels off but you cannot pin down what is actually wrong (work, love, or your mental health).",
               selfReview:
                 "When you want to reassess yourself: for the moments when you want to pause, look back at your whole life and plan a more balanced way forward.",
             },
@@ -248,15 +246,14 @@ export const enPages = {
             items: {
               career:
                 "Changing jobs: stay where you are, move to a new company, or start your own?",
-              life:
-                "Life and love: choosing where to live, continuing or ending a relationship, or starting something new?",
+              life: "Life and love: choosing where to live, continuing or ending a relationship, or starting something new?",
               timing:
                 "A decision with a deadline: when you are torn between two and four options and need clear guidance.",
             },
           },
           guide: {
             title: "How to read the Crossroads spread",
-            body: "Each option has 3 cards in this order: current energy, how it develops, outcome. The last card is the \"Summary & advice\" — it belongs to no option, it reflects the whole picture and guides your decision.",
+            body: 'Each option has 3 cards in this order: current energy, how it develops, outcome. The last card is the "Summary & advice" — it belongs to no option, it reflects the whole picture and guides your decision.',
           },
           options: {
             title: "The options you are torn between",

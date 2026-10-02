@@ -96,8 +96,7 @@ export const viPages = {
         cardCount: "Số lá bài: {{count}} lá · {{positions}} vị trí",
         cost: "Chi phí: {{cost}} xu đỏ",
         balance: "Xu đỏ hiện có: {{balance}}",
-        insufficientCoins:
-          "Bạn cần tối thiểu {{cost}} xu đỏ để tiếp tục. Hãy điểm danh hằng ngày để nhận thêm xu.",
+        insufficientCoins: "Bạn cần tối thiểu {{cost}} xu đỏ để tiếp tục.",
         continue: "Tiếp tục",
         back: "Quay lại",
         saving: "Đang tạo trải bài chuyên sâu của bạn…",
@@ -125,7 +124,7 @@ export const viPages = {
             title: "Trải bài này để làm gì?",
             items: {
               overview:
-                "Cung cấp góc nhìn toàn cảnh: Thay vì chỉ trả lời một câu hỏi lẻ (như \"Người ấy có thích tôi không?\"), trải bài này giúp bạn thấy được bức tranh lớn về mọi mặt trong đời sống.",
+                'Cung cấp góc nhìn toàn cảnh: Thay vì chỉ trả lời một câu hỏi lẻ (như "Người ấy có thích tôi không?"), trải bài này giúp bạn thấy được bức tranh lớn về mọi mặt trong đời sống.',
               blockage:
                 "Tìm ra điểm nghẽn: Nhận diện nhanh lĩnh vực nào đang phát triển thuận lợi và khía cạnh nào đang gặp rắc rối cần bạn tập trung xử lý.",
               forecast:
@@ -137,8 +136,7 @@ export const viPages = {
             items: {
               milestone:
                 "Vào các cột mốc mới: Dịp đầu năm mới, sinh nhật, hoặc khởi đầu một chu kỳ mới trong cuộc sống.",
-              lost:
-                "Khi mất phương hướng: Bạn cảm thấy mọi thứ không ổn nhưng không chỉ ra được cụ thể vấn đề nằm ở đâu (là do công việc, tình cảm, hay sức khỏe tinh thần).",
+              lost: "Khi mất phương hướng: Bạn cảm thấy mọi thứ không ổn nhưng không chỉ ra được cụ thể vấn đề nằm ở đâu (là do công việc, tình cảm, hay sức khỏe tinh thần).",
               selfReview:
                 "Khi muốn đánh giá lại bản thân: Dành cho những lúc bạn muốn dừng lại, soi rọi lại toàn bộ cuộc sống để lên kế hoạch cân bằng lại mọi thứ.",
             },
@@ -249,15 +247,14 @@ export const viPages = {
             items: {
               career:
                 "Chuyển việc: Ở lại hay nhảy sang công ty mới, hay mở công ty riêng?",
-              life:
-                "Cuộc sống & tình cảm: Chọn nơi sinh sống, tiếp tục hay kết thúc một mối quan hệ, hay bắt đầu điều gì mới?",
+              life: "Cuộc sống & tình cảm: Chọn nơi sinh sống, tiếp tục hay kết thúc một mối quan hệ, hay bắt đầu điều gì mới?",
               timing:
                 "Quyết định cần thời hạn: Khi bạn đang phân vân giữa hai đến bốn lựa chọn và cần một hướng dẫn rõ ràng.",
             },
           },
           guide: {
             title: "Cách đọc trải bài Ngã rẽ",
-            body: "Mỗi lựa chọn sẽ có 3 lá bài theo thứ tự: Năng lượng hiện tại, Sự phát triển, Kết quả. Lá bài cuối cùng là \"Tóm tắt & lời khuyên\" — lá này không thuộc về bất kỳ lựa chọn nào, mà phản ánh bức tranh tổng thể và hướng dẫn bạn đưa ra quyết định.",
+            body: 'Mỗi lựa chọn sẽ có 3 lá bài theo thứ tự: Năng lượng hiện tại, Sự phát triển, Kết quả. Lá bài cuối cùng là "Tóm tắt & lời khuyên" — lá này không thuộc về bất kỳ lựa chọn nào, mà phản ánh bức tranh tổng thể và hướng dẫn bạn đưa ra quyết định.',
           },
           options: {
             title: "Lựa chọn đang phân vân",
