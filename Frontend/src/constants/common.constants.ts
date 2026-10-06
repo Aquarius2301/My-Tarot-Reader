@@ -1,5 +1,8 @@
 export const APP_NAME = "My Tarot Reader" as const;
 
+/** Default number of items per page for paginated list endpoints. */
+export const PAGINATION_PAGE_SIZE = 10 as const;
+
 /**
  * Dispatched on `window` when the refresh-token flow fails (session
  * expired/revoked). The SessionExpiredHandler component listens for it and

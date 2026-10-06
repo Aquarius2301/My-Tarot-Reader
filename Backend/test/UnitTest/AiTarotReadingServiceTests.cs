@@ -719,7 +719,7 @@ public class AiTarotReadingServiceTests
         oldest.CreatedAt = DateTimeOffset.UtcNow.AddHours(-1);
         await db.SaveChangesAsync();
 
-        var result = await service.GetAllAiTarotReadingsAsync(userId);
+        var result = await service.GetAllAiTarotReadingsAsync(userId, new GetAllAiTarotReadingRequest());
 
         result.Items.Should().HaveCount(2);
         result.Items[0].Id.Should().Be(newest.Id);
@@ -739,7 +739,7 @@ public class AiTarotReadingServiceTests
     {
         var (service, _, _, _) = CreateSut();
 
-        var result = await service.GetAllAiTarotReadingsAsync(Guid.NewGuid());
+        var result = await service.GetAllAiTarotReadingsAsync(Guid.NewGuid(), new GetAllAiTarotReadingRequest());
 
         result.Should().NotBeNull();
         result.Items.Should().BeEmpty();
@@ -759,7 +759,7 @@ public class AiTarotReadingServiceTests
         await SeedReadingAsync(db, userA, """[{"cardCode":"maj-00","isReversed":false}]""");
         await SeedReadingAsync(db, userB, """[{"cardCode":"maj-21","isReversed":true}]""");
 
-        var result = await service.GetAllAiTarotReadingsAsync(userA);
+        var result = await service.GetAllAiTarotReadingsAsync(userA, new GetAllAiTarotReadingRequest());
 
         result.Items.Should().HaveCount(1);
         result.Items.Single().Cards.Single().CardCode.Should().Be(ValidCard);
@@ -782,7 +782,7 @@ public class AiTarotReadingServiceTests
             deleted: true
         );
 
-        var result = await service.GetAllAiTarotReadingsAsync(userId);
+        var result = await service.GetAllAiTarotReadingsAsync(userId, new GetAllAiTarotReadingRequest());
 
         result.Items.Should().HaveCount(1);
         result.Items.Single().Cards.Single().CardCode.Should().Be(ValidCard);
@@ -811,9 +811,59 @@ public class AiTarotReadingServiceTests
         newest.CreatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync();
 
-        var result = await service.GetAllAiTarotReadingsAsync(userId);
+        var result = await service.GetAllAiTarotReadingsAsync(userId, new GetAllAiTarotReadingRequest());
 
         result.Items.Select(x => x.Id).Should().Equal(newest.Id, oldest.Id);
+    }
+
+    /// <summary>
+    /// Pagination returns only the readings of the requested page while reporting the
+    /// total count and total number of pages.
+    /// </summary>
+    [Fact]
+    public async Task GetAllAiTarotReadings_PageTwo_ReturnsSecondPage()
+    {
+        var (service, db, _, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        for (var i = 0; i < 5; i++)
+        {
+            await SeedReadingAsync(db, userId, """[{"cardCode":"maj-00","isReversed":false}]""");
+        }
+
+        var result = await service.GetAllAiTarotReadingsAsync(
+            userId,
+            new GetAllAiTarotReadingRequest(Page: 2, PageSize: 2)
+        );
+
+        result.Items.Should().HaveCount(2);
+        result.Total.Should().Be(5);
+        result.Page.Should().Be(2);
+        result.PageSize.Should().Be(2);
+        result.TotalPages.Should().Be(3);
+    }
+
+    /// <summary>
+    /// Invalid paging inputs (page 0, negative page size) fall back to safe defaults
+    /// instead of throwing.
+    /// </summary>
+    [Fact]
+    public async Task GetAllAiTarotReadings_InvalidPagingInput_UsesDefaults()
+    {
+        var (service, db, _, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        await SeedReadingAsync(db, userId, """[{"cardCode":"maj-00","isReversed":false}]""");
+
+        var result = await service.GetAllAiTarotReadingsAsync(
+            userId,
+            new GetAllAiTarotReadingRequest(Page: 0, PageSize: -5)
+        );
+
+        result.Items.Should().HaveCount(1);
+        result.Page.Should().Be(1);
+        result.PageSize.Should().Be(10);
+        result.TotalPages.Should().Be(1);
     }
 
     #endregion
@@ -842,7 +892,7 @@ public class AiTarotReadingServiceTests
             .Single(r => r.Id == reading.Id)
             .DeletedAt.Should()
             .NotBeNull();
-        var afterDelete = await service.GetAllAiTarotReadingsAsync(userId);
+        var afterDelete = await service.GetAllAiTarotReadingsAsync(userId, new GetAllAiTarotReadingRequest());
         afterDelete.Items.Should().BeEmpty();
     }
 

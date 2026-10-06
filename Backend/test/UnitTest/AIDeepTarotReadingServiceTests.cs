@@ -2086,7 +2086,7 @@ public class AIDeepTarotReadingServiceTests
         oldest.CreatedAt = DateTimeOffset.UtcNow.AddHours(-1);
         await db.SaveChangesAsync();
 
-        var result = await service.GetAllAiDeepTarotReadingsAsync(userId);
+        var result = await service.GetAllAiDeepTarotReadingsAsync(userId, new GetAllAiDeepTarotReadingRequest());
 
         result.Items.Should().HaveCount(2);
         result.Items[0].Id.Should().Be(newest.Id);
@@ -2107,7 +2107,7 @@ public class AIDeepTarotReadingServiceTests
     {
         var (service, _, _, _) = CreateSut();
 
-        var result = await service.GetAllAiDeepTarotReadingsAsync(Guid.NewGuid());
+        var result = await service.GetAllAiDeepTarotReadingsAsync(Guid.NewGuid(), new GetAllAiDeepTarotReadingRequest());
 
         result.Should().NotBeNull();
         result.Items.Should().BeEmpty();
@@ -2127,7 +2127,7 @@ public class AIDeepTarotReadingServiceTests
         await SeedReadingAsync(db, userA, """[{"cardCode":"maj-00","isReversed":false}]""");
         await SeedReadingAsync(db, userB, """[{"cardCode":"maj-21","isReversed":true}]""");
 
-        var result = await service.GetAllAiDeepTarotReadingsAsync(userA);
+        var result = await service.GetAllAiDeepTarotReadingsAsync(userA, new GetAllAiDeepTarotReadingRequest());
 
         result.Items.Should().HaveCount(1);
         result.Items.Single().Cards.Single().CardCode.Should().Be("maj-00");
@@ -2150,7 +2150,7 @@ public class AIDeepTarotReadingServiceTests
             deleted: true
         );
 
-        var result = await service.GetAllAiDeepTarotReadingsAsync(userId);
+        var result = await service.GetAllAiDeepTarotReadingsAsync(userId, new GetAllAiDeepTarotReadingRequest());
 
         result.Items.Should().HaveCount(1);
         result.Items.Single().Cards.Single().CardCode.Should().Be("maj-00");
@@ -2179,9 +2179,59 @@ public class AIDeepTarotReadingServiceTests
         newest.CreatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync();
 
-        var result = await service.GetAllAiDeepTarotReadingsAsync(userId);
+        var result = await service.GetAllAiDeepTarotReadingsAsync(userId, new GetAllAiDeepTarotReadingRequest());
 
         result.Items.Select(x => x.Id).Should().Equal(newest.Id, oldest.Id);
+    }
+
+    /// <summary>
+    /// Pagination returns only the readings of the requested page while reporting the
+    /// total count and total number of pages.
+    /// </summary>
+    [Fact]
+    public async Task GetAllAiDeepTarotReadings_PageTwo_ReturnsSecondPage()
+    {
+        var (service, db, _, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        for (var i = 0; i < 5; i++)
+        {
+            await SeedReadingAsync(db, userId, """[{"cardCode":"maj-00","isReversed":false}]""");
+        }
+
+        var result = await service.GetAllAiDeepTarotReadingsAsync(
+            userId,
+            new GetAllAiDeepTarotReadingRequest(Page: 2, PageSize: 2)
+        );
+
+        result.Items.Should().HaveCount(2);
+        result.Total.Should().Be(5);
+        result.Page.Should().Be(2);
+        result.PageSize.Should().Be(2);
+        result.TotalPages.Should().Be(3);
+    }
+
+    /// <summary>
+    /// Invalid paging inputs (page 0, negative page size) fall back to safe defaults
+    /// instead of throwing.
+    /// </summary>
+    [Fact]
+    public async Task GetAllAiDeepTarotReadings_InvalidPagingInput_UsesDefaults()
+    {
+        var (service, db, _, _) = CreateSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        await SeedReadingAsync(db, userId, """[{"cardCode":"maj-00","isReversed":false}]""");
+
+        var result = await service.GetAllAiDeepTarotReadingsAsync(
+            userId,
+            new GetAllAiDeepTarotReadingRequest(Page: 0, PageSize: -5)
+        );
+
+        result.Items.Should().HaveCount(1);
+        result.Page.Should().Be(1);
+        result.PageSize.Should().Be(10);
+        result.TotalPages.Should().Be(1);
     }
 
     #endregion
@@ -2211,7 +2261,7 @@ public class AIDeepTarotReadingServiceTests
             .Single(r => r.Id == reading.Id)
             .DeletedAt.Should()
             .NotBeNull();
-        var afterDelete = await service.GetAllAiDeepTarotReadingsAsync(userId);
+        var afterDelete = await service.GetAllAiDeepTarotReadingsAsync(userId, new GetAllAiDeepTarotReadingRequest());
         afterDelete.Items.Should().BeEmpty();
     }
 

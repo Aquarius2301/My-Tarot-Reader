@@ -5,3 +5,4 @@ export * from "./error";
 export * from "./modal";
 export * from "./coins";
 export * from "./copyButton";
+export * from "./pagination";

@@ -1,6 +1,11 @@
 import { aiTarotApi } from "@/api";
-import type { CreateAiTarotReadingRequest } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { CreateAiTarotReadingRequest, PageParams } from "@/types";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   AUTH_QUERY_KEY,
   AI_TAROT_QUERY_KEY,
@@ -32,10 +37,12 @@ export const useGetAiTarotReadingById = (readingId: string, enabled = true) =>
     retry: false, // 404 NotFound is expected when the reading does not exist.
   });
 
-export const useGetAllAiTarotReadings = () =>
+export const useGetAllAiTarotReadings = ({ page, pageSize }: PageParams) =>
   useQuery({
-    queryKey: GET_ALL_AI_TAROT_QUERY_KEY,
-    queryFn: () => aiTarotApi.getAllAiTarotReadings(),
+    queryKey: [...GET_ALL_AI_TAROT_QUERY_KEY, page, pageSize],
+    queryFn: () =>
+      aiTarotApi.getAllAiTarotReadings({ page, pageSize }),
+    placeholderData: keepPreviousData, // Keep the current list visible while paging.
   });
 
 export const useDeleteAiTarotReading = () => {

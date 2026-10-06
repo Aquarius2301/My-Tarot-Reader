@@ -70,7 +70,7 @@ public class AiTarotReadingController(IAiTarotReadingService service) : Controll
     }
 
     /// <summary>
-    /// Retrieves all AI tarot readings for the authenticated user.
+    /// Retrieves a page of AI tarot readings for the authenticated user.
     /// </summary>
     /// <remarks>
     /// Returns only a short excerpt of each answer (not the full answer).
@@ -83,12 +83,13 @@ public class AiTarotReadingController(IAiTarotReadingService service) : Controll
     )]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllAiTarotReadingsAsync(
+        [FromQuery] GetAllAiTarotReadingRequest request,
         CancellationToken cancellationToken
     )
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.GetAllAiTarotReadingsAsync(userId, cancellationToken);
+        var result = await _service.GetAllAiTarotReadingsAsync(userId, request, cancellationToken);
 
         return Ok(ApiResponse.Success(result));
     }

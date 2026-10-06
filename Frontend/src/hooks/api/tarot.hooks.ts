@@ -1,5 +1,10 @@
 import { tarotReadingApi } from "@/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   GET_ALL_READING_QUERY_KEY,
   GET_CARD_FOR_AUTH_QUERY_KEY,
@@ -8,6 +13,7 @@ import {
 import type {
   CreateDrawForAuthRequest,
   CreateDrawForGuestRequest,
+  PageParams,
 } from "@/types";
 
 export const useGetLastDrawnCardForGuest = (enabled: boolean = true) => {
@@ -50,10 +56,11 @@ export const useCreateDrawForAuth = () => {
   });
 };
 
-export const useGetAllReading = () =>
+export const useGetAllReading = ({ page, pageSize }: PageParams) =>
   useQuery({
-    queryKey: GET_ALL_READING_QUERY_KEY,
-    queryFn: () => tarotReadingApi.getAllReading(),
+    queryKey: [...GET_ALL_READING_QUERY_KEY, page, pageSize],
+    queryFn: () => tarotReadingApi.getAllReading({ page, pageSize }),
+    placeholderData: keepPreviousData, // Keep the current list visible while paging.
   });
 
 export const useDeleteHistory = () => {
