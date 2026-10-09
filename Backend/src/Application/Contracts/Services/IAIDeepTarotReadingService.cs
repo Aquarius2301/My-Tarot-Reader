@@ -141,10 +141,27 @@ public record GetAllAiDeepTarotReadingItem(
 );
 
 /// <summary>
-/// Result of retrieving all deep tarot readings for a user.
+/// Request for retrieving a page of deep tarot readings for a user.
 /// </summary>
-/// <param name="Items">The list of readings.</param>
-public record GetAllAiDeepTarotReadingResult(List<GetAllAiDeepTarotReadingItem> Items);
+/// <param name="Page">The 1-based page number.</param>
+/// <param name="PageSize">The number of items per page.</param>
+public record GetAllAiDeepTarotReadingRequest(int Page = 1, int PageSize = 10);
+
+/// <summary>
+/// Result of retrieving a page of deep tarot readings for a user.
+/// </summary>
+/// <param name="Items">The readings of the requested page.</param>
+/// <param name="Page">The normalized 1-based page number.</param>
+/// <param name="PageSize">The normalized number of items per page.</param>
+/// <param name="Total">The total number of readings across all pages.</param>
+/// <param name="TotalPages">The total number of pages.</param>
+public record GetAllAiDeepTarotReadingResult(
+    List<GetAllAiDeepTarotReadingItem> Items,
+    int Page,
+    int PageSize,
+    int Total,
+    int TotalPages
+);
 
 public interface IAIDeepTarotReadingService
 {
@@ -214,12 +231,14 @@ public interface IAIDeepTarotReadingService
     );
 
     /// <summary>
-    /// Retrieves all deep tarot readings for the user, without the full answer.
+    /// Retrieves a page of deep tarot readings for the user, without the full answer.
     /// </summary>
     /// <param name="userId">The authenticated user's ID.</param>
-    /// <returns><see cref="GetAllAiDeepTarotReadingResult"/> containing a short excerpt per reading.</returns>
+    /// <param name="request"><see cref="GetAllAiDeepTarotReadingRequest"/> containing the page and page size.</param>
+    /// <returns><see cref="GetAllAiDeepTarotReadingResult"/> containing one page with a short excerpt per reading.</returns>
     Task<GetAllAiDeepTarotReadingResult> GetAllAiDeepTarotReadingsAsync(
         Guid userId,
+        GetAllAiDeepTarotReadingRequest request,
         CancellationToken cancellationToken = default
     );
 

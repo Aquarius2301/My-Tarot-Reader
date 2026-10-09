@@ -4,6 +4,7 @@ import type {
   AiTarotQuestionType,
   TarotCardCode,
 } from "@/constants";
+import type { PaginatedResult } from "./pagination.types";
 
 /** A single drawn card sent to the backend when creating an AI tarot reading. */
 export interface AiCardRequest {
@@ -67,7 +68,5 @@ export interface GetAllAiTarotReadingItem {
   createdAt: string;
 }
 
-/** Result of retrieving all AI tarot readings for a user. */
-export interface GetAllAiTarotReadingResult {
-  items: GetAllAiTarotReadingItem[];
-}
+/** Result of retrieving a page of AI tarot readings for a user. */
+export interface GetAllAiTarotReadingResult extends PaginatedResult<GetAllAiTarotReadingItem> {}

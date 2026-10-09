@@ -40,6 +40,7 @@ public static class DependencyInjectionExtension
         services.AddSingleton<IEmailBackgroundQueue, EmailBackgroundQueue>();
         services.AddHostedService<EmailBackgroundWorker>();
         services.AddHostedService<TokenCleanupWorker>();
+        services.AddHostedService<PayOsWebhookConfirmWorker>();
 
         // Services
         services.AddScoped<IAuthService, AuthService>();
@@ -49,10 +50,12 @@ public static class DependencyInjectionExtension
         services.AddScoped<IAiTarotReadingService, AiTarotReadingService>();
         services.AddScoped<IAIDeepTarotReadingService, AIDeepTarotReadingService>();
         services.AddScoped<IDevAuthService, DevAuthService>();
+        services.AddScoped<IShopService, ShopService>();
 
         // External clients
         services.AddHttpClient<IEmailSender, EmailSender>();
         services.AddHttpClient<IGeminiClient, GeminiClient>();
+        services.AddHttpClient<IPayOsClient, PayOsClient>();
 
         // Validators
         services.AddScoped<
@@ -95,6 +98,8 @@ public static class DependencyInjectionExtension
         >();
 
         services.AddScoped<IValidator<CreateDevTokenRequest>, CreateDevTokenRequestValidator>();
+
+        services.AddScoped<IValidator<CreatePaymentRequest>, CreatePaymentRequestValidator>();
 
         return services;
     }

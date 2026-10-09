@@ -44,6 +44,8 @@ const HistoryTarotPage = lazy(
   () => import("@/pages/auth/HistoryPage/HistoryTarotPage"),
 );
 const WalletPage = lazy(() => import("@/pages/auth/WalletPage"));
+const ShopPage = lazy(() => import("@/pages/auth/ShopPage"));
+const ShopCheckoutPage = lazy(() => import("@/pages/auth/ShopCheckoutPage"));
 
 interface AppRoute {
   titleKey: string;
@@ -138,6 +140,16 @@ const protectedRoutes: AppRoute[] = [
     titleKey: "page.wallet.title",
     path: WEB_URL.wallet,
     component: WalletPage,
+  },
+  {
+    titleKey: "page.shop.title",
+    path: WEB_URL.shop,
+    component: ShopPage,
+  },
+  {
+    titleKey: "page.shop.checkoutTitle",
+    path: `${WEB_URL.shopCheckout}/:orderId`,
+    component: ShopCheckoutPage,
   },
 ];
 

@@ -71,10 +71,27 @@ public record GetAllAiTarotReadingItem(
 );
 
 /// <summary>
-/// Result of retrieving all AI tarot readings for a user.
+/// Request for retrieving a page of AI tarot readings for a user.
 /// </summary>
-/// <param name="Items">The list of readings.</param>
-public record GetAllAiTarotReadingResult(List<GetAllAiTarotReadingItem> Items);
+/// <param name="Page">The 1-based page number.</param>
+/// <param name="PageSize">The number of items per page.</param>
+public record GetAllAiTarotReadingRequest(int Page = 1, int PageSize = 10);
+
+/// <summary>
+/// Result of retrieving a page of AI tarot readings for a user.
+/// </summary>
+/// <param name="Items">The readings of the requested page.</param>
+/// <param name="Page">The normalized 1-based page number.</param>
+/// <param name="PageSize">The normalized number of items per page.</param>
+/// <param name="Total">The total number of readings across all pages.</param>
+/// <param name="TotalPages">The total number of pages.</param>
+public record GetAllAiTarotReadingResult(
+    List<GetAllAiTarotReadingItem> Items,
+    int Page,
+    int PageSize,
+    int Total,
+    int TotalPages
+);
 
 /// <summary>
 /// Result of creating an AI tarot reading.
@@ -112,12 +129,14 @@ public interface IAiTarotReadingService
     );
 
     /// <summary>
-    /// Retrieves all AI tarot readings for the user, without the full answer.
+    /// Retrieves a page of AI tarot readings for the user, without the full answer.
     /// </summary>
     /// <param name="userId">The authenticated user's ID.</param>
-    /// <returns><see cref="GetAllAiTarotReadingResult"/> containing a short excerpt per reading.</returns>
+    /// <param name="request"><see cref="GetAllAiTarotReadingRequest"/> containing the page and page size.</param>
+    /// <returns><see cref="GetAllAiTarotReadingResult"/> containing one page with a short excerpt per reading.</returns>
     Task<GetAllAiTarotReadingResult> GetAllAiTarotReadingsAsync(
         Guid userId,
+        GetAllAiTarotReadingRequest request,
         CancellationToken cancellationToken = default
     );
 

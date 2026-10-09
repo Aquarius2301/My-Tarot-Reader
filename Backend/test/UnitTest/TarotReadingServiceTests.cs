@@ -610,7 +610,7 @@ public class TarotReadingServiceTests
         );
         await db.SaveChangesAsync();
 
-        var result = await service.GetAllReadingAsync(userId);
+        var result = await service.GetAllReadingAsync(userId, new GetAllReadingRequest());
 
         result.Items.Should().HaveCount(2);
         var first = result.Items.Single(x => x.CardCode == ValidCard);
@@ -629,7 +629,7 @@ public class TarotReadingServiceTests
     {
         var (service, _, _) = CreateAuthSut();
 
-        var result = await service.GetAllReadingAsync(Guid.NewGuid());
+        var result = await service.GetAllReadingAsync(Guid.NewGuid(), new GetAllReadingRequest());
 
         result.Should().NotBeNull();
         result.Items.Should().BeEmpty();
@@ -676,7 +676,7 @@ public class TarotReadingServiceTests
         );
         await db.SaveChangesAsync();
 
-        var result = await service.GetAllReadingAsync(userA);
+        var result = await service.GetAllReadingAsync(userA, new GetAllReadingRequest());
 
         result.Items.Should().HaveCount(2);
         result
@@ -725,7 +725,7 @@ public class TarotReadingServiceTests
         );
         await db.SaveChangesAsync();
 
-        var result = await service.GetAllReadingAsync(userId);
+        var result = await service.GetAllReadingAsync(userId, new GetAllReadingRequest());
 
         result.Items.Select(x => x.CreatedAt).Should().Equal(newest, middle, oldest);
     }
@@ -761,10 +761,98 @@ public class TarotReadingServiceTests
         deleted.DeletedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync();
 
-        var result = await service.GetAllReadingAsync(userId);
+        var result = await service.GetAllReadingAsync(userId, new GetAllReadingRequest());
 
         result.Items.Should().HaveCount(1);
         result.Items.Single().CardCode.Should().Be("kept");
+    }
+
+    /// <summary>
+    /// Pagination returns only the items of the requested page while reporting the
+    /// total count and total number of pages.
+    /// </summary>
+    [Fact]
+    public async Task GetAllReadingAsync_PageTwo_ReturnsSecondPage()
+    {
+        var (service, db, _) = CreateAuthSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        for (var i = 0; i < 5; i++)
+        {
+            db.TarotReadings.Add(
+                new TarotReading
+                {
+                    UserId = userId,
+                    CardCode = ValidCard,
+                    IsReversed = false,
+                    CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-i),
+                }
+            );
+        }
+        await db.SaveChangesAsync();
+
+        var result = await service.GetAllReadingAsync(userId, new GetAllReadingRequest(Page: 2, PageSize: 2));
+
+        result.Items.Should().HaveCount(2);
+        result.Total.Should().Be(5);
+        result.Page.Should().Be(2);
+        result.PageSize.Should().Be(2);
+        result.TotalPages.Should().Be(3);
+    }
+
+    /// <summary>
+    /// Invalid paging inputs (page 0, negative page size) fall back to safe defaults
+    /// instead of throwing.
+    /// </summary>
+    [Fact]
+    public async Task GetAllReadingAsync_InvalidPagingInput_UsesDefaults()
+    {
+        var (service, db, _) = CreateAuthSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        db.TarotReadings.Add(
+            new TarotReading
+            {
+                UserId = userId,
+                CardCode = ValidCard,
+                IsReversed = false,
+                CreatedAt = DateTimeOffset.UtcNow,
+            }
+        );
+        await db.SaveChangesAsync();
+
+        var result = await service.GetAllReadingAsync(userId, new GetAllReadingRequest(Page: 0, PageSize: -5));
+
+        result.Items.Should().HaveCount(1);
+        result.Page.Should().Be(1);
+        result.PageSize.Should().Be(10);
+        result.TotalPages.Should().Be(1);
+    }
+
+    /// <summary>
+    /// An oversized page size is clamped to the maximum allowed value.
+    /// </summary>
+    [Fact]
+    public async Task GetAllReadingAsync_TooLargePageSize_ClampedToMax()
+    {
+        var (service, db, _) = CreateAuthSut();
+        var userId = Guid.NewGuid();
+        await SeedUserAsync(db, userId);
+        db.TarotReadings.Add(
+            new TarotReading
+            {
+                UserId = userId,
+                CardCode = ValidCard,
+                IsReversed = false,
+                CreatedAt = DateTimeOffset.UtcNow,
+            }
+        );
+        await db.SaveChangesAsync();
+
+        var result = await service.GetAllReadingAsync(userId, new GetAllReadingRequest(Page: 1, PageSize: 500));
+
+        result.Items.Should().HaveCount(1);
+        result.PageSize.Should().Be(50);
     }
 
     #endregion
@@ -799,7 +887,7 @@ public class TarotReadingServiceTests
             .Single(r => r.Id == reading.Id)
             .DeletedAt.Should()
             .NotBeNull();
-        var afterDelete = await service.GetAllReadingAsync(userId);
+        var afterDelete = await service.GetAllReadingAsync(userId, new GetAllReadingRequest());
         afterDelete.Items.Should().BeEmpty();
     }
 

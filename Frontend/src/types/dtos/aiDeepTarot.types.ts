@@ -3,6 +3,7 @@ import type {
   CrossroadsTimeFrame,
   TarotCardCode,
 } from "@/constants";
+import type { PaginatedResult } from "./pagination.types";
 
 /** A single drawn card sent to the backend when creating a deep tarot reading. */
 export interface AiDeepCardRequest {
@@ -109,7 +110,5 @@ export interface GetAllAiDeepTarotReadingItem {
   question?: string | null;
 }
 
-/** Result of retrieving all deep tarot readings for a user. */
-export interface GetAllAiDeepTarotReadingResult {
-  items: GetAllAiDeepTarotReadingItem[];
-}
+/** Result of retrieving a page of deep tarot readings for a user. */
+export interface GetAllAiDeepTarotReadingResult extends PaginatedResult<GetAllAiDeepTarotReadingItem> {}

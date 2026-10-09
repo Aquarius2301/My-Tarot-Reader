@@ -352,13 +352,23 @@ public class AIDeepTarotReadingService(
 
     public async Task<GetAllAiDeepTarotReadingResult> GetAllAiDeepTarotReadingsAsync(
         Guid userId,
+        GetAllAiDeepTarotReadingRequest request,
         CancellationToken cancellationToken = default
     )
     {
-        var readings = await _context
+        var (page, pageSize) = PaginationHelper.Normalize(request.Page, request.PageSize);
+
+        var query = _context
             .AIDeepTarotReadings.AsNoTracking()
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
+            .ThenByDescending(r => r.Id);
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var readings = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(r => new
             {
                 r.Id,
@@ -383,7 +393,7 @@ public class AIDeepTarotReadingService(
             ))
             .ToList();
 
-        return new GetAllAiDeepTarotReadingResult(items);
+        return new GetAllAiDeepTarotReadingResult(items, page, pageSize, total, PaginationHelper.GetTotalPages(total, pageSize));
     }
 
     public async Task DeleteAiDeepTarotReadingAsync(

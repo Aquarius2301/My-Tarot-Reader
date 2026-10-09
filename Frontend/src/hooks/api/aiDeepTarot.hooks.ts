@@ -3,8 +3,14 @@ import type {
   CreateCrossroadsReadingRequest,
   CreateTwelveHousesReadingRequest,
   CreateTwelveMonthsReadingRequest,
+  PageParams,
 } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   AUTH_QUERY_KEY,
   AI_DEEP_TAROT_QUERY_KEY,
@@ -68,10 +74,12 @@ export const useGetAiDeepTarotReadingById = (
     retry: false, // 404 NotFound is expected when the reading does not exist.
   });
 
-export const useGetAllAiDeepTarotReadings = () =>
+export const useGetAllAiDeepTarotReadings = ({ page, pageSize }: PageParams) =>
   useQuery({
-    queryKey: GET_ALL_AI_DEEP_TAROT_QUERY_KEY,
-    queryFn: () => aiDeepTarotApi.getAllAiDeepTarotReadings(),
+    queryKey: [...GET_ALL_AI_DEEP_TAROT_QUERY_KEY, page, pageSize],
+    queryFn: () =>
+      aiDeepTarotApi.getAllAiDeepTarotReadings({ page, pageSize }),
+    placeholderData: keepPreviousData, // Keep the current list visible while paging.
   });
 
 export const useDeleteAiDeepTarotReading = () => {

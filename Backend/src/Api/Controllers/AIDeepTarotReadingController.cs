@@ -146,7 +146,7 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     }
 
     /// <summary>
-    /// Retrieves all deep tarot readings for the authenticated user.
+    /// Retrieves a page of deep tarot readings for the authenticated user.
     /// </summary>
     /// <remarks>
     /// Returns only a short excerpt of each answer (not the full answer).
@@ -159,12 +159,13 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     )]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllAiDeepTarotReadingsAsync(
+        [FromQuery] GetAllAiDeepTarotReadingRequest request,
         CancellationToken cancellationToken
     )
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.GetAllAiDeepTarotReadingsAsync(userId, cancellationToken);
+        var result = await _service.GetAllAiDeepTarotReadingsAsync(userId, request, cancellationToken);
 
         return Ok(ApiResponse.Success(result));
     }

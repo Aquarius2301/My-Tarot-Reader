@@ -393,5 +393,43 @@ export const enPages = {
         "Converted {{redCoins}} red coins into {{whiteCoins}} white coins",
       convertExceedsBalance: "You only have {{balance}} red coins",
     },
+    shop: {
+      title: "Shop",
+      subtitle:
+        "Buy red coins with PayOS to unlock more Tarot readings and AI spreads.",
+      empty: "No packages available right now",
+      packageRedCoins: "red coins",
+      buyButton: "Buy",
+      checkoutTitle: "Checkout",
+      checkoutSubtitle:
+        "Pay with the QR code below or open the PayOS page. This page updates automatically once the payment settles.",
+      waitingTitle: "Waiting for payment",
+      waitingSubtitle:
+        "Scan the QR code with your banking app, or open the PayOS checkout page to complete the payment.",
+      amountLabel: "Amount",
+      redCoinsLabel: "Red coins",
+      orderCodeLabel: "Order code",
+      qrTitle: "Scan to pay",
+      qrAlt: "Payment QR code",
+      openCheckout: "Open PayOS checkout",
+      checkAgain: "Check again",
+      backToShop: "Back to shop",
+      pollHint:
+        "Keep this tab open while paying \u2014 the order status refreshes automatically.",
+      paidTitle: "Payment successful",
+      paidSubtitle:
+        "{{redCoins}} red coins have been added to your wallet.",
+      paidAt: "Paid at {{time}}",
+      goWallet: "Go to wallet",
+      buyMore: "Buy more",
+      failedTitle: "Payment not completed",
+      status: {
+        pending: "Waiting for payment",
+        paid: "Paid",
+        cancelled: "The order was cancelled.",
+        expired: "The order has expired. Please create a new one.",
+        failed: "The payment failed. Please try again.",
+      },
+    },
   },
 } as const;

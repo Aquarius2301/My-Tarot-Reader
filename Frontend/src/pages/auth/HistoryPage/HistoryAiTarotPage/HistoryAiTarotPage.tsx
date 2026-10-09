@@ -1,5 +1,5 @@
-import { ErrorComponent, TarotCard } from "@/components";
-import { AI_TAROT_CARD_COUNT_BY_VALUE } from "@/constants";
+import { ErrorComponent, PaginationBar, TarotCard } from "@/components";
+import { AI_TAROT_CARD_COUNT_BY_VALUE, PAGINATION_PAGE_SIZE } from "@/constants";
 import { useDeleteAiTarotReading, useGetAllAiTarotReadings } from "@/hooks/api";
 import { WEB_URL } from "@/routes";
 import { convertISOToDate, getErrorMessage } from "@/utils";
@@ -34,7 +34,11 @@ export default function HistoryAiTarotPage() {
   const { token } = theme.useToken();
   const { message } = App.useApp();
 
-  const { data, isLoading, refetch } = useGetAllAiTarotReadings();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(PAGINATION_PAGE_SIZE);
+
+  const { data, isLoading, isPlaceholderData, refetch } =
+    useGetAllAiTarotReadings({ page, pageSize });
   const { mutate, isPending } = useDeleteAiTarotReading();
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -46,6 +50,9 @@ export default function HistoryAiTarotPage() {
 
     mutate(deleteId, {
       onSuccess: () => {
+        if (data?.items.length === 1 && page > 1) {
+          setPage((p) => p - 1);
+        }
         message.success(t("page.historyAiTarot.deleteSuccess"));
         closeDeleteModal();
       },
@@ -56,7 +63,7 @@ export default function HistoryAiTarotPage() {
     });
   };
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return <Spin fullscreen />;
   }
 
@@ -79,14 +86,18 @@ export default function HistoryAiTarotPage() {
         <Text type="secondary">{t("page.historyAiTarot.subtitle")}</Text>
       </div>
 
-      {data.items.length === 0 && (
+      {data.total === 0 && (
         <Empty
           description={t("page.historyAiTarot.empty")}
           style={{ margin: `${token.marginXXL}px 0` }}
         />
       )}
 
-      <Flex vertical gap={token.marginLG}>
+      <Flex
+        vertical
+        gap={token.marginLG}
+        style={{ opacity: isPlaceholderData ? 0.6 : 1, transition: "opacity 0.2s" }}
+      >
         {data.items.map((item) => (
           <HistoryAiTarotItem
             key={item.id}
@@ -95,6 +106,16 @@ export default function HistoryAiTarotPage() {
           />
         ))}
       </Flex>
+
+      <PaginationBar
+        total={data.total}
+        page={page}
+        pageSize={pageSize}
+        onChange={(nextPage, nextPageSize) => {
+          setPage(nextPage);
+          setPageSize(nextPageSize);
+        }}
+      />
 
       <DeleteAiTarotModal
         open={!!deleteId}

@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using MyTarotReader.Application.Common.Exceptions;
+using MyTarotReader.Application.Common.Helpers;
 using MyTarotReader.Application.Common.Validators;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Contracts.Persistence;
@@ -142,17 +143,27 @@ public class TarotReadingService(
 
     public async Task<GetAllReadingResult> GetAllReadingAsync(
         Guid userId,
+        GetAllReadingRequest request,
         CancellationToken cancellationToken = default
     )
     {
-        var history = await _context
+        var (page, pageSize) = PaginationHelper.Normalize(request.Page, request.PageSize);
+
+        var query = _context
             .TarotReadings.AsNoTracking()
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
+            .ThenByDescending(r => r.Id);
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(r => new GetAllReadingItem(r.Id, r.CardCode, r.IsReversed, r.CreatedAt))
             .ToListAsync(cancellationToken);
 
-        return new GetAllReadingResult(history);
+        return new GetAllReadingResult(items, page, pageSize, total, PaginationHelper.GetTotalPages(total, pageSize));
     }
 
     public async Task DeleteReadingAsync(

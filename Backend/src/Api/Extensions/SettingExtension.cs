@@ -9,7 +9,7 @@ public static class SettingExtension
 {
     /// <summary>
     /// Registers <see cref="IOptions{TOptions}"/> bindings for Jwt, Google, AiTarot,
-    /// TokenCleanup, Wallet, Email, Streak and DevAuth settings.
+    /// TokenCleanup, Wallet, Email, Streak, DevAuth, PayOs and Shop settings.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     /// <param name="configuration">The application configuration.</param>
@@ -24,5 +24,7 @@ public static class SettingExtension
         services.Configure<StreakSetting>(configuration.GetSection("Streak"));
         services.Configure<EmailSetting>(configuration.GetSection("Email"));
         services.Configure<DevAuthSetting>(configuration.GetSection("DevAuth"));
+        services.Configure<PayOsSetting>(configuration.GetSection("PayOs"));
+        services.Configure<ShopSetting>(configuration.GetSection("Shop"));
     }
 }

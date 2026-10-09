@@ -126,17 +126,20 @@ public class TarotReadingController(ITarotReadingService service) : ControllerBa
     }
 
     /// <summary>
-    /// Retrieves all tarot readings for the authenticated user.
+    /// Retrieves a page of tarot readings for the authenticated user.
     /// </summary>
     [HttpGet]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<GetAllReadingResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetAllReadingAsync(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAllReadingAsync(
+        [FromQuery] GetAllReadingRequest request,
+        CancellationToken cancellationToken
+    )
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var history = await _service.GetAllReadingAsync(userId, cancellationToken);
+        var history = await _service.GetAllReadingAsync(userId, request, cancellationToken);
 
         return Ok(ApiResponse.Success(history));
     }

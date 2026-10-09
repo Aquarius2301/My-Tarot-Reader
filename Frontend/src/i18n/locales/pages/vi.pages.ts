@@ -393,5 +393,42 @@ export const viPages = {
       convertSuccess: "Đã đổi {{redCoins}} xu đỏ thành {{whiteCoins}} xu trắng",
       convertExceedsBalance: "Bạn chỉ có {{balance}} xu đỏ",
     },
+    shop: {
+      title: "Cửa hàng",
+      subtitle:
+        "Mua xu đỏ qua PayOS để mở khóa thêm các lượt trải bài Tarot và trải AI.",
+      empty: "Hiện chưa có gói nào để mua",
+      packageRedCoins: "xu đỏ",
+      buyButton: "Mua",
+      checkoutTitle: "Thanh toán",
+      checkoutSubtitle:
+        "Quét mã QR bên dưới hoặc mở trang PayOS. Trang này sẽ tự động cập nhật khi thanh toán xong.",
+      waitingTitle: "Đang chờ thanh toán",
+      waitingSubtitle:
+        "Quét mã QR bằng ứng dụng ngân hàng, hoặc mở trang thanh toán PayOS để hoàn tất.",
+      amountLabel: "Số tiền",
+      redCoinsLabel: "Xu đỏ",
+      orderCodeLabel: "Mã đơn hàng",
+      qrTitle: "Quét mã để thanh toán",
+      qrAlt: "Mã QR thanh toán",
+      openCheckout: "Mở trang thanh toán PayOS",
+      checkAgain: "Kiểm tra lại",
+      backToShop: "Quay lại cửa hàng",
+      pollHint:
+        "Hãy giữ tab này khi đang thanh toán \u2014 trạng thái đơn hàng sẽ tự làm mới.",
+      paidTitle: "Thanh toán thành công",
+      paidSubtitle: "{{redCoins}} xu đỏ đã được cộng vào ví của bạn.",
+      paidAt: "Đã thanh toán lúc {{time}}",
+      goWallet: "Đi tới ví",
+      buyMore: "Mua thêm",
+      failedTitle: "Thanh toán chưa hoàn tất",
+      status: {
+        pending: "Đang chờ thanh toán",
+        paid: "Đã thanh toán",
+        cancelled: "Đơn hàng đã bị hủy.",
+        expired: "Đơn hàng đã hết hạn. Vui lòng tạo đơn mới.",
+        failed: "Thanh toán thất bại. Vui lòng thử lại.",
+      },
+    },
   },
 } as const;

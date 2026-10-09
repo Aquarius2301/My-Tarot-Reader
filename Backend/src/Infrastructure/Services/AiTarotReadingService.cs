@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MyTarotReader.Application.Common.Exceptions;
+using MyTarotReader.Application.Common.Helpers;
 using MyTarotReader.Application.Common.Validators;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Constants.Tarot;
@@ -159,13 +160,23 @@ public class AiTarotReadingService(
 
     public async Task<GetAllAiTarotReadingResult> GetAllAiTarotReadingsAsync(
         Guid userId,
+        GetAllAiTarotReadingRequest request,
         CancellationToken cancellationToken = default
     )
     {
-        var readings = await _context
+        var (page, pageSize) = PaginationHelper.Normalize(request.Page, request.PageSize);
+
+        var query = _context
             .AITarotReadings.AsNoTracking()
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
+            .ThenByDescending(r => r.Id);
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var readings = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(r => new
             {
                 r.Id,
@@ -190,7 +201,7 @@ public class AiTarotReadingService(
             ))
             .ToList();
 
-        return new GetAllAiTarotReadingResult(items);
+        return new GetAllAiTarotReadingResult(items, page, pageSize, total, PaginationHelper.GetTotalPages(total, pageSize));
     }
 
     public async Task DeleteAiTarotReadingAsync(

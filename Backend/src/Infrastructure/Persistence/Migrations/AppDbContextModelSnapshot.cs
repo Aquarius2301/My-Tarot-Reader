@@ -265,6 +265,66 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.ToTable("OrderDetails");
                 });
 
+            modelBuilder.Entity("MyTarotReader.Domain.Entities.PaymentOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AmountVnd")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("PackageCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset?>("PaidAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PayOsPaymentLinkId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PayOsTransactionReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("RedCoins")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderCode")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PaymentOrders", t =>
+                        {
+                            t.HasCheckConstraint("CK_PaymentOrders_AmountVnd_Positive", "\"AmountVnd\" > 0");
+
+                            t.HasCheckConstraint("CK_PaymentOrders_RedCoins_Positive", "\"RedCoins\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("MyTarotReader.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -555,6 +615,17 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("WhiteCoinBatch");
+                });
+
+            modelBuilder.Entity("MyTarotReader.Domain.Entities.PaymentOrder", b =>
+                {
+                    b.HasOne("MyTarotReader.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyTarotReader.Domain.Entities.RefreshToken", b =>

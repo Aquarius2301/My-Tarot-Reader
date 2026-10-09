@@ -40,10 +40,27 @@ public record GetAllReadingItem(
 );
 
 /// <summary>
-/// Result of retrieving all tarot readings for a user.
+/// Request for retrieving a page of tarot readings for a user.
 /// </summary>
-/// <param name="Items"></param>
-public record GetAllReadingResult(List<GetAllReadingItem> Items);
+/// <param name="Page">The 1-based page number.</param>
+/// <param name="PageSize">The number of items per page.</param>
+public record GetAllReadingRequest(int Page = 1, int PageSize = 10);
+
+/// <summary>
+/// Result of retrieving a page of tarot readings for a user.
+/// </summary>
+/// <param name="Items">The readings of the requested page.</param>
+/// <param name="Page">The normalized 1-based page number.</param>
+/// <param name="PageSize">The normalized number of items per page.</param>
+/// <param name="Total">The total number of readings across all pages.</param>
+/// <param name="TotalPages">The total number of pages.</param>
+public record GetAllReadingResult(
+    List<GetAllReadingItem> Items,
+    int Page,
+    int PageSize,
+    int Total,
+    int TotalPages
+);
 
 public interface ITarotReadingService
 {
@@ -103,12 +120,14 @@ public interface ITarotReadingService
     Task RemoveDrawForGuestAsync(string guestKey, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all tarot readings for a specific user.
+    /// Retrieves a page of tarot readings for a specific user.
     /// </summary>
     /// <param name="userId">The ID of the user for whom to retrieve the readings.</param>
-    /// <returns><see cref="GetAllTarotReadingResult"/> containing the user's tarot reading history.</returns>
+    /// <param name="request"><see cref="GetAllReadingRequest"/> containing the page and page size.</param>
+    /// <returns><see cref="GetAllReadingResult"/> containing one page of the user's tarot reading history.</returns>
     Task<GetAllReadingResult> GetAllReadingAsync(
         Guid userId,
+        GetAllReadingRequest request,
         CancellationToken cancellationToken = default
     );
 
