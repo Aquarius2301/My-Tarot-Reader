@@ -43,5 +43,14 @@ export const viErrors = {
       invalidAmount: "Số xu không hợp lệ.",
       walletNotFound: "Không tìm thấy ví của bạn.",
     },
+    shop: {
+      invalidPackage: "Gói này không khả dụng.",
+      orderNotFound: "Không tìm thấy đơn hàng.",
+      createPaymentFailed: "Không thể tạo giao dịch. Vui lòng thử lại.",
+      invalidWebhookSignature: "Chữ ký thông báo thanh toán không hợp lệ.",
+      confirmWebhookFailed: "Không thể xác nhận thanh toán. Vui lòng thử lại.",
+      payOsError:
+        "Nhà cung cấp thanh toán báo lỗi. Vui lòng thử lại.",
+    },
   },
 };

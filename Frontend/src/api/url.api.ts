@@ -35,4 +35,9 @@ export const API_URL = {
     getWallet: "/api/wallet",
     convertRedToWhite: "/api/wallet/convert",
   },
+  shop: {
+    packages: "/api/shop/packages",
+    createOrder: "/api/shop/orders",
+    getOrder: "/api/shop/orders",
+  },
 } as const;

@@ -7,3 +7,4 @@ export * from "./dtos/aiTarot.types";
 export * from "./dtos/aiDeepTarot.types";
 export * from "./dtos/streak.types";
 export * from "./dtos/wallet.types";
+export * from "./dtos/shop.types";

@@ -37,7 +37,7 @@ src/
 │   │   ├── ResultPage/     # AiTarotResultPage, AiDeepTarotResultPage
 │   │   ├── HistoryPage/    # HistoryTarotPage, HistoryAiTarotPage, HistoryAiDeepTarotPage
 │   │   ├── HomePage/ LibraryPage/ WalletPage/
-│   │   └── ShopPage/, ShopCheckoutPage/   # empty placeholders — not routed yet (see Known gaps)
+│   │   └── ShopPage/ ShopCheckoutPage/      # PayOS red-coin shop + checkout/polling page
 │   ├── guest/          # guest HomePage, TarotPage, LoginPage, LoginCallbackPage
 │   └── shared/         # home/ + tarot/ sections reused by the guest and auth pages
 ├── routes/
@@ -114,7 +114,7 @@ Full conventions live in `.agent/skills/frontend-react-architecture/SKILL.md` �
 
 ## Known gaps
 
-- `pages/auth/ShopPage/`, `ShopPage/components/` and `ShopCheckoutPage/` exist but are empty and unrouted. The backend already carries `Order` / `OrderDetail` entities, so the shop flow is scaffolded only.
+- The shop's PayOS `ReturnUrl` / `CancelUrl` in `Backend/src/Api/appsettings.json` are still placeholders; the frontend doesn't rely on them (it opens `checkoutUrl` in a new tab and polls `GET /api/shop/orders/{id}`), but they must be set to real URLs before PayOS redirects are used.
 - There is no 404 / catch-all route in `AppRouter` — an unknown URL renders `MainLayout` with an empty outlet.
 - The backend's `AIChatMessage` / `AIChatTarotReading` entities have no controller, service or page yet, so the data model is ahead of the feature.
 - No `env.d.ts`, so `import.meta.env.VITE_*` names are not type-checked (see [Configuration](#configuration)).

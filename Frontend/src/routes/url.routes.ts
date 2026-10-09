@@ -17,4 +17,6 @@ export const WEB_URL = {
   aiDeepTarotHistory: "/history/deep",
   library: "/library",
   wallet: "/wallet",
+  shop: "/shop",
+  shopCheckout: "/shop/checkout",
 } as const;

@@ -42,5 +42,15 @@ export const enErrors = {
       invalidAmount: "The number of coins is invalid.",
       walletNotFound: "Your wallet was not found.",
     },
+    shop: {
+      invalidPackage: "This package is not available.",
+      orderNotFound: "The order was not found.",
+      createPaymentFailed:
+        "Could not create the payment. Please try again.",
+      invalidWebhookSignature: "Invalid payment notification signature.",
+      confirmWebhookFailed:
+        "Could not confirm the payment. Please try again.",
+      payOsError: "The payment provider reported an error. Please try again.",
+    },
   },
 } as const;
