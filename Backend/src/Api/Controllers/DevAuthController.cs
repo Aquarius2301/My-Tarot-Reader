@@ -1,9 +1,13 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Models;
-using MyTarotReader.Application.Contracts.Services;
+using MyTarotReader.Application.Features.DevAuth;
+using MyTarotReader.Domain.Enums;
 
 namespace MyTarotReader.Api.Controllers;
+
+public record CreateDevTokenRequest(UserRole? Role);
 
 /// <summary>
 /// Development-only login that mints real JWTs for a seeded development user so
@@ -17,7 +21,7 @@ namespace MyTarotReader.Api.Controllers;
 [ApiController]
 [DevelopmentOnly]
 [ProducesErrorResponseType(typeof(ApiResponse<object>))]
-public class DevAuthController(IDevAuthService service) : ControllerBase
+public class DevAuthController(IMediator mediator) : ControllerBase
 {
     /// <summary>
     /// Issues an access token for the seeded development user and sets the auth cookies.
@@ -37,9 +41,8 @@ public class DevAuthController(IDevAuthService service) : ControllerBase
     )
     {
         var deviceId = Request.Headers["X-Device-Id"].ToString();
-        var result = await service.CreateDevTokenAsync(
-            request ?? new CreateDevTokenRequest(null),
-            deviceId,
+        var result = await mediator.Send(
+            new CreateDevTokenCommand(request?.Role, deviceId),
             cancellationToken
         );
 

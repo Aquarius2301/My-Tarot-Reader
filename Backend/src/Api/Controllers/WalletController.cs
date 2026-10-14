@@ -1,18 +1,19 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Models;
-using MyTarotReader.Application.Contracts.Services;
+using MyTarotReader.Application.Features.Wallet;
 
 namespace MyTarotReader.Api.Controllers;
+
+public record ConvertRedToWhiteRequest(int RedCoins);
 
 [Route("api/wallet")]
 [ApiController]
 [ProducesErrorResponseType(typeof(ApiResponse<object>))]
-public class WalletController(IWalletService service) : ControllerBase
+public class WalletController(IMediator mediator) : ControllerBase
 {
-    private readonly IWalletService _service = service;
-
     /// <summary>
     /// Retrieves the white and red coin balances together with the active white
     /// coin batches ordered by expiry (soonest first).
@@ -25,7 +26,7 @@ public class WalletController(IWalletService service) : ControllerBase
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.GetWalletAsync(userId, cancellationToken);
+        var result = await mediator.Send(new GetWalletQuery(userId), cancellationToken);
         return Ok(ApiResponse.Success(result));
     }
 
@@ -49,7 +50,10 @@ public class WalletController(IWalletService service) : ControllerBase
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        await _service.ConvertRedToWhiteAsync(userId, request, cancellationToken);
+        await mediator.Send(
+            new ConvertRedToWhiteCommand(userId, request.RedCoins),
+            cancellationToken
+        );
         return Ok(ApiResponse.Success());
     }
 }

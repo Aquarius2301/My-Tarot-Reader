@@ -1,18 +1,32 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Models;
-using MyTarotReader.Application.Contracts.Services;
+using MyTarotReader.Application.Features.AiDeepTarot;
+using MyTarotReader.Domain.Enums;
 
 namespace MyTarotReader.Api.Controllers;
+
+public record CreateTwelveHousesReadingRequest(string Locale, List<AiDeepCardRequest> Cards);
+
+public record CreateTwelveMonthsReadingRequest(string Locale, List<AiDeepCardRequest> Cards);
+
+public record CreateCrossroadsReadingRequest(
+    string Locale,
+    string Question,
+    List<string> Options,
+    CrossroadsTimeFrame? TimeFrame,
+    List<AiDeepCardRequest> Cards
+);
+
+public record GetAllAiDeepTarotReadingRequest(int Page, int PageSize);
 
 [Route("api/aiDeepTarot")]
 [ApiController]
 [ProducesErrorResponseType(typeof(ApiResponse<object>))]
-public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : ControllerBase
+public class AIDeepTarotReadingController(IMediator mediator) : ControllerBase
 {
-    private readonly IAIDeepTarotReadingService _service = service;
-
     /// <summary>
     /// Creates a new 12 astrological houses deep tarot reading by generating a reading with
     /// Gemini and saving it.
@@ -24,10 +38,7 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     /// </remarks>
     [HttpPost("twelveHouses")]
     [Authorize]
-    [ProducesResponseType(
-        typeof(ApiResponse<CreateTwelveHousesReadingResult>),
-        StatusCodes.Status200OK
-    )]
+    [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -38,13 +49,12 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.CreateTwelveHousesReadingAsync(
-            request,
-            userId,
+        var readingId = await mediator.Send(
+            new CreateTwelveHousesReadingCommand(request.Locale, request.Cards, userId),
             cancellationToken
         );
 
-        return Ok(ApiResponse.Success(result));
+        return Ok(ApiResponse.Success(readingId));
     }
 
     /// <summary>
@@ -59,10 +69,7 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     /// </remarks>
     [HttpPost("twelveMonths")]
     [Authorize]
-    [ProducesResponseType(
-        typeof(ApiResponse<CreateTwelveMonthsReadingResult>),
-        StatusCodes.Status200OK
-    )]
+    [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -73,13 +80,12 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.CreateTwelveMonthsReadingAsync(
-            request,
-            userId,
+        var readingId = await mediator.Send(
+            new CreateTwelveMonthsReadingCommand(request.Locale, request.Cards, userId),
             cancellationToken
         );
 
-        return Ok(ApiResponse.Success(result));
+        return Ok(ApiResponse.Success(readingId));
     }
 
     /// <summary>
@@ -95,10 +101,7 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     /// </remarks>
     [HttpPost("crossroads")]
     [Authorize]
-    [ProducesResponseType(
-        typeof(ApiResponse<CreateCrossroadsReadingResult>),
-        StatusCodes.Status200OK
-    )]
+    [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -109,13 +112,19 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.CreateCrossroadsReadingAsync(
-            request,
-            userId,
+        var readingId = await mediator.Send(
+            new CreateCrossroadsReadingCommand(
+                request.Locale,
+                request.Question,
+                request.Options,
+                request.TimeFrame,
+                request.Cards,
+                userId
+            ),
             cancellationToken
         );
 
-        return Ok(ApiResponse.Success(result));
+        return Ok(ApiResponse.Success(readingId));
     }
 
     /// <summary>
@@ -136,9 +145,8 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.GetAiDeepTarotReadingByIdAsync(
-            userId,
-            readingId,
+        var result = await mediator.Send(
+            new GetAiDeepTarotReadingByIdQuery(userId, readingId),
             cancellationToken
         );
 
@@ -154,7 +162,7 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     [HttpGet]
     [Authorize]
     [ProducesResponseType(
-        typeof(ApiResponse<GetAllAiDeepTarotReadingResult>),
+        typeof(ApiResponse<GetAllAiDeepTarotReadingsResult>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -165,7 +173,10 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.GetAllAiDeepTarotReadingsAsync(userId, request, cancellationToken);
+        var result = await mediator.Send(
+            new GetAllAiDeepTarotReadingsQuery(request.Page, request.PageSize, userId),
+            cancellationToken
+        );
 
         return Ok(ApiResponse.Success(result));
     }
@@ -185,7 +196,10 @@ public class AIDeepTarotReadingController(IAIDeepTarotReadingService service) : 
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        await _service.DeleteAiDeepTarotReadingAsync(userId, readingId, cancellationToken);
+        await mediator.Send(
+            new DeleteAiDeepTarotReadingCommand(userId, readingId),
+            cancellationToken
+        );
 
         return Ok(ApiResponse.Success());
     }

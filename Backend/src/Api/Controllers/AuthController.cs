@@ -1,17 +1,20 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Common.Models;
 using MyTarotReader.Application.Constants.Errors;
-using MyTarotReader.Application.Contracts.Services;
+using MyTarotReader.Application.Features.Auth;
 
 namespace MyTarotReader.Api.Controllers;
+
+public record GoogleLoginRequest(string Credential, string Locale);
 
 [Route("api/auth")]
 [ApiController]
 [ProducesErrorResponseType(typeof(ApiResponse<object>))]
-public class AuthController(IAuthService service) : ControllerBase
+public class AuthController(IMediator mediator) : ControllerBase
 {
     /// <summary>
     /// Google OAuth login and register.
@@ -30,7 +33,10 @@ public class AuthController(IAuthService service) : ControllerBase
     )
     {
         var deviceId = Request.Headers["X-Device-Id"].ToString();
-        var response = await service.GoogleLoginAsync(request, deviceId, cancellationToken);
+        var response = await mediator.Send(
+            new GoogleLoginCommand(request.Credential, request.Locale, deviceId),
+            cancellationToken
+        );
 
         AppendAuthCookies(
             response.AccessToken,
@@ -57,7 +63,10 @@ public class AuthController(IAuthService service) : ControllerBase
         var refreshToken = ReadRefreshTokenOrThrow();
         var deviceId = Request.Headers["X-Device-Id"].ToString();
 
-        var response = await service.RefreshAsync(refreshToken, deviceId, cancellationToken);
+        var response = await mediator.Send(
+            new RefreshCommand(refreshToken, deviceId),
+            cancellationToken
+        );
 
         AppendAuthCookies(
             response.AccessToken,
@@ -87,7 +96,7 @@ public class AuthController(IAuthService service) : ControllerBase
             ? token
             : string.Empty;
 
-        await service.LogoutAsync(refreshToken, cancellationToken);
+        await mediator.Send(new LogoutCommand(refreshToken), cancellationToken);
 
         ClearAuthCookies();
 
@@ -105,7 +114,7 @@ public class AuthController(IAuthService service) : ControllerBase
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var user = await service.GetCurrentUserAsync(userId, cancellationToken);
+        var user = await mediator.Send(new GetCurrentUserQuery(userId), cancellationToken);
 
         return Ok(ApiResponse.Success(user));
     }

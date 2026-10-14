@@ -1,18 +1,27 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Models;
-using MyTarotReader.Application.Contracts.Services;
+using MyTarotReader.Application.Features.AiTarot;
+using MyTarotReader.Domain.Enums;
 
 namespace MyTarotReader.Api.Controllers;
+
+public record CreateAiTarotReadingRequest(
+    CardCount CardCount,
+    QuestionType Type,
+    string Locale,
+    List<AiReadingCard> Cards
+);
+
+public record GetAllAiTarotReadingRequest(int Page, int PageSize);
 
 [Route("api/aiTarot")]
 [ApiController]
 [ProducesErrorResponseType(typeof(ApiResponse<object>))]
-public class AiTarotReadingController(IAiTarotReadingService service) : ControllerBase
+public class AiTarotReadingController(IMediator mediator) : ControllerBase
 {
-    private readonly IAiTarotReadingService _service = service;
-
     /// <summary>
     /// Creates a new AI tarot reading by generating a reading with Gemini and saving it.
     /// </summary>
@@ -23,10 +32,7 @@ public class AiTarotReadingController(IAiTarotReadingService service) : Controll
     /// </remarks>
     [HttpPost]
     [Authorize]
-    [ProducesResponseType(
-        typeof(ApiResponse<CreateAiTarotReadingResult>),
-        StatusCodes.Status200OK
-    )]
+    [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -37,9 +43,18 @@ public class AiTarotReadingController(IAiTarotReadingService service) : Controll
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.CreateAiTarotReadingAsync(request, userId, cancellationToken);
+        var readingId = await mediator.Send(
+            new CreateAiTarotReadingCommand(
+                request.CardCount,
+                request.Type,
+                request.Locale,
+                request.Cards,
+                userId
+            ),
+            cancellationToken
+        );
 
-        return Ok(ApiResponse.Success(result));
+        return Ok(ApiResponse.Success(readingId));
     }
 
     /// <summary>
@@ -60,9 +75,8 @@ public class AiTarotReadingController(IAiTarotReadingService service) : Controll
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.GetAiTarotReadingByIdAsync(
-            userId,
-            readingId,
+        var result = await mediator.Send(
+            new GetAiTarotReadingByIdQuery(userId, readingId),
             cancellationToken
         );
 
@@ -89,7 +103,10 @@ public class AiTarotReadingController(IAiTarotReadingService service) : Controll
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.GetAllAiTarotReadingsAsync(userId, request, cancellationToken);
+        var result = await mediator.Send(
+            new GetAllAiTarotReadingQuery(request.Page, request.PageSize, userId),
+            cancellationToken
+        );
 
         return Ok(ApiResponse.Success(result));
     }
@@ -109,7 +126,7 @@ public class AiTarotReadingController(IAiTarotReadingService service) : Controll
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        await _service.DeleteAiTarotReadingAsync(userId, readingId, cancellationToken);
+        await mediator.Send(new DeleteAiTarotReadingCommand(userId, readingId), cancellationToken);
 
         return Ok(ApiResponse.Success());
     }

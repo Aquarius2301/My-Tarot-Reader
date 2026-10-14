@@ -1,19 +1,21 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Models;
-using MyTarotReader.Application.Contracts.Services;
+using MyTarotReader.Application.Features.Shop;
+using MyTarotReader.Application.Features.Shop.Commands.CreatePayment;
 using PayOS.Models.Webhooks;
 
 namespace MyTarotReader.Api.Controllers;
 
+public record CreatePaymentRequest(string PackageCode);
+
 [Route("api/shop")]
 [ApiController]
 [ProducesErrorResponseType(typeof(ApiResponse<object>))]
-public class ShopController(IShopService service) : ControllerBase
+public class ShopController(IMediator mediator) : ControllerBase
 {
-    private readonly IShopService _service = service;
-
     /// <summary>
     /// Retrieves the purchasable red-coin packages.
     /// </summary>
@@ -23,7 +25,7 @@ public class ShopController(IShopService service) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetPackagesAsync(CancellationToken cancellationToken)
     {
-        var result = await _service.GetPackagesAsync(cancellationToken);
+        var result = await mediator.Send(new GetPackagesQuery(), cancellationToken);
         return Ok(ApiResponse.Success(result));
     }
 
@@ -47,7 +49,10 @@ public class ShopController(IShopService service) : ControllerBase
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.CreatePaymentAsync(userId, request, cancellationToken);
+        var result = await mediator.Send(
+            new CreatePaymentCommand(userId, request.PackageCode),
+            cancellationToken
+        );
         return Ok(ApiResponse.Success(result));
     }
 
@@ -67,11 +72,7 @@ public class ShopController(IShopService service) : ControllerBase
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.GetOrderStatusAsync(
-            userId,
-            new GetOrderStatusRequest(id),
-            cancellationToken
-        );
+        var result = await mediator.Send(new GetOrderStatusQuery(id, userId), cancellationToken);
         return Ok(ApiResponse.Success(result));
     }
 
@@ -92,7 +93,7 @@ public class ShopController(IShopService service) : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        await _service.HandleWebhookAsync(new HandleWebhookRequest(webhook), cancellationToken);
+        await mediator.Send(new HandleWebhookCommand(webhook), cancellationToken);
         return Ok(new { error = 0, message = "success" });
     }
 }

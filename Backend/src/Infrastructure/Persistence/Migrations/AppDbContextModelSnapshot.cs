@@ -206,9 +206,6 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -220,6 +217,9 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<int>("RedCoins")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -228,41 +228,14 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("WhiteCoins")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("MyTarotReader.Domain.Entities.OrderDetail", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("WhiteCoinBatchId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("WhiteCoinBatchId");
-
-                    b.ToTable("OrderDetails");
                 });
 
             modelBuilder.Entity("MyTarotReader.Domain.Entities.PaymentOrder", b =>
@@ -599,24 +572,6 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MyTarotReader.Domain.Entities.OrderDetail", b =>
-                {
-                    b.HasOne("MyTarotReader.Domain.Entities.Order", "Order")
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyTarotReader.Domain.Entities.WhiteCoinBatch", "WhiteCoinBatch")
-                        .WithMany()
-                        .HasForeignKey("WhiteCoinBatchId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Order");
-
-                    b.Navigation("WhiteCoinBatch");
-                });
-
             modelBuilder.Entity("MyTarotReader.Domain.Entities.PaymentOrder", b =>
                 {
                     b.HasOne("MyTarotReader.Domain.Entities.User", "User")
@@ -686,11 +641,6 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("MyTarotReader.Domain.Entities.AIChatTarotReading", b =>
                 {
                     b.Navigation("AIChatMessages");
-                });
-
-            modelBuilder.Entity("MyTarotReader.Domain.Entities.Order", b =>
-                {
-                    b.Navigation("OrderDetails");
                 });
 
             modelBuilder.Entity("MyTarotReader.Domain.Entities.User", b =>

@@ -1,10 +1,9 @@
 using FluentValidation;
-using MyTarotReader.Application.Common.Validators;
-using MyTarotReader.Application.Contracts.Backgrounds;
-using MyTarotReader.Application.Contracts.Common;
-using MyTarotReader.Application.Contracts.Persistence;
-using MyTarotReader.Application.Contracts.Services;
-using MyTarotReader.Infrastructure.Backgrounds;
+using MyTarotReader.Application.Backgrounds;
+using MyTarotReader.Application.Common.Behaviors;
+using MyTarotReader.Application.Features.Auth;
+using MyTarotReader.Application.Persistence;
+using MyTarotReader.Application.Services;
 using MyTarotReader.Infrastructure.Common;
 using MyTarotReader.Infrastructure.Persistence;
 using MyTarotReader.Infrastructure.Services;
@@ -30,76 +29,27 @@ public static class DependencyInjectionExtension
         // Database context
         services.AddScoped<IAppDbContext, AppDbContext>();
 
-        // Common
-        services.AddScoped<IGoogleAuthValidator, GoogleAuthValidator>();
-        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        services.AddScoped<IEmailHandler, EmailHandler>();
-        services.AddScoped<IEmailTemplateEngine, EmailTemplateEngine>();
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(GoogleLoginCommand).Assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+        });
 
-        // Background jobs
-        services.AddSingleton<IEmailBackgroundQueue, EmailBackgroundQueue>();
-        services.AddHostedService<EmailBackgroundWorker>();
-        services.AddHostedService<TokenCleanupWorker>();
-        services.AddHostedService<PayOsWebhookConfirmWorker>();
+        services.AddValidatorsFromAssembly(typeof(GoogleLoginCommandValidator).Assembly);
 
-        // Services
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IStreakService, StreakService>();
-        services.AddScoped<ITarotReadingService, TarotReadingService>();
+        services.AddHostedService<EmailBackground>();
+        services.AddHostedService<TokenCleanupBackground>();
+        services.AddHostedService<PayOsWebhookConfirmBackground>();
+
+        services.AddScoped<IEmailHandlerService, EmailHandlerService>();
+        services.AddHttpClient<IEmailSenderService, EmailSenderService>();
+        services.AddSingleton<IEmailQueueService, EmailQueueService>();
+        services.AddScoped<IEmailTemplateEngineService, EmailTemplateEngineService>();
+        services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+        services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
         services.AddScoped<IWalletService, WalletService>();
-        services.AddScoped<IAiTarotReadingService, AiTarotReadingService>();
-        services.AddScoped<IAIDeepTarotReadingService, AIDeepTarotReadingService>();
-        services.AddScoped<IDevAuthService, DevAuthService>();
-        services.AddScoped<IShopService, ShopService>();
-
-        // External clients
-        services.AddHttpClient<IEmailSender, EmailSender>();
-        services.AddHttpClient<IGeminiClient, GeminiClient>();
-        services.AddHttpClient<IPayOsClient, PayOsClient>();
-
-        // Validators
-        services.AddScoped<
-            IValidator<CreateDrawForAuthRequest>,
-            CreateDrawForAuthRequestValidator
-        >();
-
-        services.AddScoped<
-            IValidator<CreateDrawForGuestRequest>,
-            CreateDrawForGuestRequestValidator
-        >();
-
-        services.AddScoped<IValidator<AddCoinRequest>, AddCoinRequestValidator>();
-
-        services.AddScoped<IValidator<DeductCoinRequest>, DeductCoinRequestValidator>();
-
-        services.AddScoped<IValidator<DeductRedCoinRequest>, DeductRedCoinRequestValidator>();
-
-        services.AddScoped<
-            IValidator<ConvertRedToWhiteRequest>,
-            ConvertRedToWhiteRequestValidator
-        >();
-
-        services.AddScoped<
-            IValidator<CreateAiTarotReadingRequest>,
-            CreateAiTarotReadingRequestValidator
-        >();
-
-        services.AddScoped<
-            IValidator<CreateTwelveHousesReadingRequest>,
-            CreateTwelveHousesReadingRequestValidator
-        >();
-        services.AddScoped<
-            IValidator<CreateTwelveMonthsReadingRequest>,
-            CreateTwelveMonthsReadingRequestValidator
-        >();
-        services.AddScoped<
-            IValidator<CreateCrossroadsReadingRequest>,
-            CreateCrossroadsReadingRequestValidator
-        >();
-
-        services.AddScoped<IValidator<CreateDevTokenRequest>, CreateDevTokenRequestValidator>();
-
-        services.AddScoped<IValidator<CreatePaymentRequest>, CreatePaymentRequestValidator>();
+        services.AddHttpClient<IGeminiClientService, GeminiClientService>();
+        services.AddHttpClient<IPayOsClientService, PayOsClientService>();
 
         return services;
     }

@@ -35,10 +35,13 @@ public class TestController : ControllerBase
     [HttpGet("validation")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult ValidationResult() =>
-        throw new ValidationException([
-            new("password", SystemErrorCode.BadRequest),
-            new("email", SystemErrorCode.BadRequest),
-        ]);
+        throw new BadRequestException(
+            fieldErrors:
+            [
+                new("password", SystemErrorCode.BadRequest),
+                new("email", SystemErrorCode.BadRequest),
+            ]
+        );
 
     /// <summary>Throws an unexpected exception, mapped to a 500 InternalServerError envelope.</summary>
     [HttpGet("boom")]

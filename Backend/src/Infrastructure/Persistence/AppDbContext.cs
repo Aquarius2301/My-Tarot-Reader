@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using MyTarotReader.Application.Contracts.Persistence;
+using MyTarotReader.Application.Persistence;
 using MyTarotReader.Domain.Entities;
 using MyTarotReader.Infrastructure.Persistence.Configurations;
 
@@ -14,7 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<AIDeepTarotReading> AIDeepTarotReadings { get; set; } = null!;
     public DbSet<AITarotReading> AITarotReadings { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
-    public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
+
+    // public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
     public DbSet<PaymentOrder> PaymentOrders { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
     public DbSet<Streak> Streaks { get; set; } = null!;
@@ -32,7 +33,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         modelBuilder.ApplyConfiguration(new AIDeepTarotReadingConfiguration());
         modelBuilder.ApplyConfiguration(new AITarotReadingConfiguration());
         modelBuilder.ApplyConfiguration(new OrderConfiguration());
-        modelBuilder.ApplyConfiguration(new OrderDetailConfiguration());
+        // modelBuilder.ApplyConfiguration(new OrderDetailConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentOrderConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
         modelBuilder.ApplyConfiguration(new StreakConfiguration());
