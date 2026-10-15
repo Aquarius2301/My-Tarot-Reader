@@ -1,9 +1,4 @@
-import type {
-  AiTarotCardCount,
-  AiTarotCardCountValue,
-  AiTarotQuestionType,
-  TarotCardCode,
-} from "@/constants";
+import type { TarotCardCode } from "@/constants";
 import type { PaginatedResult } from "./pagination.types";
 
 /** A single drawn card sent to the backend when creating an AI tarot reading. */
@@ -14,8 +9,8 @@ export interface AiCardRequest {
 
 /** Request payload for creating an AI tarot reading. */
 export interface CreateAiTarotReadingRequest {
-  cardCount: AiTarotCardCount;
-  type: AiTarotQuestionType;
+  cardCount: number;
+  type: string;
   locale: string;
   cards: AiCardRequest[];
 }
@@ -49,8 +44,8 @@ export interface AiTarotAnswer {
 /** Result of retrieving a single AI tarot reading. */
 export interface GetAiTarotReadingResult {
   id: string;
-  cardCount: AiTarotCardCountValue;
-  type: AiTarotQuestionType;
+  cardCount: number;
+  type: string;
   title: string;
   answer: string;
   cards: AiReadingCard[];
@@ -60,8 +55,8 @@ export interface GetAiTarotReadingResult {
 /** A single AI tarot reading entry in the user's reading history. */
 export interface GetAllAiTarotReadingItem {
   id: string;
-  cardCount: AiTarotCardCountValue;
-  type: AiTarotQuestionType;
+  cardCount: number;
+  type: string;
   title: string;
   answerSummary: string;
   cards: AiReadingCard[];
@@ -70,3 +65,24 @@ export interface GetAllAiTarotReadingItem {
 
 /** Result of retrieving a page of AI tarot readings for a user. */
 export interface GetAllAiTarotReadingResult extends PaginatedResult<GetAllAiTarotReadingItem> {}
+
+/** A spread size setting (card count, price and per-language position labels). */
+export interface AiTarotReadingCountItem {
+  cardCount: number;
+  whiteCoins: number;
+  positionsEn: string[];
+  positionsVi: string[];
+}
+
+/** A question-topic setting (stable code plus localized display names). */
+export interface AiTarotReadingTypeItem {
+  code: string;
+  nameEn: string;
+  nameVi: string;
+}
+
+/** Result of retrieving the admin-managed AI tarot settings. */
+export interface GetAiTarotSettingResult {
+  readingCounts: AiTarotReadingCountItem[];
+  readingTypes: AiTarotReadingTypeItem[];
+}

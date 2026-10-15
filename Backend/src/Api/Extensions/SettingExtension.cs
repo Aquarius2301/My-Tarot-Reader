@@ -8,7 +8,7 @@ namespace MyTarotReader.Api.Extensions;
 public static class SettingExtension
 {
     /// <summary>
-    /// Registers <see cref="IOptions{TOptions}"/> bindings for Jwt, Google, AiTarot,
+    /// Registers <see cref="IOptions{TOptions}"/> bindings for Jwt, Google,
     /// TokenCleanup, Wallet, Email, Streak, DevAuth, PayOs and Shop settings.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
@@ -18,7 +18,6 @@ public static class SettingExtension
         services.Configure<JwtSetting>(configuration.GetSection("Jwt"));
         services.Configure<GoogleSetting>(configuration.GetSection("Google"));
         services.Configure<GeminiSetting>(configuration.GetSection("Gemini"));
-        services.Configure<AiTarotSetting>(configuration.GetSection("AiTarot"));
         services.Configure<TokenCleanupSetting>(configuration.GetSection("TokenCleanup"));
         services.Configure<WalletSetting>(configuration.GetSection("Wallet"));
         services.Configure<StreakSetting>(configuration.GetSection("Streak"));

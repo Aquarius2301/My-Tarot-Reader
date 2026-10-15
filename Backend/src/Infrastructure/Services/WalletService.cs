@@ -82,7 +82,12 @@ public class WalletService(IAppDbContext context, IOptions<WalletSetting> wallet
         var user =
             context
                 .Users.Where(u => u.Id == userId)
-                .Select(u => new { u.Id, u.Wallet })
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Wallet,
+                    u.Wallet.WhiteCoinBatches,
+                })
                 .FirstOrDefault()
             ?? throw new NotFoundException(WalletErrorCode.WalletNotFound);
 
@@ -94,7 +99,7 @@ public class WalletService(IAppDbContext context, IOptions<WalletSetting> wallet
 
         // Check if the user has enough white coins
         if (
-            user.Wallet.WhiteCoinBatches.Where(b =>
+            user.WhiteCoinBatches.Where(b =>
                     b.ExpiredAt > DateTimeOffset.UtcNow && b.RemainingAmount > 0
                 )
                 .Sum(b => b.Amount) < whiteCoins

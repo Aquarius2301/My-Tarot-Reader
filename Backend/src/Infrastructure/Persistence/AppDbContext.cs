@@ -11,6 +11,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<AIDeepTarotReading> AIDeepTarotReadings { get; set; } = null!;
     public DbSet<AITarotReading> AITarotReadings { get; set; } = null!;
+    public DbSet<AITarotReadingCount> AITarotReadingCounts { get; set; } = null!;
+    public DbSet<AiTarotReadingType> AITarotReadingTypes { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
 
     // public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
@@ -26,10 +28,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfiguration(new AIChatMessageConfiguration());
-        modelBuilder.ApplyConfiguration(new AIChatTarotReadingConfiguration());
         modelBuilder.ApplyConfiguration(new AIDeepTarotReadingConfiguration());
         modelBuilder.ApplyConfiguration(new AITarotReadingConfiguration());
+        modelBuilder.ApplyConfiguration(new AITarotReadingCountConfiguration());
+        modelBuilder.ApplyConfiguration(new AiTarotReadingTypeConfiguration());
         modelBuilder.ApplyConfiguration(new OrderConfiguration());
         // modelBuilder.ApplyConfiguration(new OrderDetailConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentOrderConfiguration());

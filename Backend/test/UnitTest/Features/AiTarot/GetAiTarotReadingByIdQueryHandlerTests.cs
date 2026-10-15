@@ -64,8 +64,8 @@ public class GetAiTarotReadingByIdQueryHandlerTests
         {
             UserId = userId,
             Title = "Tình yêu sắp tới",
-            CardCount = CardCount.Three,
-            QuestionType = QuestionType.Love,
+            CardCount = 3,
+            QuestionType = "love",
             Answer = answer ?? BuildGeminiJson("Một câu trả lời dài đầy đủ."),
             AnswerSummary = "Một câu trả lời dài đầy đủ.",
             Cards = cardsJson,
@@ -93,8 +93,8 @@ public class GetAiTarotReadingByIdQueryHandlerTests
         // Assert
         result.Id.Should().Be(reading.Id);
         result.Title.Should().Be(reading.Title);
-        result.CardCount.Should().Be(CardCount.Three);
-        result.Type.Should().Be(QuestionType.Love);
+        result.CardCount.Should().Be(3);
+        result.Type.Should().Be("love");
         result.Answer.Should().NotBeNullOrEmpty();
         JsonDocument.Parse(result.Answer)
             .RootElement.GetProperty("overview")

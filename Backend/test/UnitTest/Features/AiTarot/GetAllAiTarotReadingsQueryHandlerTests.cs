@@ -42,8 +42,8 @@ public class GetAllAiTarotReadingsQueryHandlerTests
         {
             UserId = userId,
             Title = "Tình yêu sắp tới",
-            CardCount = CardCount.Three,
-            QuestionType = QuestionType.Love,
+            CardCount = 3,
+            QuestionType = "love",
             Answer = """{"title":"Tình yêu sắp tới","overview":"Một câu trả lời dài đầy đủ.","cards":[],"overallAdvice":"x"}""",
             AnswerSummary = "Một câu trả lời dài đầy đủ.",
             Cards = cardsJson,

@@ -9,9 +9,9 @@ public class AITarotReading : BaseEntity
 
     public string Title { get; set; } = string.Empty;
 
-    public CardCount CardCount { get; set; }
+    public int CardCount { get; set; }
 
-    public QuestionType QuestionType { get; set; }
+    public string QuestionType { get; set; } = null!;
 
     /// <summary>
     /// A short excerpt of the answer (overview) used for list views,

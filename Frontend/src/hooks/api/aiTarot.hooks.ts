@@ -11,8 +11,17 @@ import {
   AI_TAROT_QUERY_KEY,
   GET_AI_TAROT_BY_ID_QUERY_KEY,
   GET_ALL_AI_TAROT_QUERY_KEY,
+  GET_AI_TAROT_SETTINGS_QUERY_KEY,
   GET_WALLET_QUERY_KEY,
 } from "./queryKey";
+
+export const useGetAiTarotSettings = () =>
+  useQuery({
+    queryKey: GET_AI_TAROT_SETTINGS_QUERY_KEY,
+    queryFn: () => aiTarotApi.getSettings(),
+    staleTime: Infinity,
+    retry: false,
+  });
 
 export const useCreateAiTarotReading = () => {
   const queryClient = useQueryClient();

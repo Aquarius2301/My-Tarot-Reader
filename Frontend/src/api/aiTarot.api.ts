@@ -3,12 +3,16 @@ import type {
   CreateAiTarotReadingResult,
   GetAllAiTarotReadingResult,
   GetAiTarotReadingResult,
+  GetAiTarotSettingResult,
   PageParams,
 } from "@/types";
 import axiosClient from "./config.api";
 import { API_URL } from "./url.api";
 
 export const aiTarotApi = {
+  getSettings: (): Promise<GetAiTarotSettingResult> =>
+    axiosClient.get(API_URL.aiTarot.settings),
+
   createAiTarotReading: (
     request: CreateAiTarotReadingRequest,
   ): Promise<CreateAiTarotReadingResult> =>

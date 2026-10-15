@@ -1,5 +1,4 @@
 import { CopyButton, ErrorComponent, TarotCard } from "@/components";
-import { AI_TAROT_CARD_COUNT_BY_VALUE, AI_TAROT_POSITIONS } from "@/constants";
 import { useGetAiTarotReadingById } from "@/hooks/api";
 import { WEB_URL } from "@/routes";
 import { matchAnswerCards, parseAiTarotAnswer } from "@/utils";
@@ -30,8 +29,6 @@ export default function AiTarotResultPage() {
   }
 
   const answer = parseAiTarotAnswer(data.answer);
-  const cardCount = AI_TAROT_CARD_COUNT_BY_VALUE[data.cardCount];
-  const positions = AI_TAROT_POSITIONS[cardCount];
   const matchedAnswerCards = answer ? matchAnswerCards(answer, data.cards) : [];
   const orientationLabel = (isReversed: boolean) =>
     isReversed ? t("tarot.position.reversed") : t("tarot.position.upright");
@@ -49,10 +46,9 @@ export default function AiTarotResultPage() {
 
     data.cards.forEach((card, index) => {
       const answerCard = matchedAnswerCards[index];
-      const positionKey = positions[index];
-      const header = positionKey
-        ? t(`page.aiTarot.position.${positionKey}`)
-        : t(`tarot.meaning.${card.cardCode}.name`);
+      const positionLabel = answerCard?.position;
+      const header =
+        positionLabel || t(`tarot.meaning.${card.cardCode}.name`);
 
       sections.push(
         [
@@ -89,56 +85,6 @@ export default function AiTarotResultPage() {
         </Flex>
       </div>
 
-      {/* Drawn cards */}
-      {/* <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-          gap: token.marginLG,
-          marginBottom: token.marginXL,
-        }}
-      >
-        {data.cards.map((card, index) => {
-          const positionKey = positions[index];
-          return (
-            <div
-              key={`${card.cardCode}-${index}`}
-              style={{
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: token.marginSM,
-                padding: 0,
-              }}
-              // styles={{
-              //   body: {
-
-              //   },
-              // }}
-            >
-              <TarotCard
-                cardCode={card.cardCode}
-                isUpright={!card.isReversed}
-                isFlipped
-                size="md"
-              />
-              <div>
-                <Text strong style={{ display: "block" }}>
-                  {t(`tarot.meaning.${card.cardCode}.name`)} ·{" "}
-                  {orientationLabel(card.isReversed)}
-                </Text>
-                {positionKey && (
-                  <Text type="secondary">
-                    {t(`page.aiTarot.position.${positionKey}`)}
-                  </Text>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div> */}
-
       {answer ? (
         <Flex vertical gap={token.marginLG}>
           {answer.overview && (
@@ -152,7 +98,7 @@ export default function AiTarotResultPage() {
 
           {data.cards.map((card, index) => {
             const answerCard = matchedAnswerCards[index];
-            const positionKey = positions[index];
+            const positionLabel = answerCard?.position;
             const name = t(`tarot.meaning.${card.cardCode}.name`);
             const orientation = orientationLabel(card.isReversed);
 
@@ -167,9 +113,7 @@ export default function AiTarotResultPage() {
                   />
                   <div>
                     <Text strong style={{ display: "block" }}>
-                      {positionKey
-                        ? t(`page.aiTarot.position.${positionKey}`)
-                        : name}
+                      {positionLabel || name}
                     </Text>
                     <Text type="secondary">
                       {name} · {orientation}

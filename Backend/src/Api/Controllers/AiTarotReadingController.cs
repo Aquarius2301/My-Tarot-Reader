@@ -4,13 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Models;
 using MyTarotReader.Application.Features.AiTarot;
-using MyTarotReader.Domain.Enums;
 
 namespace MyTarotReader.Api.Controllers;
 
 public record CreateAiTarotReadingRequest(
-    CardCount CardCount,
-    QuestionType Type,
+    int CardCount,
+    string Type,
     string Locale,
     List<AiReadingCard> Cards
 );
@@ -22,6 +21,16 @@ public record GetAllAiTarotReadingRequest(int Page, int PageSize);
 [ProducesErrorResponseType(typeof(ApiResponse<object>))]
 public class AiTarotReadingController(IMediator mediator) : ControllerBase
 {
+    [HttpGet("settings")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<GetAiTarotSettingResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetAiTarotSettingAsync(CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new GetAiTarotSettingQuery(), cancellationToken);
+        return Ok(ApiResponse.Success(result));
+    }
+
     /// <summary>
     /// Creates a new AI tarot reading by generating a reading with Gemini and saving it.
     /// </summary>
@@ -62,10 +71,7 @@ public class AiTarotReadingController(IMediator mediator) : ControllerBase
     /// </summary>
     [HttpGet("{readingId:guid}")]
     [Authorize]
-    [ProducesResponseType(
-        typeof(ApiResponse<GetAiTarotReadingResult>),
-        StatusCodes.Status200OK
-    )]
+    [ProducesResponseType(typeof(ApiResponse<GetAiTarotReadingResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAiTarotReadingByIdAsync(
@@ -91,10 +97,7 @@ public class AiTarotReadingController(IMediator mediator) : ControllerBase
     /// </remarks>
     [HttpGet]
     [Authorize]
-    [ProducesResponseType(
-        typeof(ApiResponse<GetAllAiTarotReadingResult>),
-        StatusCodes.Status200OK
-    )]
+    [ProducesResponseType(typeof(ApiResponse<GetAllAiTarotReadingResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllAiTarotReadingsAsync(
         [FromQuery] GetAllAiTarotReadingRequest request,

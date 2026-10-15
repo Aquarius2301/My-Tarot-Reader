@@ -1,6 +1,5 @@
 using MediatR;
 using MyTarotReader.Application.Common.Models;
-using MyTarotReader.Domain.Enums;
 
 namespace MyTarotReader.Application.Features.AiTarot;
 
@@ -16,8 +15,8 @@ public record GetAllAiTarotReadingResult(
 
 public record GetAllAiTarotReadingItem(
     Guid Id,
-    CardCount CardCount,
-    QuestionType Type,
+    int CardCount,
+    string Type,
     string Title,
     string AnswerSummary,
     List<AiReadingCard> Cards,

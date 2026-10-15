@@ -1,13 +1,12 @@
 using System;
 using System.Text.Json;
 using MediatR;
-using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Constants.Tarot;
 using MyTarotReader.Application.Persistence;
 using MyTarotReader.Application.Services;
-using MyTarotReader.Application.Settings;
 using MyTarotReader.Domain.Entities;
 using MyTarotReader.Domain.Enums;
 
@@ -16,20 +15,30 @@ namespace MyTarotReader.Application.Features.AiTarot;
 public class CreateAiTarotReadingCommandHandler(
     IAppDbContext context,
     IWalletService walletService,
-    IGeminiClientService geminiClientService,
-    IOptions<WalletSetting> walletSettings,
-    IOptions<AiTarotSetting> aiTarotSettings
-) : IRequestHandler<CreateAiTarotReadingCommand, Guid>
+    IGeminiClientService geminiClientService
+) : IRequestHandler<CreateAiTarotReadingCommand, CreateAiTarotReadingResult>
 {
-    private readonly WalletSetting _walletSetting = walletSettings.Value;
-    private readonly AiTarotSetting _aiTarotSetting = aiTarotSettings.Value;
-
-    public async Task<Guid> Handle(
+    public async Task<CreateAiTarotReadingResult> Handle(
         CreateAiTarotReadingCommand request,
         CancellationToken cancellationToken = default
     )
     {
-        var cost = GetCost(request.CardCount);
+        var setting =
+            await context
+                .AITarotReadingCounts.AsNoTracking()
+                .FirstOrDefaultAsync(
+                    s => s.CardCount == request.CardCount && s.IsEnabled,
+                    cancellationToken
+                )
+            ?? throw new BadRequestException(AiTarotErrorCode.InvalidCardCount);
+
+        var readingType =
+            await context
+                .AITarotReadingTypes.AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Code == request.Type && s.IsEnabled, cancellationToken)
+            ?? throw new BadRequestException(AiTarotErrorCode.InvalidQuestionType);
+
+        var cost = setting.WhiteCoins;
 
         var balance = await walletService.GetCoinsAsync(request.UserId, cancellationToken);
         if (balance.WhiteCoins < cost)
@@ -37,7 +46,7 @@ public class CreateAiTarotReadingCommandHandler(
             throw new BadRequestException(WalletErrorCode.InsufficientCoins);
         }
 
-        var prompt = BuildPrompt(request);
+        var prompt = BuildPrompt(request, setting, readingType);
         var rawAnswer = await geminiClientService.GenerateContentAsync(prompt, cancellationToken);
 
         AiTarotAnswerJson answer;
@@ -91,12 +100,20 @@ public class CreateAiTarotReadingCommandHandler(
 
         await transaction.CommitAsync(cancellationToken);
 
-        return entity.Id;
+        return new CreateAiTarotReadingResult(entity.Id);
     }
 
-    private static string BuildPrompt(CreateAiTarotReadingCommand request)
+    private static string BuildPrompt(
+        CreateAiTarotReadingCommand request,
+        AITarotReadingCount setting,
+        AiTarotReadingType readingType
+    )
     {
-        var languageName = request.Locale == "vi" ? "Vietnamese" : "English";
+        var isVietnamese = request.Locale == "vi";
+        var languageName = isVietnamese ? "Vietnamese" : "English";
+        var positions = isVietnamese ? setting.PositionsVi : setting.PositionsEn;
+        var topicName = isVietnamese ? readingType.NameVi : readingType.NameEn;
+
         var lines = request
             .Cards.Select(
                 (card, index) =>
@@ -113,7 +130,7 @@ public class CreateAiTarotReadingCommandHandler(
             "You are a professional, empathetic, and intuitive Tarot reader. Interpret the tarot reading for the user based on the provided cards, spread type, topic, and question.",
             "### RULE 1: POSITIONAL INTERPRETATION",
             "The card meaning depends heavily on its spread position:",
-            GetPositionRule(request.CardCount),
+            GetPositionRule(setting, positions),
             "### RULE 2: TONE & LANGUAGE",
             $"Language: MUST respond in natural, warm, insightful, and accessible in {languageName}.",
             "Style: WEAVE the positional meanings naturally into a cohesive narrative. DO NOT mention rule names, positional definitions, or internal prompt mechanics (e.g., do not say 'According to Rule 2...' or 'In position 1 which means core energy...'). Speak directly to the user's heart.",
@@ -123,8 +140,8 @@ public class CreateAiTarotReadingCommandHandler(
             "+ Main Analysis: Position name - Card name (upright/reversed): meaning and interpretation. (~100-150 words per card)",
             "+ Conclusion: Summarize the key insights and provide a final takeaway. (~50-100 words)",
             "",
-            $"The user wants a tarot reading about the topic: {request.Type}.",
-            $"The spread contains {(int)request.CardCount} cards:",
+            $"The user wants a tarot reading about the topic: {topicName}.",
+            $"The spread contains {request.CardCount} cards:",
             string.Join("\n", lines),
             "",
             "Interpret the spread and return ONLY one valid JSON string (no other text), according to this exact schema:",
@@ -132,29 +149,8 @@ public class CreateAiTarotReadingCommandHandler(
         );
     }
 
-    private static string GetPositionRule(CardCount cardCount)
+    private static string GetPositionRule(AITarotReadingCount setting, List<string> positions)
     {
-        return cardCount switch
-        {
-            CardCount.Three =>
-                "- 3 cards: Core energy | Challenges/obstacles | Outcome/advice (Overall response ~300-400 words)",
-            CardCount.Five =>
-                "- 5 cards: Core energy | Challenges/obstacles | Your strength | Future | Outcome/advice (Overall response ~450-600 words)",
-            CardCount.Seven =>
-                "- 7 cards: Core energy | Challenges/obstacles | Your strength | Hidden influences | The way to face it | Future | Outcome/advice (Overall response ~650-800 words)",
-            CardCount.Ten =>
-                "- 10 cards: Core energy | Challenges/obstacles | What to focus on | Past | Your strength | Near future | Suggested approach | What you need to know | Hopes/fears | Outcome/advice (Overall response ~800-1000 words)",
-            _ => throw new InternalServerException(AiTarotErrorCode.InvalidCardCount),
-        };
-    }
-
-    private int GetCost(CardCount cardCount)
-    {
-        if (!_aiTarotSetting.Costs.TryGetValue((int)cardCount, out var cost))
-        {
-            throw new InternalServerException(AiTarotErrorCode.InvalidCardCount);
-        }
-
-        return cost;
+        return $"- {setting.CardCount} cards: {string.Join(" | ", positions)} (Overall response ~{setting.MinWords}-{setting.MaxWords} words)";
     }
 }

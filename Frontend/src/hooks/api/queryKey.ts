@@ -22,6 +22,10 @@ export const GET_STREAK_QUERY_KEY = [...STREAK_QUERY_KEY, "getStreak"] as const;
 
 // aiTarot.hooks.ts
 export const AI_TAROT_QUERY_KEY = ["aiTarot"] as const;
+export const GET_AI_TAROT_SETTINGS_QUERY_KEY = [
+  ...AI_TAROT_QUERY_KEY,
+  "settings",
+] as const;
 export const GET_AI_TAROT_BY_ID_QUERY_KEY = [
   ...AI_TAROT_QUERY_KEY,
   "getById",

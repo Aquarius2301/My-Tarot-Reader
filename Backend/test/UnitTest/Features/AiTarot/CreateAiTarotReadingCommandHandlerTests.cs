@@ -1,13 +1,12 @@
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Moq;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Features.AiTarot;
 using MyTarotReader.Application.Services;
-using MyTarotReader.Application.Settings;
+using MyTarotReader.Domain.Entities;
 using MyTarotReader.Domain.Enums;
 using MyTarotReader.Infrastructure.Persistence;
 using MyTarotReader.UnitTest.Common;
@@ -34,6 +33,7 @@ public class CreateAiTarotReadingCommandHandlerTests
     ) CreateSut(int whiteBalance = 100)
     {
         var db = TestDbContextFactory.Create();
+        SeedSettings(db);
         var gemini = new Mock<IGeminiClientService>();
         var wallet = new Mock<IWalletService>();
         wallet
@@ -54,19 +54,67 @@ public class CreateAiTarotReadingCommandHandlerTests
         var sut = new CreateAiTarotReadingCommandHandler(
             db,
             wallet.Object,
-            gemini.Object,
-            Options.Create(new WalletSetting()),
-            Options.Create(new AiTarotSetting())
+            gemini.Object
         );
 
         return (sut, db, gemini, wallet);
+    }
+
+    private static void SeedSettings(AppDbContext db)
+    {
+        db.AITarotReadingCounts.AddRange(
+            new AITarotReadingCount
+            {
+                CardCount = 3,
+                WhiteCoins = 2,
+                PositionsEn = ["Core energy", "Challenges/obstacles", "Outcome/advice"],
+                PositionsVi = ["Năng lượng cốt lõi", "Thử thách/trở ngại", "Kết quả/lời khuyên"],
+                MinWords = 300,
+                MaxWords = 400,
+                IsEnabled = true,
+            },
+            new AITarotReadingCount
+            {
+                CardCount = 5,
+                WhiteCoins = 3,
+                PositionsEn =
+                [
+                    "Core energy",
+                    "Challenges/obstacles",
+                    "Your strength",
+                    "Future",
+                    "Outcome/advice",
+                ],
+                PositionsVi =
+                [
+                    "Năng lượng cốt lõi",
+                    "Thử thách/trở ngại",
+                    "Điểm mạnh của bạn",
+                    "Tương lai",
+                    "Kết quả/lời khuyên",
+                ],
+                MinWords = 450,
+                MaxWords = 600,
+                IsEnabled = true,
+            }
+        );
+        db.AITarotReadingTypes.Add(
+            new AiTarotReadingType
+            {
+                Code = "love",
+                NameEn = "Love",
+                NameVi = "Tình yêu",
+                IsEnabled = true,
+            }
+        );
+        db.SaveChanges();
     }
 
     private static List<AiReadingCard> ValidCards() =>
         [new(ValidCard, false), new("maj-06", true), new("min-cups-2", false)];
 
     private static CreateAiTarotReadingCommand ValidCommand(Guid userId) =>
-        new(CardCount.Three, QuestionType.Love, "vi", ValidCards(), userId);
+        new(3, "love", "vi", ValidCards(), userId);
 
     private static string BuildGeminiJson(string overview, string cardCode = ValidCard) =>
         JsonSerializer.Serialize(
@@ -109,8 +157,8 @@ public class CreateAiTarotReadingCommandHandlerTests
         result.Should().Be(entity.Id);
         entity.UserId.Should().Be(userId);
         entity.Title.Should().Be("Tình yêu sắp tới");
-        entity.CardCount.Should().Be(CardCount.Three);
-        entity.QuestionType.Should().Be(QuestionType.Love);
+        entity.CardCount.Should().Be(3);
+        entity.QuestionType.Should().Be("love");
         entity.Answer.Should().NotBeNullOrEmpty();
 
         var parsedAnswer = JsonDocument.Parse(entity.Answer);
@@ -257,18 +305,38 @@ public class CreateAiTarotReadingCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_UnsupportedCardCount_ThrowsInternalServerAndSkipsGemini()
+    public async Task Handle_UnsupportedCardCount_ThrowsBadRequestAndSkipsGemini()
     {
         // Arrange
         var (sut, db, gemini, _) = CreateSut();
-        var command = ValidCommand(Guid.NewGuid()) with { CardCount = (CardCount)99 };
+        var command = ValidCommand(Guid.NewGuid()) with { CardCount = 99 };
 
         // Act
         var act = () => sut.Handle(command, CancellationToken.None);
 
         // Assert
-        var ex = await act.Should().ThrowAsync<InternalServerException>();
+        var ex = await act.Should().ThrowAsync<BadRequestException>();
         ex.Which.ErrorCode.Should().Be(AiTarotErrorCode.InvalidCardCount);
+        gemini.Verify(
+            g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        db.AITarotReadings.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_UnsupportedQuestionType_ThrowsBadRequestAndSkipsGemini()
+    {
+        // Arrange
+        var (sut, db, gemini, _) = CreateSut();
+        var command = ValidCommand(Guid.NewGuid()) with { Type = "unknown" };
+
+        // Act
+        var act = () => sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        var ex = await act.Should().ThrowAsync<BadRequestException>();
+        ex.Which.ErrorCode.Should().Be(AiTarotErrorCode.InvalidQuestionType);
         gemini.Verify(
             g => g.GenerateContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never
@@ -313,7 +381,7 @@ public class CreateAiTarotReadingCommandHandlerTests
             .ReturnsAsync(BuildGeminiJson("Năng lượng chung của trải bài."));
         var command = ValidCommand(Guid.NewGuid()) with
         {
-            CardCount = CardCount.Five,
+            CardCount = 5,
             Cards =
             [
                 new(ValidCard, false),

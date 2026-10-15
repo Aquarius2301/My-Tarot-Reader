@@ -37,8 +37,8 @@ public class DeleteAiTarotReadingCommandHandlerTests
         {
             UserId = userId,
             Title = "Tình yêu sắp tới",
-            CardCount = CardCount.Three,
-            QuestionType = QuestionType.Love,
+            CardCount = 3,
+            QuestionType = "love",
             Answer = "{}",
             AnswerSummary = "Tóm tắt.",
             Cards = """[{"cardCode":"maj-00","isReversed":false}]""",
