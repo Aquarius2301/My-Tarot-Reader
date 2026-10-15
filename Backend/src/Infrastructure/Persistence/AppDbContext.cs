@@ -9,8 +9,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     : DbContext(options),
         IAppDbContext
 {
-    public DbSet<AIChatMessage> AIChatMessages { get; set; } = null!;
-    public DbSet<AIChatTarotReading> AIChatTarotReadings { get; set; } = null!;
     public DbSet<AIDeepTarotReading> AIDeepTarotReadings { get; set; } = null!;
     public DbSet<AITarotReading> AITarotReadings { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;

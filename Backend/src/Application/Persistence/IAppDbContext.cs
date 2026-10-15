@@ -9,13 +9,9 @@ namespace MyTarotReader.Application.Persistence;
 /// </summary>
 public interface IAppDbContext
 {
-    DbSet<AIChatMessage> AIChatMessages { get; set; }
-    DbSet<AIChatTarotReading> AIChatTarotReadings { get; set; }
     DbSet<AIDeepTarotReading> AIDeepTarotReadings { get; set; }
     DbSet<AITarotReading> AITarotReadings { get; set; }
     DbSet<Order> Orders { get; set; }
-
-    // DbSet<OrderDetail> OrderDetails { get; set; }
     DbSet<PaymentOrder> PaymentOrders { get; set; }
     DbSet<RefreshToken> RefreshTokens { get; set; }
     DbSet<Streak> Streaks { get; set; }
