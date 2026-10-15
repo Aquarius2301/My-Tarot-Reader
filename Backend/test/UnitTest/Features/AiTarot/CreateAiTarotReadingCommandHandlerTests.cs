@@ -6,7 +6,6 @@ using Moq;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Features.AiTarot;
-using MyTarotReader.Application.Features.AiTarot.Commands.CreateAiTarotReading;
 using MyTarotReader.Application.Services;
 using MyTarotReader.Application.Settings;
 using MyTarotReader.Domain.Enums;

@@ -2,7 +2,7 @@ using System;
 using FluentValidation;
 using MyTarotReader.Application.Constants.Errors;
 
-namespace MyTarotReader.Application.Features.Shop.Commands.CreatePayment;
+namespace MyTarotReader.Application.Features.Shop;
 
 public class CreatePaymentCommandValidator : AbstractValidator<CreatePaymentCommand>
 {

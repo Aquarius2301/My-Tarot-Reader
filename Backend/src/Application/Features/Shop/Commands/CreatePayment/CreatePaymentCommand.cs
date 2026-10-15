@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace MyTarotReader.Application.Features.Shop.Commands.CreatePayment;
+namespace MyTarotReader.Application.Features.Shop;
 
 public record CreatePaymentCommand(Guid UserId, string PackageCode) : IRequest<CreatePaymentResult>;
 

@@ -14,8 +14,6 @@ public class CreateDrawForGuestCommandHandler(IConnectionMultiplexer redis)
     {
         // ValidateGuestKey(guestKey);
 
-        // ValidationHelper.ValidateOrThrow(_createDrawForGuestValidator, request);
-
         var db = redis.GetDatabase();
         var key = TarotConstant.KeyPrefix + request.GuestKey;
         var record = new DrawRecord(

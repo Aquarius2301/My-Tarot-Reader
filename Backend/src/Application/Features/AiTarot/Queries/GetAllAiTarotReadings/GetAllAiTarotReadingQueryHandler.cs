@@ -1,10 +1,9 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MyTarotReader.Application.Common.Helpers;
-using MyTarotReader.Application.Features.AiTarot;
 using MyTarotReader.Application.Persistence;
 
-namespace MyTarotReader.Application.Features.AITarot;
+namespace MyTarotReader.Application.Features.AiTarot;
 
 public class GetAllAiTarotReadingQueryHandler(IAppDbContext context)
     : IRequestHandler<GetAllAiTarotReadingQuery, GetAllAiTarotReadingResult>

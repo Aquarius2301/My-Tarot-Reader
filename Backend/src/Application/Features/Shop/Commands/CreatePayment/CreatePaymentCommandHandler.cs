@@ -10,7 +10,7 @@ using MyTarotReader.Domain.Entities;
 using MyTarotReader.Domain.Enums;
 using PayOS.Models.V2.PaymentRequests;
 
-namespace MyTarotReader.Application.Features.Shop.Commands.CreatePayment;
+namespace MyTarotReader.Application.Features.Shop;
 
 public class CreatePaymentCommandHandler(
     IAppDbContext context,
@@ -27,8 +27,6 @@ public class CreatePaymentCommandHandler(
         CancellationToken cancellationToken = default
     )
     {
-        // ValidationHelper.ValidateOrThrow(_createPaymentValidator, request);
-
         var package =
             _shopSetting.Packages.FirstOrDefault(p =>
                 string.Equals(p.Code, request.PackageCode, StringComparison.OrdinalIgnoreCase)

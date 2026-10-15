@@ -2,7 +2,6 @@ using FluentAssertions;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Features.Wallet;
-using MyTarotReader.Application.Features.Wallet.Queries;
 using MyTarotReader.Domain.Entities;
 using MyTarotReader.Infrastructure.Persistence;
 using MyTarotReader.UnitTest.Common;

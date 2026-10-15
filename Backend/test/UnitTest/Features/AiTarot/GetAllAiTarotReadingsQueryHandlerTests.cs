@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MyTarotReader.Application.Features.AiTarot;
-using MyTarotReader.Application.Features.AITarot;
 using MyTarotReader.Domain.Entities;
 using MyTarotReader.Domain.Enums;
 using MyTarotReader.Infrastructure.Persistence;

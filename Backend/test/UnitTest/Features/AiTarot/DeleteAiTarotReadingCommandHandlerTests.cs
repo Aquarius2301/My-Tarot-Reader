@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Features.AiTarot;
-using MyTarotReader.Application.Features.AiTarot.Commands.DeleteAiTarotReading;
 using MyTarotReader.Domain.Entities;
 using MyTarotReader.Domain.Enums;
 using MyTarotReader.Infrastructure.Persistence;

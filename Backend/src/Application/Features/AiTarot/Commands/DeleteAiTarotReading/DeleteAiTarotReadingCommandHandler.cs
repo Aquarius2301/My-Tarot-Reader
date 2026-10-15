@@ -4,7 +4,7 @@ using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Persistence;
 
-namespace MyTarotReader.Application.Features.AiTarot.Commands.DeleteAiTarotReading;
+namespace MyTarotReader.Application.Features.AiTarot;
 
 public class DeleteAiTarotReadingCommandHandler(IAppDbContext context)
     : IRequestHandler<DeleteAiTarotReadingCommand, Unit>

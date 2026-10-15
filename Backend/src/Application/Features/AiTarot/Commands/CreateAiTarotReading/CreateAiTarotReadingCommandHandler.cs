@@ -11,7 +11,7 @@ using MyTarotReader.Application.Settings;
 using MyTarotReader.Domain.Entities;
 using MyTarotReader.Domain.Enums;
 
-namespace MyTarotReader.Application.Features.AiTarot.Commands.CreateAiTarotReading;
+namespace MyTarotReader.Application.Features.AiTarot;
 
 public class CreateAiTarotReadingCommandHandler(
     IAppDbContext context,

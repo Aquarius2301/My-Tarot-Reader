@@ -5,7 +5,7 @@ using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
 using MyTarotReader.Application.Persistence;
 
-namespace MyTarotReader.Application.Features.Wallet.Queries;
+namespace MyTarotReader.Application.Features.Wallet;
 
 public class GetWalletQueryHandler(IAppDbContext context)
     : IRequestHandler<GetWalletQuery, GetWalletResult>

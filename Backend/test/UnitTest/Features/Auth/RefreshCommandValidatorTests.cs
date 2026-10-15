@@ -5,9 +5,9 @@ using Xunit;
 
 namespace MyTarotReader.UnitTest.Features.Auth;
 
-public class RefreshValidatorTests
+public class RefreshCommandValidatorTests
 {
-    private readonly RefreshValidator _sut = new();
+    private readonly RefreshCommandValidator _sut = new();
 
     [Fact]
     public void Validate_ValidCommand_IsValid()

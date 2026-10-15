@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Models;
 using MyTarotReader.Application.Features.Shop;
-using MyTarotReader.Application.Features.Shop.Commands.CreatePayment;
 using PayOS.Models.Webhooks;
 
 namespace MyTarotReader.Api.Controllers;

@@ -3,9 +3,9 @@ using MyTarotReader.Application.Constants.Errors;
 
 namespace MyTarotReader.Application.Features.Auth;
 
-public class RefreshValidator : AbstractValidator<RefreshCommand>
+public class RefreshCommandValidator : AbstractValidator<RefreshCommand>
 {
-    public RefreshValidator()
+    public RefreshCommandValidator()
     {
         RuleFor(x => x.RefreshToken).NotEmpty().WithMessage(AuthErrorCode.InvalidRefreshToken);
 
