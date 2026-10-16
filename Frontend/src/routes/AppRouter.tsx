@@ -1,14 +1,13 @@
 import { lazy, Suspense } from "react";
 import { Spin } from "antd";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import {
   PublicRoute,
   ProtectedRoute,
   RouteTitle,
   SessionExpiredHandler,
 } from "./components";
-import { BootScreen, MainLayout } from "@/components";
-import { useGetCurrentUser } from "@/hooks/api";
+import { MainLayout } from "@/components";
 import { WEB_URL } from "./url.routes";
 
 const HomePage = lazy(() => import("@/pages/auth/HomePage"));
@@ -16,36 +15,9 @@ const GuestHomePage = lazy(() => import("@/pages/guest/HomePage"));
 const LoginPage = lazy(() => import("@/pages/guest/LoginPage"));
 const LoginCallbackPage = lazy(() => import("@/pages/guest/LoginCallbackPage"));
 const GuestDrawTarotPage = lazy(() => import("@/pages/guest/TarotPage"));
-const DrawTarotPage = lazy(() => import("@/pages/auth/DrawPage/TarotPage"));
-const AiTarotPage = lazy(() => import("@/pages/auth/DrawPage/AiTarotPage"));
-const AiTarotResultPage = lazy(
-  () => import("@/pages/auth/ResultPage/AiTarotResultPage"),
-);
-const TwelveHousesPage = lazy(
-  () => import("@/pages/auth/DrawPage/AiDeepTarotPage/TwelveHouses"),
-);
-const TwelveMonthsPage = lazy(
-  () => import("@/pages/auth/DrawPage/AiDeepTarotPage/TwelveMonths"),
-);
-const CrossroadsPage = lazy(
-  () => import("@/pages/auth/DrawPage/AiDeepTarotPage/Crossroads"),
-);
-const AiDeepTarotResultPage = lazy(
-  () => import("@/pages/auth/ResultPage/AiDeepTarotResultPage"),
-);
-const HistoryAiTarotPage = lazy(
-  () => import("@/pages/auth/HistoryPage/HistoryAiTarotPage"),
-);
-const HistoryAiDeepTarotPage = lazy(
-  () => import("@/pages/auth/HistoryPage/HistoryAiDeepTarotPage"),
-);
+const DrawTarotPage = lazy(() => import("@/pages/auth/TarotPage"));
 const LibraryPage = lazy(() => import("@/pages/auth/LibraryPage"));
-const HistoryTarotPage = lazy(
-  () => import("@/pages/auth/HistoryPage/HistoryTarotPage"),
-);
-const WalletPage = lazy(() => import("@/pages/auth/WalletPage"));
-const ShopPage = lazy(() => import("@/pages/auth/ShopPage"));
-const ShopCheckoutPage = lazy(() => import("@/pages/auth/ShopCheckoutPage"));
+const HistoryPage = lazy(() => import("@/pages/auth/HistoryPage"));
 
 interface AppRoute {
   titleKey: string;
@@ -87,69 +59,14 @@ const protectedRoutes: AppRoute[] = [
     component: DrawTarotPage,
   },
   {
-    titleKey: "page.aiTarot.title",
-    path: WEB_URL.aiTarot,
-    component: AiTarotPage,
-  },
-  {
-    titleKey: "page.aiTarot.result.title",
-    path: `${WEB_URL.aiTarotResult}/:readingId`,
-    component: AiTarotResultPage,
-  },
-  {
-    titleKey: "page.aiDeepTarot.spreads.twelveHouses.title",
-    path: WEB_URL.aiDeepTarotTwelveHouses,
-    component: TwelveHousesPage,
-  },
-  {
-    titleKey: "page.aiDeepTarot.spreads.twelveMonths.title",
-    path: WEB_URL.aiDeepTarotTwelveMonths,
-    component: TwelveMonthsPage,
-  },
-  {
-    titleKey: "page.aiDeepTarot.spreads.crossroads.title",
-    path: WEB_URL.aiDeepTarotCrossroads,
-    component: CrossroadsPage,
-  },
-  {
-    titleKey: "page.aiDeepTarot.result.title",
-    path: `${WEB_URL.aiDeepTarotResult}/:readingId`,
-    component: AiDeepTarotResultPage,
-  },
-  {
-    titleKey: "page.historyAiTarot.title",
-    path: WEB_URL.aiTarotHistory,
-    component: HistoryAiTarotPage,
-  },
-  {
-    titleKey: "page.historyAiDeepTarot.title",
-    path: WEB_URL.aiDeepTarotHistory,
-    component: HistoryAiDeepTarotPage,
-  },
-  {
     titleKey: "page.library.title",
     path: WEB_URL.library,
     component: LibraryPage,
   },
   {
     titleKey: "page.history.title",
-    path: WEB_URL.tarotHistory,
-    component: HistoryTarotPage,
-  },
-  {
-    titleKey: "page.wallet.title",
-    path: WEB_URL.wallet,
-    component: WalletPage,
-  },
-  {
-    titleKey: "page.shop.title",
-    path: WEB_URL.shop,
-    component: ShopPage,
-  },
-  {
-    titleKey: "page.shop.checkoutTitle",
-    path: `${WEB_URL.shopCheckout}/:orderId`,
-    component: ShopCheckoutPage,
+    path: WEB_URL.history,
+    component: HistoryPage,
   },
 ];
 
@@ -157,41 +74,16 @@ export default function AppRouter() {
   return (
     <BrowserRouter>
       <SessionExpiredHandler />
-      <AppGate />
-    </BrowserRouter>
-  );
-}
-
-function AppGate() {
-  const location = useLocation();
-
-  // /login and /login/callback don't depend on the session, so skip the auth
-  // probe there: for a guest /me would 401 and trigger a pointless
-  // /auth/refresh round-trip (the OAuth callback boots its own login flow).
-  const isAuthFreeRoute =
-    location.pathname === WEB_URL.login ||
-    location.pathname === WEB_URL.loginCallback;
-
-  const { data, isLoading, dataUpdatedAt, errorUpdatedAt } =
-    useGetCurrentUser(!isAuthFreeRoute);
-
-  // Block the first paint with a bare spinner until the auth state is known,
-  // so the header never renders guest chrome and then flips to auth chrome.
-  // Only applies on cold boot: once the query has settled, later refetches
-  // (login/session-expired) keep the current UI instead of blanking it.
-  const hasResolved = dataUpdatedAt > 0 || errorUpdatedAt > 0;
-
-  if (isLoading && !hasResolved) {
-    return <BootScreen />;
-  }
-
-  return (
-    <MainLayout user={data} role={data?.role} currentPath={location.pathname}>
-      <Suspense fallback={<Spin fullscreen />}>
+      <Suspense
+        fallback={
+          <MainLayout>
+            <Spin fullscreen />
+          </MainLayout>
+        }
+      >
         <Routes>
-          {/* Public routes render inside PublicRoute's Outlet; ProtectedRoute
-            redirects unauthenticated users to WEB_URL.guestHome. The shared
-            MainLayout stays mounted so the header never flashes on navigation. */}
+          {/* Public routes render inside PublicRoute's MainLayout via <Outlet/>.
+            ProtectedRoute redirects unauthenticated users to WEB_URL.HOME. */}
           <Route element={<PublicRoute />}>
             {publicRoutes.map((r) => {
               const Component = r.component;
@@ -215,20 +107,12 @@ function AppGate() {
               const Component = r.component;
 
               return (
-                <Route
-                  key={r.path}
-                  path={r.path}
-                  element={
-                    <RouteTitle titleKey={r.titleKey}>
-                      <Component />
-                    </RouteTitle>
-                  }
-                />
+                <Route key={r.path} path={r.path} element={<Component />} />
               );
             })}
           </Route>
         </Routes>
       </Suspense>
-    </MainLayout>
+    </BrowserRouter>
   );
 }

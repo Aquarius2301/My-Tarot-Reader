@@ -8,7 +8,6 @@ obj/
 *.suo
 .vs/
 *.Development.json
-*.Production.json
 
 # EF Core
 *.db

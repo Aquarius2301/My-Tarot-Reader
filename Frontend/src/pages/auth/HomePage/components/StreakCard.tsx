@@ -23,13 +23,13 @@ import { useTranslation } from "react-i18next";
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 const DAY_LABEL_KEYS = [
-  "page.home.streakDay1",
-  "page.home.streakDay2",
-  "page.home.streakDay3",
-  "page.home.streakDay4",
-  "page.home.streakDay5",
-  "page.home.streakDay6",
-  "page.home.streakDay7",
+  "page.streak.day1",
+  "page.streak.day2",
+  "page.streak.day3",
+  "page.streak.day4",
+  "page.streak.day5",
+  "page.streak.day6",
+  "page.streak.day7",
 ];
 
 export default function StreakCard() {
@@ -58,13 +58,12 @@ export default function StreakCard() {
     isSaverUsed,
   } = data;
 
-  const todayIndex = cycleDay - 1;
-  const nextIndex =
-    todayIndex < 0 ? 0 : isCheckedInToday ? todayIndex + 1 : todayIndex;
+  const todayIndex = isCheckedInToday ? cycleDay - 1 : cycleDay;
+  const nextIndex = Math.max(0, cycleDay);
 
   const handleCheckIn = () => {
     mutate(undefined, {
-      onSuccess: () => message.success(t("page.home.streakCheckInSuccess")),
+      onSuccess: () => message.success(t("page.streak.checkInSuccess")),
       onError: (error) => message.error(getErrorMessage(error)),
     });
   };
@@ -95,10 +94,10 @@ export default function StreakCard() {
         <div>
           <Title level={4} style={{ margin: 0, marginBottom: 4 }}>
             <FireFilled style={{ color: token.colorPrimary, marginRight: 8 }} />
-            {t("page.home.streakTitle")}
+            {t("page.streak.title")}
           </Title>
           <Text type="secondary" style={{ fontSize: 14 }}>
-            {t("page.home.streakSubtitle")}
+            {t("page.streak.subtitle")}
           </Text>
           <div style={{ marginTop: token.marginXS }}>
             <Tag
@@ -108,14 +107,14 @@ export default function StreakCard() {
             >
               {t(
                 isSaverUsed
-                  ? "page.home.streakSaverUsed"
-                  : "page.home.streakSaverAvailable",
+                  ? "page.streak.saverUsed"
+                  : "page.streak.saverAvailable",
               )}
             </Tag>
             {isSaverUsed && (
               <div>
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  {t("page.home.streakSaverResetIn", {
+                  {t("page.streak.saverResetIn", {
                     days: getDaysUntilNextMonthInVietnam(),
                   })}
                 </Text>
@@ -126,14 +125,14 @@ export default function StreakCard() {
 
         <div style={{ display: "flex", gap: token.marginLG }}>
           <Stat
-            label={t("page.home.streakCurrentStreak")}
+            label={t("page.streak.currentStreak")}
             value={currentStreak}
-            unit={t("page.home.streakDays")}
+            unit={t("page.streak.days")}
           />
           <Stat
-            label={t("page.home.streakLongestStreak")}
+            label={t("page.streak.longestStreak")}
             value={longestStreak}
-            unit={t("page.home.streakDays")}
+            unit={t("page.streak.days")}
           />
         </div>
       </div>
@@ -236,7 +235,7 @@ export default function StreakCard() {
               marginBottom: token.marginSM,
             }}
           >
-            {t("page.home.streakReward")}: {STREAK_DAILY_REWARDS[nextIndex]}{" "}
+            {t("page.streak.reward")}: {STREAK_DAILY_REWARDS[nextIndex]}{" "}
             {t("component.mainLayout.whiteCoin")}
           </Tag>
           <br />
@@ -254,7 +253,7 @@ export default function StreakCard() {
               boxShadow: `0 4px 14px ${token.colorPrimary}40`,
             }}
           >
-            {t("page.home.streakCheckIn")}
+            {t("page.streak.checkIn")}
           </Button>
         </div>
       )}
@@ -263,7 +262,7 @@ export default function StreakCard() {
         <div style={{ textAlign: "center" }}>
           <Text type="success" style={{ fontSize: 16 }}>
             <CheckCircleFilled style={{ marginRight: 8 }} />
-            {t("page.home.streakCheckedInToday")}
+            {t("page.streak.checkedInToday")}
           </Text>
         </div>
       )}

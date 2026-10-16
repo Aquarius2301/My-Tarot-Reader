@@ -7,9 +7,7 @@ public class Order : BaseEntity
 {
     public Guid UserId { get; set; }
 
-    public int RedCoins { get; set; }
-
-    public int WhiteCoins { get; set; }
+    public int Amount { get; set; }
 
     public string Description { get; set; } = null!;
 
@@ -19,7 +17,7 @@ public class Order : BaseEntity
 
     public User User { get; set; } = null!;
 
-    // public ICollection<WhiteCoinBatch> WhiteCoinsBatches { get; set; } = [];
+    public ICollection<OrderDetail> OrderDetails { get; set; } = [];
 
     #endregion
 }

@@ -84,72 +84,17 @@ export default function MainLayout({
           label: t("page.tarot.title"),
           href: user ? WEB_URL.tarot : WEB_URL.guestTarot,
         },
-        user && {
-          key: "aiTarot",
-          label: t("page.aiTarot.title"),
-          href: WEB_URL.aiTarot,
-        },
-        user && {
-          key: "aiDeepTarot",
-          label: t("page.aiDeepTarot.parentTitle"),
-          children: [
-            {
-              key: "aiDeepTarotTwelveHouses",
-              label: t("page.aiDeepTarot.spreads.twelveHouses.title"),
-              href: WEB_URL.aiDeepTarotTwelveHouses,
-            },
-            {
-              key: "aiDeepTarotTwelveMonths",
-              label: t("page.aiDeepTarot.spreads.twelveMonths.title"),
-              href: WEB_URL.aiDeepTarotTwelveMonths,
-            },
-            {
-              key: "aiDeepTarotCrossroads",
-              label: t("page.aiDeepTarot.spreads.crossroads.title"),
-              href: WEB_URL.aiDeepTarotCrossroads,
-            },
-          ],
-        },
-      ].filter(Boolean) as NavItem[],
+      ],
     },
     user && {
       key: "history",
-      label: t("page.history.parentTitle"),
-      children: [
-        user && {
-          key: "history",
-          label: t("page.history.title"),
-          href: WEB_URL.tarotHistory,
-        },
-        user && {
-          key: "aiTarotHistory",
-          label: t("page.historyAiTarot.title"),
-          href: WEB_URL.aiTarotHistory,
-        },
-        user && {
-          key: "aiDeepTarotHistory",
-          label: t("page.historyAiDeepTarot.title"),
-          href: WEB_URL.aiDeepTarotHistory,
-        },
-      ],
+      label: t("page.history.title"),
+      href: WEB_URL.history,
     },
-
     user && {
       key: "library",
       label: t("page.library.title"),
       href: WEB_URL.library,
-    },
-
-    user && {
-      key: "wallet",
-      label: t("page.wallet.title"),
-      href: WEB_URL.wallet,
-    },
-
-    user && {
-      key: "shop",
-      label: t("page.shop.title"),
-      href: WEB_URL.shop,
     },
   ].filter(Boolean) as NavItem[];
 
@@ -189,7 +134,7 @@ export default function MainLayout({
         return {
           key: item.key,
           label: item.label,
-          children: item.children && buildMenuItems(item.children),
+          children: buildMenuItems(item.children),
         };
       }
 

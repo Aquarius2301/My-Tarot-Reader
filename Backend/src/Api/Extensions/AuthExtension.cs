@@ -12,9 +12,9 @@ namespace MyTarotReader.Api.Extensions;
 public static class AuthExtension
 {
     /// <summary>
-    /// Registers JWT bearer authentication configured to read the access token from the
-    /// <see cref="CookieHelper.AccessTokenCookieName"/> cookie when the request carries
-    /// no <c>Authorization</c> header.
+    /// Registers JWT bearer authentication configured to read the access token
+    /// from the <see cref="CookieHelper.AccessTokenCookieName"/> cookie instead of
+    /// the Authorization header.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     /// <param name="configuration">The application configuration, requiring a "Jwt" section.</param>
@@ -42,25 +42,19 @@ public static class AuthExtension
                     ),
                 };
 
-                // Fall back to the HttpOnly cookie when the request carries no Authorization
-                // header, since the JWT bearer handler has already parsed the header into
-                // context.Token by the time this runs. An explicit header wins so that a
-                // stale accessToken cookie cannot silently authenticate as another user.
+                // Pull the token from the HttpOnly cookie instead of the Authorization header.
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
                     {
-                        if (string.IsNullOrWhiteSpace(context.Token))
+                        if (
+                            context.Request.Cookies.TryGetValue(
+                                CookieHelper.AccessTokenCookieName,
+                                out var token
+                            ) && !string.IsNullOrWhiteSpace(token)
+                        )
                         {
-                            if (
-                                context.Request.Cookies.TryGetValue(
-                                    CookieHelper.AccessTokenCookieName,
-                                    out var token
-                                ) && !string.IsNullOrWhiteSpace(token)
-                            )
-                            {
-                                context.Token = token;
-                            }
+                            context.Token = token;
                         }
 
                         return Task.CompletedTask;

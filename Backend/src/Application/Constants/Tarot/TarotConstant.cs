@@ -5,11 +5,8 @@ public record TarotCard(string Code, string Name);
 /// <summary>
 /// Contains the canonical list of all 78 valid tarot card codes.
 /// </summary>
-public static class TarotConstant
+public static class TarotConstants
 {
-    public static readonly string KeyPrefix = "tarot:draw:";
-    public static readonly TimeSpan DrawCooldown = TimeSpan.FromHours(12);
-
     /**
     * Contains the canonical list of all 78 valid tarot card codes and their corresponding English names.
     */

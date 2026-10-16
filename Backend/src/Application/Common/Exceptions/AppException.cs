@@ -27,16 +27,14 @@ public abstract class BaseException(
 }
 
 /// <summary>400 - the request was malformed or rejected.</summary>
-public class BadRequestException(
-    string code = SystemErrorCode.BadRequest,
-    IReadOnlyList<FieldError>? fieldErrors = null
-) : BaseException(400, code, null, fieldErrors) { }
+public class BadRequestException(string code = SystemErrorCode.BadRequest)
+    : BaseException(400, code) { }
 
 /// <summary>400 - one or more fields failed validation.</summary>
-// public class ValidationException(
-//     IReadOnlyList<FieldError> fieldErrors,
-//     string code = SystemErrorCode.BadRequest
-// ) : BaseException(400, code, null, fieldErrors) { }
+public class ValidationException(
+    IReadOnlyList<FieldError> fieldErrors,
+    string code = SystemErrorCode.BadRequest
+) : BaseException(400, code, null, fieldErrors) { }
 
 /// <summary>401 - authentication missing or invalid.</summary>
 /// <remarks>Constructs an unauthorized exception.</remarks>

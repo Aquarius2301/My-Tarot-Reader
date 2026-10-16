@@ -11,10 +11,9 @@ public class AITarotReadingConfiguration : IEntityTypeConfiguration<AITarotReadi
 {
     public void Configure(EntityTypeBuilder<AITarotReading> builder)
     {
-        builder.Property(x => x.CardCount).IsRequired();
-        builder.Property(x => x.QuestionType).IsRequired().HasMaxLength(20);
+        builder.Property(x => x.CardCount).IsRequired().HasConversion<string>().HasMaxLength(10);
+        builder.Property(x => x.QuestionType).IsRequired().HasConversion<string>().HasMaxLength(10);
         builder.Property(x => x.Answer).IsRequired();
-        builder.Property(x => x.AnswerSummary).IsRequired().HasMaxLength(500);
         builder.Property(x => x.Cards).IsRequired().HasMaxLength(2000);
 
         builder

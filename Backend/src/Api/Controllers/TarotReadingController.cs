@@ -1,23 +1,18 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Models;
-using MyTarotReader.Application.Features.Tarot;
+using MyTarotReader.Application.Contracts.Services;
 
 namespace MyTarotReader.Api.Controllers;
-
-public record CreateDrawForAuthRequest(string CardCode, bool IsReversed);
-
-public record CreateDrawForGuestRequest(string CardCode, bool IsReversed);
-
-public record GetAllReadingRequest(int Page, int PageSize);
 
 [Route("api/tarot")]
 [ApiController]
 [ProducesErrorResponseType(typeof(ApiResponse<object>))]
-public class TarotReadingController(IMediator mediator) : ControllerBase
+public class TarotReadingController(ITarotReadingService service) : ControllerBase
 {
+    private readonly ITarotReadingService _service = service;
+
     /// <summary>
     /// Retrieves the last drawn tarot card for an authenticated user.
     /// </summary>
@@ -34,10 +29,7 @@ public class TarotReadingController(IMediator mediator) : ControllerBase
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await mediator.Send(
-            new GetLastDrawnCardForAuthQuery(userId),
-            cancellationToken
-        );
+        var result = await _service.GetLastDrawnCardForAuthAsync(userId, cancellationToken);
         return Ok(ApiResponse.Success(result));
     }
 
@@ -55,11 +47,7 @@ public class TarotReadingController(IMediator mediator) : ControllerBase
     )
     {
         var userId = JwtHelper.GetUserId(HttpContext);
-
-        await mediator.Send(
-            new CreateDrawForAuthCommand(request.CardCode, request.IsReversed, userId),
-            cancellationToken
-        );
+        await _service.CreateDrawForAuthAsync(request, userId, cancellationToken);
         return Ok(ApiResponse.Success());
     }
 
@@ -82,12 +70,12 @@ public class TarotReadingController(IMediator mediator) : ControllerBase
     {
         var guestKey = Request.Headers["X-Device-Id"].ToString();
 
-        var result = await mediator.Send(
-            new GetLastDrawnCardForGuestQuery(guestKey),
+        var availability = await _service.GetLastDrawnCardForGuestAsync(
+            guestKey,
             cancellationToken
         );
 
-        return Ok(ApiResponse.Success(result));
+        return Ok(ApiResponse.Success(availability));
     }
 
     /// <summary>
@@ -115,10 +103,7 @@ public class TarotReadingController(IMediator mediator) : ControllerBase
             DateTimeOffset.UtcNow.AddDays(1)
         ); // Save the guest key in a cookie for easy to remove key on swagger (testing)
 
-        await mediator.Send(
-            new CreateDrawForGuestCommand(request.CardCode, request.IsReversed, guestKey),
-            cancellationToken
-        );
+        await _service.CreateDrawForGuestAsync(request, guestKey, cancellationToken);
 
         return Ok(ApiResponse.Success());
     }
@@ -128,7 +113,6 @@ public class TarotReadingController(IMediator mediator) : ControllerBase
     /// </summary>
     /// <remarks> This endpoint is for testing purposes only. </remarks>
     [HttpDelete("guest-draw")]
-    [DevelopmentOnly]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ClearGuestDrawAsync(
@@ -136,30 +120,24 @@ public class TarotReadingController(IMediator mediator) : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        await mediator.Send(new RemoveDrawnForGuestCommand(guestKey), cancellationToken);
+        await _service.RemoveDrawForGuestAsync(guestKey, cancellationToken);
         return Ok(ApiResponse.Success());
     }
 
     /// <summary>
-    /// Retrieves a page of tarot readings for the authenticated user.
+    /// Retrieves all tarot readings for the authenticated user.
     /// </summary>
     [HttpGet]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<GetAllReadingResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetAllReadingAsync(
-        [FromQuery] GetAllReadingRequest request,
-        CancellationToken cancellationToken
-    )
+    public async Task<IActionResult> GetAllReadingAsync(CancellationToken cancellationToken)
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await mediator.Send(
-            new GetAllReadingQuery(request.Page, request.PageSize, userId),
-            cancellationToken
-        );
+        var history = await _service.GetAllReadingAsync(userId, cancellationToken);
 
-        return Ok(ApiResponse.Success(result));
+        return Ok(ApiResponse.Success(history));
     }
 
     /// <summary>
@@ -177,7 +155,7 @@ public class TarotReadingController(IMediator mediator) : ControllerBase
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        await mediator.Send(new RemoveDrawnForAuthCommand(userId, readingId), cancellationToken);
+        await _service.DeleteReadingAsync(userId, readingId, cancellationToken);
 
         return Ok(ApiResponse.Success());
     }

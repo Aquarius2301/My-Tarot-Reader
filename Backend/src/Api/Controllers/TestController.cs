@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Common.Models;
 using MyTarotReader.Application.Constants.Errors;
@@ -8,13 +7,17 @@ namespace MyTarotReader.Api.Controllers;
 
 /// <summary>
 /// Test controller to exercise the standard API response envelope and global
-/// exception handling on Swagger. Development-only; never mapped in production.
+/// exception handling on Swagger. Not part of the production feature set.
 /// </summary>
 [ApiController]
 [Route("api/test")]
-[DevelopmentOnly]
 public class TestController : ControllerBase
 {
+    /// <summary>No return value.</summary>
+    [HttpHead("health")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public IActionResult HeadResult() => Ok(ApiResponse.Success());
+
     /// <summary>Returns a success envelope with a sample payload.</summary>
     [HttpGet("ok")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -35,13 +38,10 @@ public class TestController : ControllerBase
     [HttpGet("validation")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult ValidationResult() =>
-        throw new BadRequestException(
-            fieldErrors:
-            [
-                new("password", SystemErrorCode.BadRequest),
-                new("email", SystemErrorCode.BadRequest),
-            ]
-        );
+        throw new ValidationException([
+            new("password", SystemErrorCode.BadRequest),
+            new("email", SystemErrorCode.BadRequest),
+        ]);
 
     /// <summary>Throws an unexpected exception, mapped to a 500 InternalServerError envelope.</summary>
     [HttpGet("boom")]

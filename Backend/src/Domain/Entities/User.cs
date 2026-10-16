@@ -29,7 +29,7 @@ public class User : BaseEntity
 
     public List<AITarotReading> AITarotReadings { get; set; } = [];
 
-    public List<AIDeepTarotReading> AIDeepTarotReadings { get; set; } = [];
+    public List<AIChatTarotReading> AIChatTarotReadings { get; set; } = [];
 
     public List<Order> Orders { get; set; } = [];
     #endregion

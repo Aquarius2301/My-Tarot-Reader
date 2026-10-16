@@ -13,9 +13,6 @@ public enum OrderType
     /// <summary> Deduct coins for AI chat follow-up conversation. </summary>
     AIChatFollowUp,
 
-    /// <summary> Deduct red coins for a deep (topic-specific) tarot reading. </summary>
-    AIDeepTarot,
-
     /// <summary> Deduct coins for expired coins. </summary>
     Expired,
 
@@ -28,7 +25,4 @@ public enum OrderType
 
     /// <summary> Grant the one-time white coins for the first login (sign-up bonus). </summary>
     FirstLogin,
-
-    /// <summary> Swap red coins into white coins (1 red = 2 white). </summary>
-    RedToWhite,
 }

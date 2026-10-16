@@ -17,28 +17,4 @@ export const API_URL = {
     getStreak: "/api/streak",
     checkIn: "/api/streak/checkin",
   },
-  aiTarot: {
-    create: "/api/aiTarot",
-    settings: "/api/aiTarot/settings",
-    getById: "/api/aiTarot",
-    getAll: "/api/aiTarot",
-    delete: "/api/aiTarot",
-  },
-  aiDeepTarot: {
-    createTwelveHouses: "/api/aiDeepTarot/twelveHouses",
-    createTwelveMonths: "/api/aiDeepTarot/twelveMonths",
-    createCrossroads: "/api/aiDeepTarot/crossroads",
-    getById: "/api/aiDeepTarot",
-    getAll: "/api/aiDeepTarot",
-    delete: "/api/aiDeepTarot",
-  },
-  wallet: {
-    getWallet: "/api/wallet",
-    convertRedToWhite: "/api/wallet/convert",
-  },
-  shop: {
-    packages: "/api/shop/packages",
-    createOrder: "/api/shop/orders",
-    getOrder: "/api/shop/orders",
-  },
 } as const;

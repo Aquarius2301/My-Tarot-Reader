@@ -6,7 +6,6 @@ import {
   Space,
   Avatar,
   type MenuProps,
-  Image,
 } from "antd";
 import {
   SunOutlined,
@@ -21,8 +20,6 @@ import type { Palette } from "./LayoutFooter";
 import UserDropdown from "./UserDropdown";
 import CoinBadge from "./CoinBadge";
 import type { GetCurrentUserResult } from "@/types";
-import { WEB_URL } from "@/routes";
-import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -57,7 +54,6 @@ export default function LayoutHeader({
   onLogin,
 }: LayoutHeaderProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   return (
     <Header
@@ -74,16 +70,7 @@ export default function LayoutHeader({
       }}
     >
       {/* Logo & APP_NAME */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          cursor: "pointer",
-        }}
-        onClick={() => navigate(WEB_URL.home)}
-      >
-        <Image src="/logo.png" preview={false} width={30} />
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         <Text
           strong
           style={{

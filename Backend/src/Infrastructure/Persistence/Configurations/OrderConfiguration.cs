@@ -15,8 +15,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.Property(x => x.Type).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.Description).IsRequired().HasMaxLength(200);
-        builder.Property(x => x.RedCoins).IsRequired();
-        builder.Property(x => x.WhiteCoins).IsRequired();
+        builder.Property(x => x.Amount).IsRequired();
 
         builder.HasIndex(x => x.UserId);
 

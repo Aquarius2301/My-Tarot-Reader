@@ -1,5 +1,4 @@
 import type { TarotCardCode } from "@/constants";
-import type { PaginatedResult } from "./pagination.types";
 
 export interface CardData {
   cardCode: TarotCardCode;
@@ -20,4 +19,6 @@ export interface GetAllReadingItem extends CardData {
   id: string;
   createdAt: string;
 }
-export interface GetAllReadingResult extends PaginatedResult<GetAllReadingItem> {}
+export interface GetAllReadingResult {
+  items: GetAllReadingItem[];
+}

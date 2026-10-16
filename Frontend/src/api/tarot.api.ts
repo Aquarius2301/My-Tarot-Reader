@@ -4,7 +4,6 @@ import type {
   GetAllReadingResult,
   GetLastDrawnCardForAuthResult,
   GetLastDrawnCardForGuestResult,
-  PageParams,
 } from "@/types";
 import axiosClient from "./config.api";
 import { API_URL } from "./url.api";
@@ -23,8 +22,8 @@ export const tarotReadingApi = {
   createDrawForAuth: (request: CreateDrawForAuthRequest): Promise<void> =>
     axiosClient.post(API_URL.tarot.createDrawForAuth, request),
 
-  getAllReading: (params: PageParams): Promise<GetAllReadingResult> =>
-    axiosClient.get(API_URL.tarot.getAllReading, { params }),
+  getAllReading: (): Promise<GetAllReadingResult> =>
+    axiosClient.get(API_URL.tarot.getAllReading),
 
   deleteReading: (historyId: string): Promise<void> =>
     axiosClient.delete(`${API_URL.tarot.deleteReading}/${historyId}`),
