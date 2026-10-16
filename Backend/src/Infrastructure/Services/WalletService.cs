@@ -41,9 +41,10 @@ public class WalletService(IAppDbContext context, IOptions<WalletSetting> wallet
         // Add white coins to the user's wallet as a new WhiteCoinBatch
         if (whiteCoins > 0)
         {
-            user.Wallet.WhiteCoinBatches.Add(
+            context.WhiteCoinBatches.Add(
                 new WhiteCoinBatch
                 {
+                    WalletId = user.Wallet.Id,
                     Amount = whiteCoins,
                     RemainingAmount = whiteCoins,
                     ExpiredAt = DateTimeOffset.UtcNow.AddDays(_walletSetting.ExpireDays),
@@ -62,6 +63,8 @@ public class WalletService(IAppDbContext context, IOptions<WalletSetting> wallet
             Description = $"Added {redCoins} red coins and {whiteCoins} white coins.",
             CreatedAt = DateTimeOffset.UtcNow,
         };
+
+        context.Orders.Add(order);
 
         await context.SaveChangesAsync(cancellationToken);
     }
@@ -144,6 +147,7 @@ public class WalletService(IAppDbContext context, IOptions<WalletSetting> wallet
             CreatedAt = DateTimeOffset.UtcNow,
         };
 
+        context.Orders.Add(order);
         await context.SaveChangesAsync(cancellationToken);
     }
 
