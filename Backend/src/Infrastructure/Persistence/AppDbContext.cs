@@ -18,6 +18,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     // public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
     public DbSet<PaymentOrder> PaymentOrders { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    public DbSet<ShopPackage> ShopPackages { get; set; } = null!;
     public DbSet<Streak> Streaks { get; set; } = null!;
     public DbSet<TarotReading> TarotReadings { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
@@ -36,6 +37,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         // modelBuilder.ApplyConfiguration(new OrderDetailConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentOrderConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+        modelBuilder.ApplyConfiguration(new ShopPackageConfiguration());
         modelBuilder.ApplyConfiguration(new StreakConfiguration());
         modelBuilder.ApplyConfiguration(new TarotReadingConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());

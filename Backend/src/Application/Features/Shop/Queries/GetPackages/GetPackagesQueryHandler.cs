@@ -1,23 +1,30 @@
 using MediatR;
-using Microsoft.Extensions.Options;
-using MyTarotReader.Application.Settings;
+using Microsoft.EntityFrameworkCore;
+using MyTarotReader.Application.Persistence;
 
 namespace MyTarotReader.Application.Features.Shop;
 
-public class GetPackagesQueryHandler(IOptions<ShopSetting> shopSetting)
+public class GetPackagesQueryHandler(IAppDbContext context)
     : IRequestHandler<GetPackagesQuery, GetPackagesResult>
 {
-    private readonly ShopSetting _shopSetting = shopSetting.Value;
-
-    public Task<GetPackagesResult> Handle(
+    public async Task<GetPackagesResult> Handle(
         GetPackagesQuery request,
         CancellationToken cancellationToken = default
     )
     {
-        var packages = _shopSetting
-            .Packages.Select(p => new GetPackagesItem(p.Code, p.RedCoins, p.PriceVnd))
-            .ToList();
+        var packages = await context
+            .ShopPackages.AsNoTracking()
+            .Where(p => p.IsEnabled)
+            .OrderBy(p => p.Price)
+            .Select(p => new GetPackagesItem(
+                p.Code,
+                p.RedCoins,
+                p.WhiteCoins,
+                p.OldPrice,
+                p.Price
+            ))
+            .ToListAsync(cancellationToken);
 
-        return Task.FromResult(new GetPackagesResult(packages));
+        return new GetPackagesResult(packages);
     }
 }

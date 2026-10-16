@@ -10,5 +10,6 @@ public record CreatePaymentResult(
     string CheckoutUrl,
     string QrCode,
     int AmountVnd,
-    int RedCoins
+    int RedCoins,
+    int WhiteCoins
 );

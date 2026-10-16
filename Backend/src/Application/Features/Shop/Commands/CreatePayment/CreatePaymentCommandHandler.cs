@@ -1,5 +1,6 @@
 using System;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
@@ -14,12 +15,10 @@ namespace MyTarotReader.Application.Features.Shop;
 
 public class CreatePaymentCommandHandler(
     IAppDbContext context,
-    IOptions<ShopSetting> shopSetting,
     IOptions<PayOsSetting> payOsSetting,
     IPayOsClientService payOsClientService
 ) : IRequestHandler<CreatePaymentCommand, CreatePaymentResult>
 {
-    private readonly ShopSetting _shopSetting = shopSetting.Value;
     private readonly PayOsSetting _payOsSetting = payOsSetting.Value;
 
     public async Task<CreatePaymentResult> Handle(
@@ -27,10 +26,15 @@ public class CreatePaymentCommandHandler(
         CancellationToken cancellationToken = default
     )
     {
+        var normalizedCode = request.PackageCode.Trim();
         var package =
-            _shopSetting.Packages.FirstOrDefault(p =>
-                string.Equals(p.Code, request.PackageCode, StringComparison.OrdinalIgnoreCase)
-            ) ?? throw new BadRequestException(ShopErrorCode.InvalidPackage);
+            await context
+                .ShopPackages.AsNoTracking()
+                .FirstOrDefaultAsync(
+                    p => p.IsEnabled && p.Code.ToLower() == normalizedCode.ToLower(),
+                    cancellationToken
+                )
+            ?? throw new BadRequestException(ShopErrorCode.InvalidPackage);
 
         var orderCode = GenerateOrderCode();
         var paymentOrder = new PaymentOrder
@@ -38,8 +42,9 @@ public class CreatePaymentCommandHandler(
             UserId = request.UserId,
             OrderCode = orderCode,
             PackageCode = package.Code,
-            AmountVnd = package.PriceVnd,
+            AmountVnd = package.Price,
             RedCoins = package.RedCoins,
+            WhiteCoins = package.WhiteCoins,
             Status = PaymentOrderStatus.Pending,
         };
         context.PaymentOrders.Add(paymentOrder);
@@ -52,7 +57,7 @@ public class CreatePaymentCommandHandler(
                 new CreatePaymentLinkRequest
                 {
                     OrderCode = orderCode,
-                    Amount = package.PriceVnd,
+                    Amount = package.Price,
                     Description = $"Mua {package.RedCoins} xu",
                     ReturnUrl = AppendOrderCode(_payOsSetting.ReturnUrl, orderCode),
                     CancelUrl = AppendOrderCode(_payOsSetting.CancelUrl, orderCode),
@@ -62,7 +67,7 @@ public class CreatePaymentCommandHandler(
                         {
                             Name = $"Goi {package.Code}",
                             Quantity = 1,
-                            Price = package.PriceVnd,
+                            Price = package.Price,
                         },
                     ],
                 },
@@ -86,8 +91,9 @@ public class CreatePaymentCommandHandler(
             orderCode,
             response.CheckoutUrl,
             response.QrCode,
-            package.PriceVnd,
-            package.RedCoins
+            package.Price,
+            package.RedCoins,
+            package.WhiteCoins
         );
     }
 

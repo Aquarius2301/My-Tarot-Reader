@@ -16,6 +16,7 @@ public interface IAppDbContext
     DbSet<Order> Orders { get; set; }
     DbSet<PaymentOrder> PaymentOrders { get; set; }
     DbSet<RefreshToken> RefreshTokens { get; set; }
+    DbSet<ShopPackage> ShopPackages { get; set; }
     DbSet<Streak> Streaks { get; set; }
     DbSet<TarotReading> TarotReadings { get; set; }
     DbSet<User> Users { get; set; }

@@ -132,7 +132,6 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `PayOs:WebhookUrl`                     | Public URL of the payment webhook registered with PayOS                                            | `https://your-api-domain.example/api/shop/webhook/payos`                                         |
 | `PayOs:ReturnUrl`                      | Frontend URL the buyer returns to after a successful payment                                       | `https://your-frontend-domain.example/shop/payment/result`                                       |
 | `PayOs:CancelUrl`                      | Frontend URL the buyer returns to after cancelling a payment                                       | `https://your-frontend-domain.example/shop/payment/cancel`                                       |
-| `Shop:Packages`                        | Purchasable red-coin packages `{ Code, RedCoins, PriceVnd }`                                       | `[ { "Code": "pack-10", "RedCoins": 10, "PriceVnd": 10000 } ]`                                   |
 
 When the `PayOs` settings values are left empty, the PayOS client falls back to the `PAYOS_CLIENT_ID`, `PAYOS_API_KEY`, `PAYOS_CHECKSUM_KEY` and `PAYOS_PARTNER_CODE` environment variables.
 
@@ -240,13 +239,6 @@ Delete the `A__B` variables the file replaces in the same save, so the service n
     "WebhookUrl": "https://your-api-domain.example/api/shop/webhook/payos",
     "ReturnUrl": "https://your-frontend-domain.example/shop/payment/result",
     "CancelUrl": "https://your-frontend-domain.example/shop/payment/cancel"
-  },
-  "Shop": {
-    "Packages": [
-      { "Code": "pack-10", "RedCoins": 10, "PriceVnd": 10000 },
-      { "Code": "pack-30", "RedCoins": 30, "PriceVnd": 27000 },
-      { "Code": "pack-50", "RedCoins": 50, "PriceVnd": 40000 }
-    ]
   }
 }
 ```

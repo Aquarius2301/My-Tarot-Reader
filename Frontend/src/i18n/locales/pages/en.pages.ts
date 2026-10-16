@@ -384,6 +384,9 @@ export const enPages = {
         "Buy red coins with PayOS to unlock more Tarot readings and AI spreads.",
       empty: "No packages available right now",
       packageRedCoins: "red coins",
+      packageWhiteCoins: "bonus white coins",
+      discountBadge: "{{percent}}% OFF",
+      oldPriceLabel: "Original price",
       buyButton: "Buy",
       checkoutTitle: "Checkout",
       checkoutSubtitle:
@@ -393,6 +396,7 @@ export const enPages = {
         "Scan the QR code with your banking app, or open the PayOS checkout page to complete the payment.",
       amountLabel: "Amount",
       redCoinsLabel: "Red coins",
+      whiteCoinsLabel: "Bonus white coins",
       orderCodeLabel: "Order code",
       qrTitle: "Scan to pay",
       qrAlt: "Payment QR code",
@@ -404,6 +408,8 @@ export const enPages = {
       paidTitle: "Payment successful",
       paidSubtitle:
         "{{redCoins}} red coins have been added to your wallet.",
+      paidSubtitleBonus:
+        "{{redCoins}} red coins and {{whiteCoins}} bonus white coins have been added to your wallet.",
       paidAt: "Paid at {{time}}",
       goWallet: "Go to wallet",
       buyMore: "Buy more",

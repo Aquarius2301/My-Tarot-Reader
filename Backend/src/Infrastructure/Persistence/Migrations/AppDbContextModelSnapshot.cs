@@ -389,6 +389,9 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("WhiteCoins")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderCode")
@@ -401,6 +404,8 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_PaymentOrders_AmountVnd_Positive", "\"AmountVnd\" > 0");
 
                             t.HasCheckConstraint("CK_PaymentOrders_RedCoins_Positive", "\"RedCoins\" > 0");
+
+                            t.HasCheckConstraint("CK_PaymentOrders_WhiteCoins_NonNegative", "\"WhiteCoins\" >= 0");
                         });
                 });
 
@@ -437,6 +442,92 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId", "DeviceFingerprint");
 
                     b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("MyTarotReader.Domain.Entities.ShopPackage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("OldPrice")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RedCoins")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WhiteCoins")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("ShopPackages", t =>
+                        {
+                            t.HasCheckConstraint("CK_ShopPackages_OldPrice_NonNegative", "\"OldPrice\" >= 0");
+
+                            t.HasCheckConstraint("CK_ShopPackages_Price_Positive", "\"Price\" > 0");
+
+                            t.HasCheckConstraint("CK_ShopPackages_RedCoins_NonNegative", "\"RedCoins\" >= 0");
+
+                            t.HasCheckConstraint("CK_ShopPackages_WhiteCoins_NonNegative", "\"WhiteCoins\" >= 0");
+                        });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555551"),
+                            Code = "pack-10",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsEnabled = true,
+                            OldPrice = 10000,
+                            Price = 10000,
+                            RedCoins = 10,
+                            WhiteCoins = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555552"),
+                            Code = "pack-30",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsEnabled = true,
+                            OldPrice = 27000,
+                            Price = 27000,
+                            RedCoins = 30,
+                            WhiteCoins = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555553"),
+                            Code = "pack-50",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsEnabled = true,
+                            OldPrice = 40000,
+                            Price = 40000,
+                            RedCoins = 50,
+                            WhiteCoins = 0
+                        });
                 });
 
             modelBuilder.Entity("MyTarotReader.Domain.Entities.Streak", b =>

@@ -37,6 +37,7 @@ public class GetOrderStatusQueryHandler(
             ToStatusString(order.Status),
             order.AmountVnd,
             order.RedCoins,
+            order.WhiteCoins,
             order.PaidAt
         );
     }
@@ -59,6 +60,7 @@ public class GetOrderStatusQueryHandler(
                 PackageCode = o.PackageCode,
                 AmountVnd = o.AmountVnd,
                 RedCoins = o.RedCoins,
+                WhiteCoins = o.WhiteCoins,
                 Status = o.Status,
                 PaidAt = o.PaidAt,
             })
@@ -143,7 +145,7 @@ public class GetOrderStatusQueryHandler(
 
     /// <summary>
     /// Marks a pending order as paid (guarded by a conditional update so concurrent
-    /// webhook/polling deliveries credit the coins exactly once) and credits the red coins.
+    /// webhook/polling deliveries credit the coins exactly once) and credits the coins.
     /// </summary>
     /// <returns><c>true</c> when this call claimed the order and credited the coins.</returns>
     private async Task<bool> FinalizePaidOrderAsync(
@@ -175,7 +177,7 @@ public class GetOrderStatusQueryHandler(
         await walletService.AddCoinsAsync(
             order.UserId,
             order.RedCoins,
-            0,
+            order.WhiteCoins,
             OrderType.TopUp,
             cancellationToken
         );

@@ -12,6 +12,7 @@ public record GetOrderStatusQuery(Guid Id, Guid UserId) : IRequest<GetOrderStatu
 /// <param name="Status">One of: <c>pending</c>, <c>paid</c>, <c>cancelled</c>, <c>expired</c>, <c>failed</c>.</param>
 /// <param name="AmountVnd">The order price in VND.</param>
 /// <param name="RedCoins">The number of red coins granted on payment.</param>
+/// <param name="WhiteCoins">The number of bonus white coins granted on payment.</param>
 /// <param name="PaidAt">The time the payment was confirmed, or <c>null</c> while unpaid.</param>
 public record GetOrderStatusResult(
     Guid Id,
@@ -19,5 +20,6 @@ public record GetOrderStatusResult(
     string Status,
     int AmountVnd,
     int RedCoins,
+    int WhiteCoins,
     DateTimeOffset? PaidAt
 );

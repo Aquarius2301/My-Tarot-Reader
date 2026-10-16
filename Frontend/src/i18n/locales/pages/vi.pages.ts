@@ -384,6 +384,9 @@ export const viPages = {
         "Mua xu đỏ qua PayOS để mở khóa thêm các lượt trải bài Tarot và trải AI.",
       empty: "Hiện chưa có gói nào để mua",
       packageRedCoins: "xu đỏ",
+      packageWhiteCoins: "xu trắng thưởng",
+      discountBadge: "GIẢM {{percent}}%",
+      oldPriceLabel: "Giá gốc",
       buyButton: "Mua",
       checkoutTitle: "Thanh toán",
       checkoutSubtitle:
@@ -393,6 +396,7 @@ export const viPages = {
         "Quét mã QR bằng ứng dụng ngân hàng, hoặc mở trang thanh toán PayOS để hoàn tất.",
       amountLabel: "Số tiền",
       redCoinsLabel: "Xu đỏ",
+      whiteCoinsLabel: "Xu trắng thưởng",
       orderCodeLabel: "Mã đơn hàng",
       qrTitle: "Quét mã để thanh toán",
       qrAlt: "Mã QR thanh toán",
@@ -403,6 +407,8 @@ export const viPages = {
         "Hãy giữ tab này khi đang thanh toán \u2014 trạng thái đơn hàng sẽ tự làm mới.",
       paidTitle: "Thanh toán thành công",
       paidSubtitle: "{{redCoins}} xu đỏ đã được cộng vào ví của bạn.",
+      paidSubtitleBonus:
+        "{{redCoins}} xu đỏ và {{whiteCoins}} xu trắng thưởng đã được cộng vào ví của bạn.",
       paidAt: "Đã thanh toán lúc {{time}}",
       goWallet: "Đi tới ví",
       buyMore: "Mua thêm",

@@ -154,7 +154,7 @@ public class CreateAiTarotReadingCommandHandlerTests
         // Assert
         var entity = db.AITarotReadings.Should().ContainSingle().Subject;
         entity.Id.Should().NotBeEmpty();
-        result.Should().Be(entity.Id);
+        result.Id.Should().Be(entity.Id);
         entity.UserId.Should().Be(userId);
         entity.Title.Should().Be("Tình yêu sắp tới");
         entity.CardCount.Should().Be(3);
