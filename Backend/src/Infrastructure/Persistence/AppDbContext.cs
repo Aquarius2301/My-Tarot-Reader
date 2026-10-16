@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using MyTarotReader.Application.Contracts.Persistence;
+using MyTarotReader.Application.Persistence;
 using MyTarotReader.Domain.Entities;
 using MyTarotReader.Infrastructure.Persistence.Configurations;
 
@@ -9,14 +9,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     : DbContext(options),
         IAppDbContext
 {
-    public DbSet<AIChatMessage> AIChatMessages { get; set; } = null!;
-    public DbSet<AIChatTarotReading> AIChatTarotReadings { get; set; } = null!;
     public DbSet<AIDeepTarotReading> AIDeepTarotReadings { get; set; } = null!;
     public DbSet<AITarotReading> AITarotReadings { get; set; } = null!;
+    public DbSet<AITarotReadingCount> AITarotReadingCounts { get; set; } = null!;
+    public DbSet<AiTarotReadingType> AITarotReadingTypes { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
-    public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
+
+    // public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
     public DbSet<PaymentOrder> PaymentOrders { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    public DbSet<ShopPackage> ShopPackages { get; set; } = null!;
     public DbSet<Streak> Streaks { get; set; } = null!;
     public DbSet<TarotReading> TarotReadings { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
@@ -27,14 +29,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfiguration(new AIChatMessageConfiguration());
-        modelBuilder.ApplyConfiguration(new AIChatTarotReadingConfiguration());
         modelBuilder.ApplyConfiguration(new AIDeepTarotReadingConfiguration());
         modelBuilder.ApplyConfiguration(new AITarotReadingConfiguration());
+        modelBuilder.ApplyConfiguration(new AITarotReadingCountConfiguration());
+        modelBuilder.ApplyConfiguration(new AiTarotReadingTypeConfiguration());
         modelBuilder.ApplyConfiguration(new OrderConfiguration());
-        modelBuilder.ApplyConfiguration(new OrderDetailConfiguration());
+        // modelBuilder.ApplyConfiguration(new OrderDetailConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentOrderConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+        modelBuilder.ApplyConfiguration(new ShopPackageConfiguration());
         modelBuilder.ApplyConfiguration(new StreakConfiguration());
         modelBuilder.ApplyConfiguration(new TarotReadingConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());

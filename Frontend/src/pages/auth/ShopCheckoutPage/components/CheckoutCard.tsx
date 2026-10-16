@@ -44,7 +44,8 @@ const FAILED_STATUS_KEY: Record<
 /**
  * Renders a payment order according to its status: a pending state with the
  * PayOS QR + checkout link and a live poll, a success result crediting the
- * red coins, or a failure result with a way back to the shop.
+ * red coins (plus bonus white coins when any), or a failure result with a way
+ * back to the shop.
  */
 export default function CheckoutCard({
   order,
@@ -67,7 +68,12 @@ export default function CheckoutCard({
       <Result
         status="success"
         title={t("page.shop.paidTitle")}
-        subTitle={t("page.shop.paidSubtitle", { redCoins: order.redCoins })}
+        subTitle={t(
+          order.whiteCoins > 0
+            ? "page.shop.paidSubtitleBonus"
+            : "page.shop.paidSubtitle",
+          { redCoins: order.redCoins, whiteCoins: order.whiteCoins },
+        )}
         extra={
           <Space>
             <Button type="primary" onClick={() => navigate(WEB_URL.wallet)}>
@@ -152,6 +158,17 @@ export default function CheckoutCard({
                 <Text strong>{order.redCoins}</Text>
               </Space>
             </Space>
+            {order.whiteCoins > 0 && (
+              <Space size={8}>
+                <Text type="secondary">
+                  {t("page.shop.whiteCoinsLabel")}:
+                </Text>
+                <Space size={4}>
+                  <CoinIcon variant="white" size={16} />
+                  <Text strong>{order.whiteCoins}</Text>
+                </Space>
+              </Space>
+            )}
             <Space size={8}>
               <Text type="secondary">{t("page.shop.orderCodeLabel")}:</Text>
               <Text>{order.orderCode}</Text>

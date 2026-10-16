@@ -17,6 +17,7 @@ public class PaymentOrderConfiguration : IEntityTypeConfiguration<PaymentOrder>
         builder.Property(x => x.PackageCode).IsRequired().HasMaxLength(50);
         builder.Property(x => x.AmountVnd).IsRequired();
         builder.Property(x => x.RedCoins).IsRequired();
+        builder.Property(x => x.WhiteCoins).IsRequired();
         builder.Property(x => x.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.PayOsPaymentLinkId).HasMaxLength(100);
         builder.Property(x => x.PayOsTransactionReference).HasMaxLength(100);
@@ -31,6 +32,12 @@ public class PaymentOrderConfiguration : IEntityTypeConfiguration<PaymentOrder>
             t.HasCheckConstraint(
                 name: "CK_PaymentOrders_RedCoins_Positive",
                 sql: "\"RedCoins\" > 0"
+            )
+        );
+        builder.ToTable(t =>
+            t.HasCheckConstraint(
+                name: "CK_PaymentOrders_WhiteCoins_NonNegative",
+                sql: "\"WhiteCoins\" >= 0"
             )
         );
 

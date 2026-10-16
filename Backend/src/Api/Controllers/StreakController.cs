@@ -1,18 +1,17 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyTarotReader.Api.Helpers;
 using MyTarotReader.Application.Common.Models;
-using MyTarotReader.Application.Contracts.Services;
+using MyTarotReader.Application.Features.Streak;
 
 namespace MyTarotReader.Api.Controllers;
 
 [Route("api/streak")]
 [ApiController]
 [ProducesErrorResponseType(typeof(ApiResponse<object>))]
-public class StreakController(IStreakService service) : ControllerBase
+public class StreakController(IMediator mediator) : ControllerBase
 {
-    private readonly IStreakService _service = service;
-
     /// <summary>
     /// Retrieves the current streak information for the authenticated user.
     /// </summary>
@@ -29,7 +28,7 @@ public class StreakController(IStreakService service) : ControllerBase
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        var result = await _service.GetStreakAsync(userId, cancellationToken);
+        var result = await mediator.Send(new GetStreakQuery(userId), cancellationToken);
         return Ok(ApiResponse.Success(result));
     }
 
@@ -51,7 +50,7 @@ public class StreakController(IStreakService service) : ControllerBase
     {
         var userId = JwtHelper.GetUserId(HttpContext);
 
-        await _service.CheckInAsync(userId, cancellationToken);
+        await mediator.Send(new CheckInCommand(userId), cancellationToken);
         return Ok(ApiResponse.Success());
     }
 }

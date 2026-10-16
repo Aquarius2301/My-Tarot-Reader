@@ -20,6 +20,9 @@ public class PaymentOrder : BaseEntity
     /// <summary> The number of red coins granted when the order is paid. </summary>
     public int RedCoins { get; set; }
 
+    /// <summary> The number of bonus white coins granted when the order is paid. </summary>
+    public int WhiteCoins { get; set; }
+
     public PaymentOrderStatus Status { get; set; }
 
     /// <summary> The PayOS payment link id, set after the payment link is created. </summary>

@@ -66,21 +66,6 @@ export const enPages = {
       continue: "Continue",
       back: "Back",
       saving: "Creating your AI reading…",
-      position: {
-        coreEnergy: "Core energy",
-        challenges: "Challenges / obstacles",
-        outcome: "Outcome / advice",
-        yourStrength: "Your strength",
-        future: "Future",
-        hiddenInfluences: "Hidden influences",
-        wayToFace: "The way to face it",
-        focus: "What to focus on",
-        past: "Past",
-        nearFuture: "Near future",
-        approach: "Suggested approach",
-        needToKnow: "What you need to know",
-        hopesFears: "Hopes / fears",
-      },
       result: {
         title: "Reading result",
         overview: "Overview",
@@ -399,6 +384,9 @@ export const enPages = {
         "Buy red coins with PayOS to unlock more Tarot readings and AI spreads.",
       empty: "No packages available right now",
       packageRedCoins: "red coins",
+      packageWhiteCoins: "bonus white coins",
+      discountBadge: "{{percent}}% OFF",
+      oldPriceLabel: "Original price",
       buyButton: "Buy",
       checkoutTitle: "Checkout",
       checkoutSubtitle:
@@ -408,6 +396,7 @@ export const enPages = {
         "Scan the QR code with your banking app, or open the PayOS checkout page to complete the payment.",
       amountLabel: "Amount",
       redCoinsLabel: "Red coins",
+      whiteCoinsLabel: "Bonus white coins",
       orderCodeLabel: "Order code",
       qrTitle: "Scan to pay",
       qrAlt: "Payment QR code",
@@ -419,6 +408,8 @@ export const enPages = {
       paidTitle: "Payment successful",
       paidSubtitle:
         "{{redCoins}} red coins have been added to your wallet.",
+      paidSubtitleBonus:
+        "{{redCoins}} red coins and {{whiteCoins}} bonus white coins have been added to your wallet.",
       paidAt: "Paid at {{time}}",
       goWallet: "Go to wallet",
       buyMore: "Buy more",

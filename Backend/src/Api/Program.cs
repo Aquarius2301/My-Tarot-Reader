@@ -7,8 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // eagerly while the services are registered.
 var secretFilePath = builder.Configuration.GetSecretFilePath(builder.Environment);
 var secretFileLoaded =
-    secretFilePath is not null
-    && builder.Configuration.AddSecretFileIfExists(secretFilePath);
+    secretFilePath is not null && builder.Configuration.AddSecretFileIfExists(secretFilePath);
 
 builder.Services.AddAllServices(builder.Configuration, builder.Environment);
 builder.Services.AddHealthChecks();

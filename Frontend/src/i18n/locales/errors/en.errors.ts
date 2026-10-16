@@ -19,6 +19,7 @@ export const enErrors = {
       invalidCardCount: "Invalid number of cards.",
       invalidCard: "One or more cards are invalid.",
       invalidLocale: "Unsupported language.",
+      invalidQuestionType: "Unsupported question topic.",
       readingNotFound: "This AI reading was not found.",
       generationFailed: "Could not create the AI reading. Please try again.",
     },

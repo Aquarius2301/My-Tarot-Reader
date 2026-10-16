@@ -28,20 +28,4 @@ public static class PaginationHelper
 
         return (normalizedPage, normalizedPageSize);
     }
-
-    /// <summary>
-    /// Computes the total number of pages for a given total item count and page size.
-    /// </summary>
-    /// <param name="total">The total number of items.</param>
-    /// <param name="pageSize">The number of items per page.</param>
-    /// <returns>The total number of pages, 0 when there are no items.</returns>
-    public static int GetTotalPages(int total, int pageSize)
-    {
-        if (total <= 0 || pageSize <= 0)
-        {
-            return 0;
-        }
-
-        return (int)Math.Ceiling(total / (double)pageSize);
-    }
 }

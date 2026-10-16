@@ -4,7 +4,9 @@ import type { PaymentOrderStatus } from "../enums.types";
 export interface GetPackagesItem {
   code: string;
   redCoins: number;
-  priceVnd: number;
+  whiteCoins: number;
+  oldPrice: number;
+  price: number;
 }
 
 /** Result of listing the purchasable packages. */
@@ -25,6 +27,7 @@ export interface CreatePaymentResult {
   qrCode: string;
   amountVnd: number;
   redCoins: number;
+  whiteCoins: number;
 }
 
 /** Result of querying one of the user's payment orders. */
@@ -34,5 +37,6 @@ export interface GetOrderStatusResult {
   status: PaymentOrderStatus;
   amountVnd: number;
   redCoins: number;
+  whiteCoins: number;
   paidAt: string | null;
 }

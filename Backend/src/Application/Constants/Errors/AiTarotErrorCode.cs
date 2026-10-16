@@ -6,6 +6,7 @@ public class AiTarotErrorCode
 
     public const string InvalidCardCount = $"{Prefix}invalidCardCount";
     public const string InvalidCard = $"{Prefix}invalidCard";
+    public const string InvalidQuestionType = $"{Prefix}invalidQuestionType";
     public const string InvalidLocale = $"{Prefix}invalidLocale";
     public const string ReadingNotFound = $"{Prefix}readingNotFound";
     public const string GenerationFailed = $"{Prefix}generationFailed";

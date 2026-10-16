@@ -1,5 +1,5 @@
 import { ErrorComponent, PaginationBar, TarotCard } from "@/components";
-import { AI_TAROT_CARD_COUNT_BY_VALUE, PAGINATION_PAGE_SIZE } from "@/constants";
+import { PAGINATION_PAGE_SIZE } from "@/constants";
 import { useDeleteAiTarotReading, useGetAllAiTarotReadings } from "@/hooks/api";
 import { WEB_URL } from "@/routes";
 import { convertISOToDate, getErrorMessage } from "@/utils";
@@ -140,7 +140,7 @@ function HistoryAiTarotItem({
 
   const { date, time } = convertISOToDate(item.createdAt, i18n.language);
   const typeLabel = t(`page.aiTarot.questionTypes.${item.type}`);
-  const cardCount = AI_TAROT_CARD_COUNT_BY_VALUE[item.cardCount];
+  const cardCount = item.cardCount;
 
   const openReading = () => navigate(`${WEB_URL.aiTarotResult}/${item.id}`);
 

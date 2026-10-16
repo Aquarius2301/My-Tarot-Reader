@@ -1,12 +1,6 @@
-import {
-  AI_TAROT_CARD_COUNTS,
-  AI_TAROT_COSTS,
-  AI_TAROT_POSITIONS,
-  AI_TAROT_QUESTION_TYPES,
-  type AiTarotCardCount,
-  type AiTarotQuestionType,
-} from "@/constants";
 import { useGetCurrentUser } from "@/hooks/api";
+import { useLanguageStore } from "@/hooks/stores";
+import type { GetAiTarotSettingResult } from "@/types";
 import { Button, Card, Flex, Segmented, Typography, theme } from "antd";
 import { ThunderboltFilled, WalletFilled } from "@ant-design/icons";
 import { useState } from "react";
@@ -15,28 +9,36 @@ import { useTranslation } from "react-i18next";
 const { Text } = Typography;
 
 export interface SelectReadingStepProps {
-  onNext: (
-    cardCount: AiTarotCardCount,
-    questionType: AiTarotQuestionType,
-  ) => void;
+  settings: GetAiTarotSettingResult;
+  onNext: (cardCount: number, questionType: string) => void;
 }
 
 /** Step 1: pick the spread size and question topic before drawing cards. */
 export default function SelectReadingStep({
+  settings,
   onNext,
 }: SelectReadingStepProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
   const { data: user } = useGetCurrentUser();
+  const language = useLanguageStore((s) => s.mode);
 
-  const [cardCount, setCardCount] = useState<AiTarotCardCount>(3);
-  const [questionType, setQuestionType] =
-    useState<AiTarotQuestionType>("energy");
+  const [cardCount, setCardCount] = useState<number>(
+    settings.readingCounts[0]?.cardCount ?? 0,
+  );
+  const [questionType, setQuestionType] = useState<string>(
+    settings.readingTypes[0]?.code ?? "",
+  );
 
-  const cost = AI_TAROT_COSTS[cardCount];
+  const countSetting = settings.readingCounts.find(
+    (item) => item.cardCount === cardCount,
+  );
+  const cost = countSetting?.whiteCoins ?? 0;
   const balance = user?.whiteCoin ?? 0;
   const canAfford = balance >= cost;
-  const positions = AI_TAROT_POSITIONS[cardCount];
+  const positions =
+    (language === "vi" ? countSetting?.positionsVi : countSetting?.positionsEn) ??
+    [];
 
   return (
     <Flex vertical gap={token.marginLG}>
@@ -47,10 +49,12 @@ export default function SelectReadingStep({
             <Segmented
               block
               value={cardCount}
-              onChange={(value) => setCardCount(value as AiTarotCardCount)}
-              options={AI_TAROT_CARD_COUNTS.map((count) => ({
-                label: t("page.aiTarot.cardCountOption", { count }),
-                value: count,
+              onChange={(value) => setCardCount(value as number)}
+              options={settings.readingCounts.map((item) => ({
+                label: t("page.aiTarot.cardCountOption", {
+                  count: item.cardCount,
+                }),
+                value: item.cardCount,
               }))}
               style={{ marginTop: token.marginSM }}
             />
@@ -63,10 +67,10 @@ export default function SelectReadingStep({
               gap={token.marginXS}
               style={{ marginTop: token.marginSM }}
             >
-              {positions.map((positionKey, index) => (
-                <Flex key={positionKey} gap={token.marginSM} align="baseline">
+              {positions.map((position, index) => (
+                <Flex key={index} gap={token.marginSM} align="baseline">
                   <Text type="secondary">{index + 1}.</Text>
-                  <Text>{t(`page.aiTarot.position.${positionKey}`)}</Text>
+                  <Text>{position}</Text>
                 </Flex>
               ))}
             </Flex>
@@ -79,10 +83,10 @@ export default function SelectReadingStep({
         <Segmented
           block
           value={questionType}
-          onChange={(value) => setQuestionType(value as AiTarotQuestionType)}
-          options={AI_TAROT_QUESTION_TYPES.map((type) => ({
-            label: t(`page.aiTarot.questionTypes.${type}`),
-            value: type,
+          onChange={(value) => setQuestionType(value as string)}
+          options={settings.readingTypes.map((type) => ({
+            label: language === "vi" ? type.nameVi : type.nameEn,
+            value: type.code,
           }))}
           style={{ marginTop: token.marginSM }}
         />

@@ -1,6 +1,6 @@
-# Backend
+# Backend (CQRS)
 
-ASP.NET Core 8 Web API for **My Tarot Reader**, built with Clean Architecture. It serves the tarot draw flows (guest + authenticated), the daily check-in streak & coin economy, Google OAuth, and AI tarot readings — both the single-spread flow and the multi-card deep spreads (12 astrological houses, 12 months, crossroads).
+ASP.NET Core 8 Web API for **My Tarot Reader**, built with Clean Architecture and a CQRS request pipeline (MediatR). It serves the tarot draw flows (guest + authenticated), the daily check-in streak & coin economy, Google OAuth, the red-coin shop (PayOS), and AI tarot readings — both the single-spread flow and the multi-card deep spreads (12 astrological houses, 12 months, crossroads).
 
 ## Requirements
 
@@ -10,10 +10,11 @@ ASP.NET Core 8 Web API for **My Tarot Reader**, built with Clean Architecture. I
 - **Google OAuth credentials** (Client ID) — required for Google login
 - **Google Gemini API key** — required for AI tarot readings
 - **Resend API key** — optional, used for the transactional welcome email
+- **PayOS credentials** — optional, used by the red-coin shop
 
 ## Architecture
 
-Clean Architecture; dependencies point only inwards (toward Domain):
+Clean Architecture with a CQRS application layer; dependencies point only inwards (toward Domain):
 
 ```
 Api -> Infrastructure -> Application -> Domain
@@ -21,41 +22,43 @@ Api -> Application -> Domain
 ```
 
 ```
-Backend
+BackendCQRS
 ├── dockerfile
 ├── .dockerignore         # keeps local bin/obj out of the image (see dockerfile: COPY . .)
 ├── MyTarotReader.sln
 ├── scripts/              # run-local, clean-build, add-migration, update-database (.sh + .cmd)
 ├── src/
 │   ├── Api/
-│   │   ├── Controllers/  # one controller per domain
-│   │   ├── Extensions/   # DI wiring (dependencies, CORS, Redis, Swagger, settings file)
+│   │   ├── Controllers/  # one controller per domain; every action dispatches through IMediator
+│   │   ├── Extensions/   # DI wiring (dependencies, CORS, Redis, Swagger, settings file, controllers)
 │   │   ├── Helpers/      # CookieHelper, JwtHelper, [DevelopmentOnly] attribute + controller convention
 │   │   ├── Middlewares/  # GlobalExceptionMiddleware, request/response logging
 │   │   ├── Properties/   # launchSettings.json
 │   │   └── Program.cs, appsettings.json
 │   ├── Application/
-│   │   ├── Common/       # ApiResponse<T>, exceptions, validators (ValidationHelper), helpers (StreakHelper, ReadingInputGuard)
-│   │   ├── Constants/    # errors/ (error.<domain>.<camelCase>) + tarot/ (TarotConstant, DeepTarotConstant)
-│   │   ├── Contracts/    # services, persistence, backgrounds/, common/
-│   │   ├── Models/       # <Fn>Request / <Fn>Result records
-│   │   ├── Settings/     # Jwt, Wallet, Streak, Gemini, Email, DevAuth, TokenCleanup
-│   │   └── Validators/   # FluentValidation validators
+│   │   ├── Features/     # <Domain>/{Commands,Queries}/<Feature>/ — request + handler + validator
+│   │   ├── Backgrounds/  # EmailBackground, TokenCleanupBackground, PayOsWebhookConfirmBackground (hosted services)
+│   │   ├── Services/     # I<N>Service service interfaces
+│   │   ├── Persistence/  # IAppDbContext (the EF Core seam handlers depend on)
+│   │   ├── Common/       # Behaviors/ (ValidationBehavior), Exceptions/ (BaseException), Helpers/ (StreakHelper, ReadingInputGuard, PaginationHelper), Models/ (ApiResponse<T>)
+│   │   ├── Constants/    # errors/ (error.<domain>.<camelCase>) + tarot/ (TarotConstant, DeepTarotConstant) + shop/
+│   │   └── Settings/     # Jwt, Google, Gemini, AiTarot, Wallet, Streak, Email, DevAuth, TokenCleanup, PayOs, Shop
 │   ├── Domain/           # entities, enums, common — pure C#, no EF Core
 │   └── Infrastructure/
-│       ├── Backgrounds/  # EmailBackgroundQueue + Worker, TokenCleanupWorker (hosted services)
-│       ├── Common/       # GeminiClient, GeminiThinkingLevelCatalog, EmailSender, templates
+│       ├── Services/     # concrete I<N>Service implementations
+│       ├── Helpers/      # GeminiThinkingCatalogHelper
 │       ├── Persistence/  # AppDbContext, Configurations/ (IEntityTypeConfiguration), migrations
-│       └── Services/     # concrete I<N>Service implementations
+│       └── Templates/    # Welcome/ transactional email template
 └── test/
     └── UnitTest/         # xUnit + Moq + EF Core InMemory + FluentAssertions
+        ├── Features/     # command/query handler + validator tests
         └── Backgrounds/  # worker + queue tests
 ```
 
-- **Domain** — entities (`User`, `TarotReading`, `AIDeepTarotReading`, `Streak`, `Wallet`, `Order`, `RefreshToken`, ...), enums (`UserRole`, `QuestionType`, `CardCount`, `CrossroadsTimeFrame`, ...). No EF Core.
-- **Application** — service interfaces, DTO records (`<Fn>Request` / `<Fn>Result`), settings classes, error codes, `ApiResponse<T>`, FluentValidation validators. No EF Core implementation.
-- **Infrastructure** — `AppDbContext`, entity configurations, migrations, concrete services, hosted background workers, JWT generator, Google auth validator, email handler, AI tarot client.
-- **Api** — controllers (one per domain), DI wiring, `GlobalExceptionMiddleware`, `Program.cs`.
+- **Domain** — entities (`User`, `TarotReading`, `AIDeepTarotReading`, `Streak`, `Wallet`, `Order`, `RefreshToken`, ...), enums (`UserRole`, `QuestionType`, `CardCount`, `CrossroadsTimeFrame`, `DeepTarotTopic`, ...). No EF Core.
+- **Application** — the CQRS core: one handler per use case, grouped as `Features/<Domain>/{Commands,Queries}/<Feature>/`, each with its request record, handler and FluentValidation validator. Also holds `IAppDbContext`, service interfaces, DTO records, settings classes, error codes and `ApiResponse<T>`. Owns the EF Core, Redis, payOS and MediatR dependencies; contains no concrete service implementations.
+- **Infrastructure** — `AppDbContext`, entity configurations, migrations, concrete services, JWT generator, Google auth validator, email handler, AI tarot client and the email template.
+- **Api** — controllers (one per domain, thin: validate input → `IMediator.Send(...)` → wrap the result in `ApiResponse<T>`), DI wiring, `GlobalExceptionMiddleware`, `Program.cs`.
 
 ### Dependencies
 
@@ -68,14 +71,16 @@ Target framework: `net8.0` for all five projects.
 | Api | `Microsoft.EntityFrameworkCore.Design` (design-time only) | 8.0.11 |
 | Api | `Swashbuckle.AspNetCore` | 6.6.2 |
 | Application | `FluentValidation.AspNetCore` | 11.3.1 |
+| Application | `MediatR` | 12.5.0 |
 | Application | `Microsoft.EntityFrameworkCore` | 8.0.11 |
 | Application | `Microsoft.Extensions.Configuration.Abstractions` | 8.0.0 |
+| Application | `Microsoft.Extensions.Hosting.Abstractions` | 8.0.1 |
+| Application | `Npgsql.EntityFrameworkCore.PostgreSQL` | 8.0.11 |
+| Application | `payOS` | 2.1.0 |
+| Application | `StackExchange.Redis` | 2.8.0 |
 | Domain | _(none — pure C#)_ | |
-| Infrastructure | `Microsoft.Extensions.Hosting.Abstractions` | 8.0.1 |
-| Infrastructure | `Microsoft.IdentityModel.Tokens` | 8.22.0 |
-| Infrastructure | `Npgsql.EntityFrameworkCore.PostgreSQL` | 8.0.11 |
 | Infrastructure | `Google.Apis.Auth` | 1.76.0 |
-| Infrastructure | `StackExchange.Redis` | 2.8.0 |
+| Infrastructure | `Microsoft.IdentityModel.Tokens` | 8.22.0 |
 | Infrastructure | `System.IdentityModel.Tokens.Jwt` | 8.22.0 |
 | UnitTest | `Microsoft.NET.Test.Sdk` | 17.14.1 |
 | UnitTest | `xunit` / `xunit.runner.visualstudio` | 2.9.3 / 2.8.2 |
@@ -97,7 +102,7 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `DevAuth:ProviderKey`                  | Provider key identifying the seeded dev-only user; looked up on every dev login                   | `dev-swagger`                                                                                    |
 | `DevAuth:Email`                        | Email of the seeded dev-only user                                                                  | `dev@my-tarot-reader.local`                                                                      |
 | `DevAuth:FullName`                     | Display name of the seeded dev-only user                                                             | `Swagger Dev User`                                                                                |
-| `DevAuth:InitialWhiteCoins`            | White coins granted when the dev user's row is first created                                        | `1000`                                                                                            |
+| `DevAuth:InitialWhiteCoins`            | White coins granted when the dev user's row is first created                                        | `1000`                                                                                           |
 | `DevAuth:WhiteCoinExpireDays`          | Expiry in days of the dev user's initial white coin batch                                           | `365`                                                                                             |
 | `DevAuth:DefaultDeviceFingerprint`     | Fingerprint used when the request carries no `X-Device-Id`                                         | `swagger-dev`                                                                                     |
 | `Gemini:Apis`                          | Ordered list of Gemini API keys, tried from the first one on every call                            | `[ "KEY1", "KEY2" ]`                                                                             |
@@ -119,6 +124,16 @@ Configuration lives in `src/Api/appsettings.json` (placeholders in the repo — 
 | `Email:ApiKey`                         | Resend API key — secret, never committed                                                           | `re_YOUR_API_KEY`                                                                                |
 | `Email:Endpoint`                       | Resend API base URL                                                                                | `https://api.resend.com`                                                                         |
 | `Email:FromAddress` / `Email:FromName` | Sender identity (the domain must be verified in Resend)                                            | `you@your-domain.com` / `My Tarot Reader`                                                        |
+| `PayOs:ClientId`                       | PayOS client id — secret, never committed                                                          | `YOUR_PAYOS_CLIENT_ID`                                                                           |
+| `PayOs:ApiKey`                         | PayOS api key — secret, never committed                                                            | `YOUR_PAYOS_API_KEY`                                                                             |
+| `PayOs:ChecksumKey`                    | PayOS checksum key (signs requests, verifies webhooks) — secret, never committed                   | `YOUR_PAYOS_CHECKSUM_KEY`                                                                        |
+| `PayOs:PartnerCode`                    | Optional PayOS partner code                                                                        | `""`                                                                                             |
+| `PayOs:BaseUrl`                        | Base URL of the PayOS merchant API                                                                 | `https://api-merchant.payos.vn`                                                                  |
+| `PayOs:WebhookUrl`                     | Public URL of the payment webhook registered with PayOS                                            | `https://your-api-domain.example/api/shop/webhook/payos`                                         |
+| `PayOs:ReturnUrl`                      | Frontend URL the buyer returns to after a successful payment                                       | `https://your-frontend-domain.example/shop/payment/result`                                       |
+| `PayOs:CancelUrl`                      | Frontend URL the buyer returns to after cancelling a payment                                       | `https://your-frontend-domain.example/shop/payment/cancel`                                       |
+
+When the `PayOs` settings values are left empty, the PayOS client falls back to the `PAYOS_CLIENT_ID`, `PAYOS_API_KEY`, `PAYOS_CHECKSUM_KEY` and `PAYOS_PARTNER_CODE` environment variables.
 
 `Gemini:Apis` and `Gemini:Models` are arrays, so on Render (or any env-var platform) set one variable per entry using the `__` separator and a numeric index (these override `appsettings.json`):
 
@@ -153,7 +168,7 @@ Once the attempts of a pair are used up, the next pair depends on the failure:
 | `401` / `403` (api key rejected)              | no                 | next **api**, same model |
 | `200` with an empty or unreadable body        | no                 | next **model**, same api |
 
-`thinking-level` is only sent when the model accepts it: `GeminiThinkingLevelCatalog` (`src/Infrastructure/Common/`) lists the levels of each model, and anything unsupported (including the 2.5 series, which only takes `thinkingBudget`) is left out so the call falls back to the model default instead of failing with a `400`.
+`thinking-level` is only sent when the model accepts it: `GeminiThinkingCatalogHelper` (`src/Infrastructure/Helpers/`) lists the levels of each model, and anything unsupported (including the 2.5 series, which only takes `thinkingBudget`) is left out so the call falls back to the model default instead of failing with a `400`.
 
 Welcome emails are delivered through the **Resend HTTPS API** (`POST https://api.resend.com/emails`, bearer `Email:ApiKey`) rather than Resend's SMTP endpoint. Render's free tier blocks outbound traffic to the SMTP ports `25`, `465` and `587`, so an SMTP client times out on connect there; HTTPS on port `443` is unaffected.
 
@@ -214,6 +229,16 @@ Delete the `A__B` variables the file replaces in the same save, so the service n
     "Endpoint": "https://api.resend.com",
     "FromAddress": "noreply@your-domain.com",
     "FromName": "My Tarot Reader"
+  },
+  "PayOs": {
+    "ClientId": "YOUR_PAYOS_CLIENT_ID",
+    "ApiKey": "YOUR_PAYOS_API_KEY",
+    "ChecksumKey": "YOUR_PAYOS_CHECKSUM_KEY",
+    "PartnerCode": "",
+    "BaseUrl": "https://api-merchant.payos.vn",
+    "WebhookUrl": "https://your-api-domain.example/api/shop/webhook/payos",
+    "ReturnUrl": "https://your-frontend-domain.example/shop/payment/result",
+    "CancelUrl": "https://your-frontend-domain.example/shop/payment/cancel"
   }
 }
 ```
@@ -232,7 +257,7 @@ Priority order, highest first:
 
 A key that the file does not mention still comes from the sources below it, so settings can be migrated to the file one by one. On startup the app logs whether the file was loaded — `Loaded secret settings from …` or `No secret settings file at …`, so a missing or misnamed file is never a silent fallback.
 
-The path can be changed with the `SETTINGS_FILE` environment variable, which also makes the file testable locally. This is the one documented exception to the "always go through `Backend/scripts/*`" rule, because the scripts do not forward extra environment variables:
+The path can be changed with the `SETTINGS_FILE` environment variable, which also makes the file testable locally. This is the one documented exception to the "always go through `BackendCQRS/scripts/*`" rule, because the scripts do not forward extra environment variables:
 
 ```bash
 SETTINGS_FILE=./appsettings.Production.json ASPNETCORE_ENVIRONMENT=Production dotnet run --project src/Api
@@ -244,7 +269,7 @@ SETTINGS_FILE=./appsettings.Production.json ASPNETCORE_ENVIRONMENT=Production do
 
 Before the first production deploy:
 
-- Configure the Render Docker service with **Root Directory = `Backend`** and use `/health` as the health-check path.
+- Configure the Render Docker service with **Root Directory = `BackendCQRS`** and use `/health` as the health-check path.
 - Verify the service port matches the port used by the ASP.NET container. `EXPOSE` in `dockerfile` is documentation only; it does not choose the port the process listens on.
 - Render terminates TLS at its proxy. The app calls `UseHttpsRedirection` but configures **no** forwarded-header handling — there is no `UseForwardedHeaders` or `ForwardedHeadersOptions` anywhere in the codebase — so the process cannot tell that the original request already arrived over HTTPS. When an HTTPS port can be resolved the middleware answers with a `307` to `https://`, and because it runs before routing this also hits `/health`, which can loop through the proxy. Treat this as a gap in the code, not only a dashboard setting: either add forwarded-header handling, or confirm the middleware stays inert (it logs a warning and does nothing when no HTTPS port is resolvable) before trusting the health check.
 - Apply EF Core migrations against the production PostgreSQL database before serving traffic. The API does not automatically migrate the database at startup.
@@ -252,7 +277,7 @@ Before the first production deploy:
 
 ## Install & Run
 
-> Always use the scripts in `Backend/scripts/` — never raw `dotnet run` / `dotnet ef`.
+> Always use the scripts in `BackendCQRS/scripts/` — never raw `dotnet run` / `dotnet ef`.
 
 ```bash
 # 1. Apply EF Core migrations (requires PostgreSQL running)
@@ -267,8 +292,8 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 ## API
 
 - **Swagger:** `/swagger` (Dev environment only; production builds reference the contract via controllers). `Swashbuckle.AspNetCore` is a normal, non-`PrivateAssets` reference and `AddSwaggerGen` runs in **every** environment — only the `UseSwagger()` / `UseSwaggerUI()` middleware is gated to Development, so the OpenAPI document can still be generated from a production build.
-- **Response envelope:** service results are always `ApiResponse<T>: { success, message, data }`. Reads return `200 OK` with the payload in `data`. Writes (`POST`/`PUT`/`DELETE`) normally return `200 OK` with `data = null` — except the routes that create and return a resource (`POST api/aiTarot`, the three `POST api/aiDeepTarot/*` spreads and `POST api/dev/auth/token`), which return the created reading (or token) in `data`. The one place the envelope does not apply is `[ApiController]` model-binding failures: no `InvalidModelStateResponseFactory` is registered, so a missing or malformed request body returns ASP.NET Core's RFC 7807 `ValidationProblemDetails` instead.
-- **Errors:** service-thrown failures are `BaseException` subtypes (`BadRequestException`, `ValidationException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `InternalServerException`) mapped by `GlobalExceptionMiddleware` to the envelope with i18n error keys (`error.<domain>.<camelCase>`). Two further branches are not exception types: a client disconnect becomes HTTP `499` with `error.system.requestAborted`, and any non-app exception becomes HTTP `500` with `error.system.internalServerError`.
+- **Response envelope:** controller results are always `ApiResponse<T>: { success, message, data }`. Reads return `200 OK` with the payload in `data`. Writes (`POST`/`PUT`/`DELETE`) normally return `200 OK` with `data = null` — except the routes that create and return a resource (`POST api/aiTarot`, the three `POST api/aiDeepTarot/*` spreads, `POST api/dev/auth/token` and `POST api/shop/orders`), which return the created reading (or token/payment) in `data`. Two endpoints sit outside the envelope by design: the PayOS webhook (`POST api/shop/webhook/payos`) replies with PayOS's own acknowledgement object, and `[ApiController]` model-binding failures return ASP.NET Core's RFC 7807 `ValidationProblemDetails` (no `InvalidModelStateResponseFactory` is registered).
+- **Errors:** handler-thrown failures are `BaseException` subtypes (`BadRequestException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `InternalServerException`) mapped by `GlobalExceptionMiddleware` to the envelope with i18n error keys (`error.<domain>.<camelCase>`). Request validation runs in the MediatR `ValidationBehavior` pipeline, which throws a `BadRequestException` carrying the field errors in `data` (`{ key, value }`) for per-field display. Two further branches are not exception types: a client disconnect becomes HTTP `499` with `error.system.requestAborted`, and any non-app exception becomes HTTP `500` with `error.system.internalServerError`.
 - **Authentication:** JWT in **HttpOnly cookies** (`accessToken`, `refreshToken`); refresh tokens are rotated on every refresh and bound to the device fingerprint sent in the `X-Device-Id` header. Guest flows use Redis for draw cooldowns. An `Authorization: Bearer <token>` header is also honoured, and takes precedence over the cookie — that is what Swagger's **Authorize** button uses.
 - **Health:** `/health` returns `200 OK` in every environment and bypasses the frontend CORS policy (separate `HealthCors` policy allows any origin). Point Render's health-check / wake-up URL at `https://<api>/health`.
 - **Coins:** AI tarot readings spend **white** coins (`AiTarot:Costs`, drained FIFO from the oldest active `WhiteCoinBatch`). Deep tarot readings spend **red** coins instead — the cost is hardcoded per topic in `DeepTarotConstant` (`TwelveHouses` = 3, `TwelveMonths` = 3). The red balance is checked before Gemini is called and charged only once the answer has been generated; a shortfall returns `error.wallet.insufficientRedCoin` (400).
@@ -298,11 +323,15 @@ The API runs at **http://localhost:5271** and Swagger UI at **http://localhost:5
 | `GET`          | `api/aiDeepTarot/{readingId:guid}` | Get one deep tarot reading                                                                                                                       | JWT    |
 | `GET`          | `api/aiDeepTarot`                  | Get all deep tarot readings (short answer excerpt only), paginated via `?page=&pageSize=` (default 1 / 10, max 50)                               | JWT    |
 | `DELETE`       | `api/aiDeepTarot/{readingId:guid}` | Delete a deep tarot reading (soft delete)                                                                                                        | JWT    |
+| `GET`          | `api/wallet`                       | Wallet balance + active white coin batches ordered by expiry                                                                                     | JWT    |
+| `POST`         | `api/wallet/convert`               | Convert red coins to white coins (1 red = 2 white)                                                                                               | JWT    |
+| `GET`          | `api/shop/packages`                | Purchasable red-coin packages                                                                                                                    | JWT    |
+| `POST`         | `api/shop/orders`                  | Create a PayOS payment order, returns the order id + checkout URL                                                                                | JWT    |
+| `GET`          | `api/shop/orders/{id:guid}`        | Order status; pending orders are reconciled with PayOS and credited once settled                                                                 | JWT    |
+| `POST`         | `api/shop/webhook/payos`           | PayOS payment notification — authenticated by checksum signature, not JWT                                                                        | Public |
 | `GET` / `HEAD` | `health`                           | Health check — reachable from any origin (used to wake up Render)                                                                                | Public |
 | `GET`          | `api/test/*`                       | Dev-only test endpoints (`ok`, `not-found`, `bad`, `validation`, `boom`); mapped only in the Development environment                             | Public |
 | `POST`         | `api/dev/auth/token`               | **Dev-only** fake login — mints a real JWT for a seeded dev user, no Google OAuth needed; mapped only in the Development environment             | Public |
-| `GET`          | `api/wallet`                       | Wallet balance + active white coin batches ordered by expiry                                                                                     | JWT    |
-| `POST`         | `api/wallet/convert`               | Convert red coins to white coins (1 red = 2 white)                                                                                               | JWT    |
 
 ### Testing `[Authorize]` endpoints in Swagger
 
@@ -381,23 +410,24 @@ Every `scripts/*.sh` has a Windows `*.cmd` twin.
 
 ### Test suite
 
-296 cases across 12 files in `test/UnitTest/`, run with EF Core InMemory (services) and Moq
-(everything else). Scope is deliberately narrow: every test targets a service, a client or a
-worker — **there are no controller tests**, so the route table, the auth attributes and the
-`[DevelopmentOnly]` route gating above are not covered by automation. Verify those from Swagger.
+324 cases across 42 files in `test/UnitTest/`, run with EF Core InMemory (handlers) and Moq
+(everything else). Scope is deliberately narrow: every test targets a command/query handler,
+a validator, a service, a client or a worker — **there are no controller tests**, so the route
+table, the auth attributes and the `[DevelopmentOnly]` route gating above are not covered by
+automation. Verify those from Swagger.
 
 ## Code Conventions
 
 Full conventions live in the repo skills — read them before writing code:
 
-- `.agent/skills/backend-dotnet-architecture/SKILL.md` — layering, folders, DTO/controller/service naming, `ApiResponse<T>`, error codes, soft delete, settings via `IOptions<T>`, transactions, EF queries.
+- `.agent/skills/backend-dotnet-architecture/SKILL.md` — layering, folders, request/handler/validator naming, `ApiResponse<T>`, error codes, soft delete, settings via `IOptions<T>`, transactions, EF queries.
 - `.agent/skills/backend-dotnet-testing/SKILL.md` — test naming (`<Method>_<Scenario>_<ExpectedResult>`), Arrange/Act/Assert, InMemory vs Moq, FluentAssertions.
 
 Highlights:
 
-- Controller `<N>Controller` uses service interface `I<N>Service`, and every action returns `IActionResult` wrapping `ApiResponse<T>`. Actions that take a body accept exactly one `<Fn>Request` and put that request's `<Fn>Result` in `data`; parameterless actions (`GET api/streak`, `PUT api/streak/checkin`, `GET api/wallet`, `POST api/auth/refresh` / `logout`, `GET api/auth/me`, the `guest-draw` routes and the dev/test controllers) build their payload in the controller instead. List endpoints (`GET api/tarot`, `GET api/aiTarot`, `GET api/aiDeepTarot`) accept a `GetAll…Request` (`?page=&pageSize=`) via `[FromQuery]` and return `page`/`pageSize`/`total`/`totalPages` in `data`.
-- DTOs are `record`s, `Data` lists use the `Item` suffix (`GetAllReadingItem`); responses always wrapped in `ApiResponse<T>`.
-- Services read via `AsNoTracking()` + `Select(...)`; writes use transactions; soft delete via `DeletedAt`; enums stored as strings.
-- Validation via FluentValidation, never inline in controllers. `ValidationHelper` has two entry points: `ValidateOrThrow` raises a `BadRequestException` that carries only the i18n code in `message`, while `ValidateOrThrowForm` raises a `ValidationException` that also populates `data` with `FieldError` entries (`{ key, value }`) for per-field display.
-- Time-dependent logic reads the clock through the injected `TimeProvider` (`StreakHelper.GetVietnamNow(_timeProvider)`), so tests can freeze it instead of depending on the day they run.
-- Never read `appsettings*.json` directly in services — use `IOptions<T>`. (`Cors:FrontendUrl` and `Redis:Configuration` are the two exceptions: both are read eagerly from `IConfiguration` during startup because CORS and Redis are wired before any request is served.)
+- Every use case is a MediatR request under `Features/<Domain>/{Commands,Queries}/<Feature>/`: a `record` request, a `Handler`, and — when the request has input — a FluentValidation `Validator` that `ValidationBehavior` runs before the handler. Controllers stay thin: they read the payload, call `IMediator.Send(...)` and wrap the result in `ApiResponse<T>` with `IActionResult`.
+- Handlers depend on `IAppDbContext` (and service interfaces), never on `AppDbContext` directly; they read via `AsNoTracking()` + `Select(...)`, write inside transactions, soft-delete via `DeletedAt`, and store enums as strings.
+- DTOs are `record`s, `Data` lists use the `Item` suffix (`GetAllReadingItem`); responses always wrapped in `ApiResponse<T>`. List endpoints (`GET api/tarot`, `GET api/aiTarot`, `GET api/aiDeepTarot`) return a `PaginationResponse<T>` (`items` / `page` / `pageSize` / `totalItems` / `totalPages`).
+- Validation via FluentValidation, never inline in controllers. The `ValidationBehavior` pipeline collects the failures into `FieldError` entries (`{ key, value }`) and raises a `BadRequestException` that carries them in `data` for per-field display.
+- Time-dependent logic reads the clock through `StreakHelper.GetVietnamNow()`, which returns UTC+7 (Vietnam, no DST); streak/check-in tests seed and assert against that same helper so they don't depend on the machine's local time zone (the clock is not injectable yet, so tests do still depend on the day they run).
+- Never read `appsettings*.json` directly in handlers/services — use `IOptions<T>`. (`Cors:FrontendUrl` and `Redis:Configuration` are the two exceptions: both are read eagerly from `IConfiguration` during startup because CORS and Redis are wired before any request is served.)

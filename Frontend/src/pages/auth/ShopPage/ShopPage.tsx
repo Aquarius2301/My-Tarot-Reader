@@ -1,4 +1,4 @@
-import { App, Col, Empty, Row, Spin, Typography } from "antd";
+import { App, Card, Empty, List, Spin, Typography, theme } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ErrorComponent } from "@/components";
@@ -6,18 +6,19 @@ import { useCreateOrder, useGetPackages } from "@/hooks/api";
 import { WEB_URL } from "@/routes";
 import type { GetPackagesItem } from "@/types";
 import { getErrorMessage, saveCheckoutPayload } from "@/utils";
-import { PackageCard } from "./components";
+import { PackageRow } from "./components";
 
 const { Title, Text } = Typography;
 
 /**
- * Shop page: lists the purchasable red-coin packages. Buying one creates a
- * PayOS order and hands the checkout payload over to the checkout page, which
- * polls the order until the payment settles.
+ * Shop page: lists the purchasable red-coin packages as rows. Buying one
+ * creates a PayOS order and hands the checkout payload over to the checkout
+ * page, which polls the order until the payment settles.
  */
 export default function ShopPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { token } = theme.useToken();
   const { message } = App.useApp();
   const { data, isLoading, refetch } = useGetPackages();
   const { mutate, isPending, variables } = useCreateOrder();
@@ -63,18 +64,30 @@ export default function ShopPage() {
       {data.packages.length === 0 ? (
         <Empty description={t("page.shop.empty")} />
       ) : (
-        <Row gutter={[16, 16]}>
-          {data.packages.map((pkg) => (
-            <Col key={pkg.code} xs={24} sm={8}>
-              <PackageCard
-                pkg={pkg}
-                loading={isPending && variables?.packageCode === pkg.code}
-                disabled={isPending}
-                onBuy={() => handleBuy(pkg)}
-              />
-            </Col>
-          ))}
-        </Row>
+        <Card
+          style={{
+            borderRadius: token.borderRadiusLG,
+            boxShadow: token.boxShadowSecondary,
+          }}
+          styles={{
+            body: { padding: `${token.paddingLG}px ${token.paddingXL}px` },
+          }}
+        >
+          <List<GetPackagesItem>
+            split
+            dataSource={data.packages}
+            renderItem={(pkg) => (
+              <List.Item key={pkg.code}>
+                <PackageRow
+                  pkg={pkg}
+                  loading={isPending && variables?.packageCode === pkg.code}
+                  disabled={isPending}
+                  onBuy={() => handleBuy(pkg)}
+                />
+              </List.Item>
+            )}
+          />
+        </Card>
       )}
     </div>
   );

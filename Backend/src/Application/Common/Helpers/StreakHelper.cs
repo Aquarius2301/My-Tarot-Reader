@@ -1,3 +1,5 @@
+using MyTarotReader.Domain.Entities;
+
 namespace MyTarotReader.Application.Common.Helpers;
 
 /// <summary>
@@ -49,5 +51,40 @@ public static class StreakHelper
         var current = now.Date;
         return current.Year > last.Year
             || (current.Year == last.Year && current.Month > last.Month);
+    }
+
+    /// <summary>
+    /// Normalizes the stored cycle day for display: a cycle runs from 0 to
+    /// <paramref name="cycleDays"/> - 1, so a value equal to the cycle length is
+    /// shown as 0.
+    /// </summary>
+    public static int GetCycleDayToShow(int cycleDay, int cycleDays) => cycleDay % cycleDays;
+
+    /// <summary>
+    /// Computes the next cycle day after a consecutive check-in. When the cycle
+    /// would complete, it restarts from 1 instead.
+    /// </summary>
+    public static int GetNextCycleDay(int cycleDay, int cycleDays)
+    {
+        var next = cycleDay + 1;
+        return next >= cycleDays ? 1 : next;
+    }
+
+    /// <summary>
+    /// Resets the streak saver flag when a new calendar month (Vietnam time) has
+    /// started since the last check-in.
+    /// </summary>
+    /// <param name="streak">The streak to update in place.</param>
+    /// <param name="vietnamNow">The current Vietnam date and time.</param>
+    /// <returns><c>true</c> when the saver flag was reset; otherwise <c>false</c>.</returns>
+    public static bool ResetSaverIfNewMonth(Streak streak, DateTime vietnamNow)
+    {
+        if (!streak.IsSaverUsed || !IsNewMonth(streak.LastCheckIn, vietnamNow))
+        {
+            return false;
+        }
+
+        streak.IsSaverUsed = false;
+        return true;
     }
 }

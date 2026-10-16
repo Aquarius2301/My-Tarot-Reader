@@ -7,13 +7,12 @@ import { App, Button, Flex, Spin, Typography } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import type { AiTarotCardCount, AiTarotQuestionType } from "@/constants";
 
 const { Text } = Typography;
 
 export interface DrawCardsStepProps {
-  cardCount: AiTarotCardCount;
-  questionType: AiTarotQuestionType;
+  cardCount: number;
+  questionType: string;
   onBack: () => void;
 }
 

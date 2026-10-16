@@ -1,1 +1,1 @@
-export { default as PackageCard } from "./PackageCard";
+export { default as PackageRow } from "./PackageRow";

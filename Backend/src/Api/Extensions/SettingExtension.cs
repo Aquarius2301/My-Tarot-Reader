@@ -8,8 +8,8 @@ namespace MyTarotReader.Api.Extensions;
 public static class SettingExtension
 {
     /// <summary>
-    /// Registers <see cref="IOptions{TOptions}"/> bindings for Jwt, Google, AiTarot,
-    /// TokenCleanup, Wallet, Email, Streak, DevAuth, PayOs and Shop settings.
+    /// Registers <see cref="IOptions{TOptions}"/> bindings for Jwt, Google,
+    /// TokenCleanup, Wallet, Email, Streak, DevAuth and PayOs settings.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     /// <param name="configuration">The application configuration.</param>
@@ -18,13 +18,11 @@ public static class SettingExtension
         services.Configure<JwtSetting>(configuration.GetSection("Jwt"));
         services.Configure<GoogleSetting>(configuration.GetSection("Google"));
         services.Configure<GeminiSetting>(configuration.GetSection("Gemini"));
-        services.Configure<AiTarotSetting>(configuration.GetSection("AiTarot"));
         services.Configure<TokenCleanupSetting>(configuration.GetSection("TokenCleanup"));
         services.Configure<WalletSetting>(configuration.GetSection("Wallet"));
         services.Configure<StreakSetting>(configuration.GetSection("Streak"));
         services.Configure<EmailSetting>(configuration.GetSection("Email"));
         services.Configure<DevAuthSetting>(configuration.GetSection("DevAuth"));
         services.Configure<PayOsSetting>(configuration.GetSection("PayOs"));
-        services.Configure<ShopSetting>(configuration.GetSection("Shop"));
     }
 }
