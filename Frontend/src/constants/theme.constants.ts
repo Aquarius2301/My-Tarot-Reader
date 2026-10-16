@@ -52,6 +52,17 @@ export const COLOR_PALETTES = {
       light: { bg: "#FBF6E8", border: "#E8D9A8" },
     },
   },
+  admin: {
+    primary: "#14B8A6",
+    hover: "#2DD4BF",
+    active: "#0D9488",
+    glow: "#5EEAD4",
+    textOnPrimary: "#042F2A",
+    surface: {
+      dark: { bg: "#07201E", border: "#134E4A" },
+      light: { bg: "#EFFBFA", border: "#B2F0EA" },
+    },
+  },
 } as const;
 
 // Base surface colors for each mode

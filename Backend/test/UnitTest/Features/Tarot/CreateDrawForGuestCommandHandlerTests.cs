@@ -64,6 +64,15 @@ public class CreateDrawForGuestCommandHandlerTests
                 ),
             Times.Once
         );
+        dbMock.Verify(
+            d =>
+                d.StringIncrementAsync(
+                    (RedisKey)"tarot:stats:guest:total",
+                    It.IsAny<long>(),
+                    It.IsAny<CommandFlags>()
+                ),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -90,6 +99,15 @@ public class CreateDrawForGuestCommandHandlerTests
         // Assert
         var ex = await act.Should().ThrowAsync<TooManyRequestsException>();
         ex.Which.ErrorCode.Should().Be(TarotReadingErrorCode.DrawnAlready);
+        dbMock.Verify(
+            d =>
+                d.StringIncrementAsync(
+                    It.IsAny<RedisKey>(),
+                    It.IsAny<long>(),
+                    It.IsAny<CommandFlags>()
+                ),
+            Times.Never
+        );
     }
 
     [Fact]

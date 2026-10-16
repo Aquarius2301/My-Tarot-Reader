@@ -1,13 +1,20 @@
 import { lazy, Suspense } from "react";
 import { Spin } from "antd";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import {
   PublicRoute,
   ProtectedRoute,
+  AdminRoute,
   RouteTitle,
   SessionExpiredHandler,
 } from "./components";
-import { BootScreen, MainLayout } from "@/components";
+import { BootScreen, MainLayout, AdminLayout } from "@/components";
 import { useGetCurrentUser } from "@/hooks/api";
 import { WEB_URL } from "./url.routes";
 
@@ -46,6 +53,7 @@ const HistoryTarotPage = lazy(
 const WalletPage = lazy(() => import("@/pages/auth/WalletPage"));
 const ShopPage = lazy(() => import("@/pages/auth/ShopPage"));
 const ShopCheckoutPage = lazy(() => import("@/pages/auth/ShopCheckoutPage"));
+const AdminStatsPage = lazy(() => import("@/pages/admin/AdminStatsPage"));
 
 interface AppRoute {
   titleKey: string;
@@ -153,6 +161,14 @@ const protectedRoutes: AppRoute[] = [
   },
 ];
 
+const adminRoutes: AppRoute[] = [
+  {
+    titleKey: "page.admin.statistics.title",
+    path: WEB_URL.adminStatistics,
+    component: AdminStatsPage,
+  },
+];
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
@@ -183,6 +199,48 @@ function AppGate() {
 
   if (isLoading && !hasResolved) {
     return <BootScreen />;
+  }
+
+  const isAdminRoute =
+    location.pathname === WEB_URL.admin ||
+    location.pathname.startsWith(`${WEB_URL.admin}/`);
+
+  // The admin section renders in its own layout (own header + nav) and is
+  // gated by AdminRoute, which redirects non-admins to the main site.
+  if (isAdminRoute) {
+    return (
+      <AdminLayout
+        user={data}
+        role={data?.role}
+        currentPath={location.pathname}
+      >
+        <Suspense fallback={<Spin fullscreen />}>
+          <Routes>
+            <Route element={<AdminRoute />}>
+              <Route
+                path={WEB_URL.admin}
+                element={<Navigate to={WEB_URL.adminStatistics} replace />}
+              />
+              {adminRoutes.map((r) => {
+                const Component = r.component;
+
+                return (
+                  <Route
+                    key={r.path}
+                    path={r.path}
+                    element={
+                      <RouteTitle titleKey={r.titleKey}>
+                        <Component />
+                      </RouteTitle>
+                    }
+                  />
+                );
+              })}
+            </Route>
+          </Routes>
+        </Suspense>
+      </AdminLayout>
+    );
   }
 
   return (

@@ -421,5 +421,22 @@ export const viPages = {
         failed: "Thanh toán thất bại. Vui lòng thử lại.",
       },
     },
+    admin: {
+      title: "Quản trị",
+      backToSite: "Về trang chính",
+      statistics: {
+        title: "Thống kê trải bài",
+        subtitle:
+          "Tổng hợp số lượng trải bài từ khách và thành viên, phân loại theo AI Tarot.",
+        guest: "Lượt trải khách",
+        registered: "Lượt trải thành viên",
+        ai: "Lượt trải AI Tarot",
+        breakdownTitle: "Phân loại AI Tarot",
+        questionType: "Chủ đề",
+        cardCount: "Số lá",
+        count: "Số lượt",
+        empty: "Chưa có lượt trải AI Tarot nào",
+      },
+    },
   },
 } as const;

@@ -8,4 +8,9 @@ public enum UserRole
 
     /// <summary> Represents a user who has upgraded to a Pro account and has access to additional features. </summary>
     Pro,
+
+    /// <summary>
+    /// Represents a user who has administrative privileges and can manage other users and system settings.
+    /// </summary>
+    Admin,
 }

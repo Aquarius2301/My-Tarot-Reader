@@ -19,4 +19,7 @@ export const WEB_URL = {
   wallet: "/wallet",
   shop: "/shop",
   shopCheckout: "/shop/checkout",
+
+  admin: "/admin",
+  adminStatistics: "/admin/statistics",
 } as const;

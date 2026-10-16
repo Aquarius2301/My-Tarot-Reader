@@ -60,3 +60,10 @@ export const GET_ORDER_STATUS_QUERY_KEY = [
   ...SHOP_QUERY_KEY,
   "getOrderStatus",
 ] as const;
+
+// admin.hooks.ts
+export const ADMIN_QUERY_KEY = ["admin"] as const;
+export const GET_TAROT_STATISTIC_QUERY_KEY = [
+  ...ADMIN_QUERY_KEY,
+  "getTarotStatistic",
+] as const;
