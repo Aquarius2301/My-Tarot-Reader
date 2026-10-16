@@ -41,4 +41,7 @@ export const API_URL = {
     createOrder: "/api/shop/orders",
     getOrder: "/api/shop/orders",
   },
+  admin: {
+    getTarotStatistic: "/api/admin/tarot-statistic",
+  },
 } as const;

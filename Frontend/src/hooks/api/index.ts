@@ -6,3 +6,4 @@ export * from "./aiDeepTarot.hooks";
 export * from "./streak.hooks";
 export * from "./wallet.hooks";
 export * from "./shop.hooks";
+export * from "./admin.hooks";

@@ -151,6 +151,12 @@ export default function MainLayout({
       label: t("page.shop.title"),
       href: WEB_URL.shop,
     },
+
+    user?.role === "admin" && {
+      key: "admin",
+      label: t("page.admin.title"),
+      href: WEB_URL.admin,
+    },
   ].filter(Boolean) as NavItem[];
 
   // Dropdown for user info and logout

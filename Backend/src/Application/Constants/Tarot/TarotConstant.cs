@@ -10,6 +10,11 @@ public static class TarotConstant
     public static readonly string KeyPrefix = "tarot:draw:";
     public static readonly TimeSpan DrawCooldown = TimeSpan.FromHours(12);
 
+    /// <summary>
+    /// Redis key of the all-time guest draw counter (no TTL).
+    /// </summary>
+    public static readonly string GuestTotalKey = "tarot:stats:guest:total";
+
     /**
     * Contains the canonical list of all 78 valid tarot card codes and their corresponding English names.
     */

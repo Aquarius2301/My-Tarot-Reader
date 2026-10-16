@@ -33,5 +33,7 @@ public class CreateDrawForGuestCommandHandler(IConnectionMultiplexer redis)
         {
             throw new TooManyRequestsException(TarotReadingErrorCode.DrawnAlready);
         }
+
+        await db.StringIncrementAsync(TarotConstant.GuestTotalKey);
     }
 }

@@ -422,5 +422,22 @@ export const enPages = {
         failed: "The payment failed. Please try again.",
       },
     },
+    admin: {
+      title: "Admin",
+      backToSite: "Back to site",
+      statistics: {
+        title: "Reading statistics",
+        subtitle:
+          "Aggregated readings from guests and members, broken down by AI Tarot.",
+        guest: "Guest readings",
+        registered: "Member readings",
+        ai: "AI Tarot readings",
+        breakdownTitle: "AI Tarot breakdown",
+        questionType: "Topic",
+        cardCount: "Card count",
+        count: "Readings",
+        empty: "No AI tarot readings yet",
+      },
+    },
   },
 } as const;
