@@ -58,9 +58,8 @@ export default function StreakCard() {
     isSaverUsed,
   } = data;
 
-  const todayIndex = cycleDay - 1;
-  const nextIndex =
-    todayIndex < 0 ? 0 : isCheckedInToday ? todayIndex + 1 : todayIndex;
+  const checkedCount = Math.min(currentStreak, STREAK_CYCLE_DAYS);
+  const isNextIndex = cycleDay - 1;
 
   const handleCheckIn = () => {
     mutate(undefined, {
@@ -112,14 +111,17 @@ export default function StreakCard() {
                   : "page.home.streakSaverAvailable",
               )}
             </Tag>
+            {!isSaverUsed && (
+              <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: "block" }}>
+                {t("page.home.streakSaverDescription")}
+              </Text>
+            )}
             {isSaverUsed && (
-              <div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {t("page.home.streakSaverResetIn", {
-                    days: getDaysUntilNextMonthInVietnam(),
-                  })}
-                </Text>
-              </div>
+              <Text type="secondary" style={{ fontSize: 12, marginTop: 4, display: "block" }}>
+                {t("page.home.streakSaverResetIn", {
+                  days: getDaysUntilNextMonthInVietnam(),
+                })}
+              </Text>
             )}
           </div>
         </div>
@@ -165,9 +167,8 @@ export default function StreakCard() {
           }}
         >
           {STREAK_DAILY_REWARDS.map((reward, i) => {
-            const isToday = i === todayIndex;
-            const isNext = i === nextIndex;
-            const isChecked = i < todayIndex || (isCheckedInToday && isToday);
+            const isChecked = i < checkedCount;
+            const isNext = !isCheckedInToday && i === isNextIndex;
 
             return (
               <div
@@ -236,7 +237,7 @@ export default function StreakCard() {
               marginBottom: token.marginSM,
             }}
           >
-            {t("page.home.streakReward")}: {STREAK_DAILY_REWARDS[nextIndex]}{" "}
+            {t("page.home.streakReward")}: {STREAK_DAILY_REWARDS[isNextIndex]}{" "}
             {t("component.mainLayout.whiteCoin")}
           </Tag>
           <br />

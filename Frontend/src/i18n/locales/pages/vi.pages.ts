@@ -23,6 +23,8 @@ export const viPages = {
       streakSaverAvailable: "Còn lượt bảo vệ chuỗi tháng này",
       streakSaverResetIn:
         "Còn {{days}} ngày nữa sẽ tự reset (00:00 mùng 1, giờ VN)",
+      streakSaverDescription:
+        "Chỉ dùng được khi chuỗi đạt ngày 2, tự động kích hoạt khi bỏ lỡ ngày",
       streakDay1: "Ngày 1",
       streakDay2: "Ngày 2",
       streakDay3: "Ngày 3",
