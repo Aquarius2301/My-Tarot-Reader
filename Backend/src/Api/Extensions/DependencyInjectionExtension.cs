@@ -1,6 +1,7 @@
 using FluentValidation;
 using MyTarotReader.Application.Backgrounds;
 using MyTarotReader.Application.Common.Behaviors;
+using MyTarotReader.Application.Common.Time;
 using MyTarotReader.Application.Features.Auth;
 using MyTarotReader.Application.Persistence;
 using MyTarotReader.Application.Services;
@@ -50,6 +51,8 @@ public static class DependencyInjectionExtension
         services.AddScoped<IWalletService, WalletService>();
         services.AddHttpClient<IGeminiClientService, GeminiClientService>();
         services.AddHttpClient<IPayOsClientService, PayOsClientService>();
+
+        services.AddSingleton<ITimeProvider, VietnamTimeProvider>();
 
         return services;
     }

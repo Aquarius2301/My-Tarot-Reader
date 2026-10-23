@@ -137,7 +137,7 @@ const buildTheme = (
       },
       Card: {
         colorBorderSecondary: surface.border,
-        colorBgContainer: base.bgContainer,
+        colorBgContainer: surface.bg,
       },
       Tag: {
         colorBgContainer: surface.bg,

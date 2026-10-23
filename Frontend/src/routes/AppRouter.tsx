@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 import {
   PublicRoute,
-  ProtectedRoute,
+  UserRoute,
   AdminRoute,
   RouteTitle,
   SessionExpiredHandler,
@@ -83,7 +83,7 @@ const publicRoutes: AppRoute[] = [
     component: LoginCallbackPage,
   },
 ];
-const protectedRoutes: AppRoute[] = [
+const userRoutes: AppRoute[] = [
   {
     titleKey: "page.home.title",
     path: WEB_URL.home,
@@ -268,8 +268,8 @@ function AppGate() {
             })}
           </Route>
 
-          <Route element={<ProtectedRoute />}>
-            {protectedRoutes.map((r) => {
+          <Route element={<UserRoute />}>
+            {userRoutes.map((r) => {
               const Component = r.component;
 
               return (

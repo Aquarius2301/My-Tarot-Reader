@@ -1,9 +1,9 @@
-using System;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MyTarotReader.Application.Common.Exceptions;
 using MyTarotReader.Application.Constants.Errors;
+using MyTarotReader.Application.Features.Shop.Helpers;
 using MyTarotReader.Application.Persistence;
 using MyTarotReader.Application.Services;
 using MyTarotReader.Application.Settings;
@@ -36,7 +36,7 @@ public class CreatePaymentCommandHandler(
                 )
             ?? throw new BadRequestException(ShopErrorCode.InvalidPackage);
 
-        var orderCode = GenerateOrderCode();
+        var orderCode = ShopHelper.GenerateOrderCode();
         var paymentOrder = new PaymentOrder
         {
             UserId = request.UserId,
@@ -58,14 +58,14 @@ public class CreatePaymentCommandHandler(
                 {
                     OrderCode = orderCode,
                     Amount = package.Price,
-                    Description = $"Mua {package.RedCoins} xu",
+                    Description = $"Buy {package.RedCoins} coins",
                     ReturnUrl = AppendOrderCode(_payOsSetting.ReturnUrl, orderCode),
                     CancelUrl = AppendOrderCode(_payOsSetting.CancelUrl, orderCode),
                     Items =
                     [
                         new PaymentLinkItem
                         {
-                            Name = $"Goi {package.Code}",
+                            Name = $"Package {package.Code}",
                             Quantity = 1,
                             Price = package.Price,
                         },
@@ -96,10 +96,6 @@ public class CreatePaymentCommandHandler(
             package.WhiteCoins
         );
     }
-
-    /// <summary>Generates a unique PayOS order code within the max-safe-number range.</summary>
-    private static long GenerateOrderCode() =>
-        DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() * 1000 + Random.Shared.Next(1000);
 
     /// <summary>Appends the order code to a return/cancel url as a query parameter.</summary>
     private static string AppendOrderCode(string url, long orderCode) =>

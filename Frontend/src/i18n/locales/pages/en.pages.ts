@@ -22,6 +22,8 @@ export const enPages = {
       streakSaverUsed: "Streak saver used this month",
       streakSaverAvailable: "Streak saver available this month",
       streakSaverResetIn: "Resets in {{days}} days (00:00 on the 1st, VN time)",
+      streakSaverDescription:
+        "Usable when streak reaches day 2, auto-used when missing a day",
       streakDay1: "Day 1",
       streakDay2: "Day 2",
       streakDay3: "Day 3",
