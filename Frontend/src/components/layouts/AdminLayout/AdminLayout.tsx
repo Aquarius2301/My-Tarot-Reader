@@ -67,11 +67,6 @@ export default function AdminLayout({
       label: t("page.admin.statistics.title"),
       href: WEB_URL.adminStatistics,
     },
-    {
-      key: "back",
-      label: t("page.admin.backToSite"),
-      href: WEB_URL.home,
-    },
   ];
 
   const buildMenuItems = (items: AdminNavItem[]): MenuProps["items"] =>
