@@ -15,27 +15,30 @@ public class CreateAiTarotReadingCountCommandHandler(IAppDbContext context)
         CancellationToken cancellationToken
     )
     {
-        var cardCountExists = await context
+        var readingCount = await context
             .AITarotReadingCounts.IgnoreQueryFilters()
-            .AnyAsync(s => s.CardCount == request.CardCount, cancellationToken);
+            .FirstOrDefaultAsync(s => s.CardCount == request.CardCount, cancellationToken);
 
-        if (cardCountExists)
+        if (readingCount is { DeletedAt: null })
         {
             throw new ConflictException(AiTarotErrorCode.CardCountExists);
         }
 
-        var readingCount = new AITarotReadingCount
+        if (readingCount is null)
         {
-            CardCount = request.CardCount,
-            WhiteCoins = request.WhiteCoins,
-            PositionsEn = request.PositionsEn,
-            PositionsVi = request.PositionsVi,
-            MinWords = request.MinWords,
-            MaxWords = request.MaxWords,
-            IsEnabled = request.IsEnabled,
-        };
+            readingCount = new AITarotReadingCount();
+            context.AITarotReadingCounts.Add(readingCount);
+        }
 
-        context.AITarotReadingCounts.Add(readingCount);
+        readingCount.CardCount = request.CardCount;
+        readingCount.WhiteCoins = request.WhiteCoins;
+        readingCount.PositionsEn = request.PositionsEn;
+        readingCount.PositionsVi = request.PositionsVi;
+        readingCount.MinWords = request.MinWords;
+        readingCount.MaxWords = request.MaxWords;
+        readingCount.IsEnabled = request.IsEnabled;
+        readingCount.DeletedAt = null;
+
         await context.SaveChangesAsync(cancellationToken);
 
         return readingCount.Id;

@@ -23,4 +23,5 @@ export const WEB_URL = {
   admin: "/admin",
   adminStatistics: "/admin/statistics",
   adminShopPackages: "/admin/shop-packages",
+  adminAiTarotSettings: "/admin/ai-tarot-settings",
 } as const;

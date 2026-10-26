@@ -4,6 +4,7 @@ export * from "./dtos/pagination.types";
 export * from "./dtos/auth.types";
 export * from "./dtos/tarot.types";
 export * from "./dtos/aiTarot.types";
+export * from "./dtos/aiTarotAdmin.types";
 export * from "./dtos/aiDeepTarot.types";
 export * from "./dtos/streak.types";
 export * from "./dtos/wallet.types";

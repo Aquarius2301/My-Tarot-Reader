@@ -15,24 +15,29 @@ public class CreateAiTarotReadingTypeCommandHandler(IAppDbContext context)
         CancellationToken cancellationToken
     )
     {
-        var codeExists = await context
-            .AITarotReadingTypes.IgnoreQueryFilters()
-            .AnyAsync(s => s.Code == request.Code, cancellationToken);
+        var code = request.Code.Trim().ToLowerInvariant();
 
-        if (codeExists)
+        var readingType = await context
+            .AITarotReadingTypes.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.Code.ToLower() == code, cancellationToken);
+
+        if (readingType is { DeletedAt: null })
         {
             throw new ConflictException(AiTarotErrorCode.ReadingTypeCodeExists);
         }
 
-        var readingType = new AiTarotReadingType
+        if (readingType is null)
         {
-            Code = request.Code,
-            NameEn = request.NameEn,
-            NameVi = request.NameVi,
-            IsEnabled = request.IsEnabled,
-        };
+            readingType = new AiTarotReadingType();
+            context.AITarotReadingTypes.Add(readingType);
+        }
 
-        context.AITarotReadingTypes.Add(readingType);
+        readingType.Code = code;
+        readingType.NameEn = request.NameEn;
+        readingType.NameVi = request.NameVi;
+        readingType.IsEnabled = request.IsEnabled;
+        readingType.DeletedAt = null;
+
         await context.SaveChangesAsync(cancellationToken);
 
         return readingType.Id;

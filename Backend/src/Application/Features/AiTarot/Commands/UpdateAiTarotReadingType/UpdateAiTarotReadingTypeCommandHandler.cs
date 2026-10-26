@@ -20,16 +20,21 @@ public class UpdateAiTarotReadingTypeCommandHandler(IAppDbContext context)
                 cancellationToken
             ) ?? throw new NotFoundException(AiTarotErrorCode.ReadingTypeNotFound);
 
+        var code = request.Code.Trim().ToLowerInvariant();
+
         var codeExists = await context
             .AITarotReadingTypes.IgnoreQueryFilters()
-            .AnyAsync(s => s.Code == request.Code && s.Id != request.Id, cancellationToken);
+            .AnyAsync(
+                s => s.Code.ToLower() == code && s.Id != request.Id,
+                cancellationToken
+            );
 
         if (codeExists)
         {
             throw new ConflictException(AiTarotErrorCode.ReadingTypeCodeExists);
         }
 
-        readingType.Code = request.Code;
+        readingType.Code = code;
         readingType.NameEn = request.NameEn;
         readingType.NameVi = request.NameVi;
         readingType.IsEnabled = request.IsEnabled;

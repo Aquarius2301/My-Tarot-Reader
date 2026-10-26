@@ -35,6 +35,13 @@ export const GET_ALL_AI_TAROT_QUERY_KEY = [
   "getAll",
 ] as const;
 
+// aiTarotAdmin.hooks.ts
+export const AI_TAROT_ADMIN_QUERY_KEY = ["aiTarotAdmin"] as const;
+export const GET_ADMIN_AI_TAROT_SETTINGS_QUERY_KEY = [
+  ...AI_TAROT_ADMIN_QUERY_KEY,
+  "settings",
+] as const;
+
 // aiDeepTarot.hooks.ts
 export const AI_DEEP_TAROT_QUERY_KEY = ["aiDeepTarot"] as const;
 export const GET_AI_DEEP_TAROT_BY_ID_QUERY_KEY = [
