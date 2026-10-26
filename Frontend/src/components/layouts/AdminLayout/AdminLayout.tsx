@@ -67,6 +67,11 @@ export default function AdminLayout({
       label: t("page.admin.statistics.title"),
       href: WEB_URL.adminStatistics,
     },
+    {
+      key: "shopPackages",
+      label: t("page.admin.shopPackages.title"),
+      href: WEB_URL.adminShopPackages,
+    },
   ];
 
   const buildMenuItems = (items: AdminNavItem[]): MenuProps["items"] =>

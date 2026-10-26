@@ -45,6 +45,8 @@ export const enErrors = {
     },
     shop: {
       invalidPackage: "This package is not available.",
+      packageNotFound: "The package was not found.",
+      packageCodeExists: "The package code already exists.",
       orderNotFound: "The order was not found.",
       createPaymentFailed:
         "Could not create the payment. Please try again.",

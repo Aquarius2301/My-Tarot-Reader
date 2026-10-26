@@ -5,4 +5,5 @@ export * from "./aiDeepTarot.api";
 export * from "./streak.api";
 export * from "./wallet.api";
 export * from "./shop.api";
+export * from "./shopAdmin.api";
 export * from "./admin.api";

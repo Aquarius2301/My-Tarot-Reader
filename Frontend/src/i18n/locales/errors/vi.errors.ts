@@ -46,6 +46,8 @@ export const viErrors = {
     },
     shop: {
       invalidPackage: "Gói này không khả dụng.",
+      packageNotFound: "Không tìm thấy gói này.",
+      packageCodeExists: "Mã gói đã tồn tại.",
       orderNotFound: "Không tìm thấy đơn hàng.",
       createPaymentFailed: "Không thể tạo giao dịch. Vui lòng thử lại.",
       invalidWebhookSignature: "Chữ ký thông báo thanh toán không hợp lệ.",

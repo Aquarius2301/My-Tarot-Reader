@@ -67,3 +67,10 @@ export const GET_TAROT_STATISTIC_QUERY_KEY = [
   ...ADMIN_QUERY_KEY,
   "getTarotStatistic",
 ] as const;
+
+// shopAdmin.hooks.ts
+export const SHOP_ADMIN_QUERY_KEY = ["shopAdmin"] as const;
+export const GET_ADMIN_SHOP_PACKAGES_QUERY_KEY = [
+  ...SHOP_ADMIN_QUERY_KEY,
+  "getAll",
+] as const;

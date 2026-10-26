@@ -5,6 +5,8 @@ public class ShopErrorCode
     private const string Prefix = "error.shop.";
 
     public const string InvalidPackage = $"{Prefix}invalidPackage";
+    public const string PackageNotFound = $"{Prefix}packageNotFound";
+    public const string PackageCodeExists = $"{Prefix}packageCodeExists";
     public const string OrderNotFound = $"{Prefix}orderNotFound";
     public const string CreatePaymentFailed = $"{Prefix}createPaymentFailed";
     public const string InvalidWebhookSignature = $"{Prefix}invalidWebhookSignature";
