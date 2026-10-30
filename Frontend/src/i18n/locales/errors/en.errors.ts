@@ -21,6 +21,12 @@ export const enErrors = {
       invalidLocale: "Unsupported language.",
       invalidQuestionType: "Unsupported question topic.",
       readingNotFound: "This AI reading was not found.",
+      readingCountNotFound: "This AI tarot spread was not found.",
+      readingTypeNotFound: "This AI tarot topic was not found.",
+      cardCountExists: "This card count already exists.",
+      readingTypeCodeExists: "The topic code already exists.",
+      invalidReadingCount: "Invalid spread configuration.",
+      invalidReadingType: "Invalid topic configuration.",
       generationFailed: "Could not create the AI reading. Please try again.",
     },
     aiDeepTarot: {
@@ -45,6 +51,8 @@ export const enErrors = {
     },
     shop: {
       invalidPackage: "This package is not available.",
+      packageNotFound: "The package was not found.",
+      packageCodeExists: "The package code already exists.",
       orderNotFound: "The order was not found.",
       createPaymentFailed:
         "Could not create the payment. Please try again.",

@@ -67,6 +67,16 @@ export default function AdminLayout({
       label: t("page.admin.statistics.title"),
       href: WEB_URL.adminStatistics,
     },
+    {
+      key: "shopPackages",
+      label: t("page.admin.shopPackages.title"),
+      href: WEB_URL.adminShopPackages,
+    },
+    {
+      key: "aiTarotSettings",
+      label: t("page.admin.aiTarotSettings.title"),
+      href: WEB_URL.adminAiTarotSettings,
+    },
   ];
 
   const buildMenuItems = (items: AdminNavItem[]): MenuProps["items"] =>

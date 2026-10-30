@@ -21,6 +21,12 @@ export const viErrors = {
       invalidLocale: "Ngôn ngữ không được hỗ trợ.",
       invalidQuestionType: "Chủ đề câu hỏi không được hỗ trợ.",
       readingNotFound: "Không tìm thấy trải bài AI này.",
+      readingCountNotFound: "Không tìm thấy trải bài AI này.",
+      readingTypeNotFound: "Không tìm thấy chủ đề AI này.",
+      cardCountExists: "Số lá này đã tồn tại.",
+      readingTypeCodeExists: "Mã chủ đề đã tồn tại.",
+      invalidReadingCount: "Cấu hình trải bài không hợp lệ.",
+      invalidReadingType: "Cấu hình chủ đề không hợp lệ.",
       generationFailed: "Không thể tạo trải bài AI. Vui lòng thử lại.",
     },
     aiDeepTarot: {
@@ -46,6 +52,8 @@ export const viErrors = {
     },
     shop: {
       invalidPackage: "Gói này không khả dụng.",
+      packageNotFound: "Không tìm thấy gói này.",
+      packageCodeExists: "Mã gói đã tồn tại.",
       orderNotFound: "Không tìm thấy đơn hàng.",
       createPaymentFailed: "Không thể tạo giao dịch. Vui lòng thử lại.",
       invalidWebhookSignature: "Chữ ký thông báo thanh toán không hợp lệ.",

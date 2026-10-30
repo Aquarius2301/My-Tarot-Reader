@@ -142,6 +142,9 @@ const buildTheme = (
       Tag: {
         colorBgContainer: surface.bg,
       },
+      Table: {
+        colorBgContainer: surface.bg,
+      },
     },
   };
 };

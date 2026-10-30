@@ -54,6 +54,12 @@ const WalletPage = lazy(() => import("@/pages/auth/WalletPage"));
 const ShopPage = lazy(() => import("@/pages/auth/ShopPage"));
 const ShopCheckoutPage = lazy(() => import("@/pages/auth/ShopCheckoutPage"));
 const AdminStatsPage = lazy(() => import("@/pages/admin/AdminStatsPage"));
+const AdminShopPackagesPage = lazy(
+  () => import("@/pages/admin/AdminShopPackagesPage"),
+);
+const AdminAiTarotSettingsPage = lazy(
+  () => import("@/pages/admin/AdminAiTarotSettingsPage"),
+);
 
 interface AppRoute {
   titleKey: string;
@@ -166,6 +172,16 @@ const adminRoutes: AppRoute[] = [
     titleKey: "page.admin.statistics.title",
     path: WEB_URL.adminStatistics,
     component: AdminStatsPage,
+  },
+  {
+    titleKey: "page.admin.shopPackages.title",
+    path: WEB_URL.adminShopPackages,
+    component: AdminShopPackagesPage,
+  },
+  {
+    titleKey: "page.admin.aiTarotSettings.title",
+    path: WEB_URL.adminAiTarotSettings,
+    component: AdminAiTarotSettingsPage,
   },
 ];
 

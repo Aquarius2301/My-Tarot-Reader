@@ -43,5 +43,9 @@ export const API_URL = {
   },
   admin: {
     getTarotStatistic: "/api/admin/tarot-statistic",
+    shopPackages: "/api/admin/shop/packages",
+    aiTarotSettings: "/api/admin/ai-tarot/settings",
+    aiTarotReadingCounts: "/api/admin/ai-tarot/reading-counts",
+    aiTarotReadingTypes: "/api/admin/ai-tarot/reading-types",
   },
 } as const;
