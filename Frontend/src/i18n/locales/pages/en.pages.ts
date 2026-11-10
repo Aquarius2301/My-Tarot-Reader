@@ -1,11 +1,20 @@
 export const enPages = {
   page: {
+    notFound: {
+      title: "Page not found",
+      description: "The page you are looking for does not exist or has moved.",
+      backHome: "Back to home",
+      goBack: "Go back",
+    },
     home: {
       title: "Home page",
-      heroTitle: "Listen to the Messages From",
-      heroTitleHighlight: "the Universe & the Cards",
+      heroTitle: "Welcome to My Tarot Reader",
+      heroTitleHighlight:
+        "Listen to the Messages From The Universe & the Cards",
       heroDescription:
-        "Decode your destiny, love, and career with AI-powered Tarot analysis. Get accurate answers and soul-healing advice instantly.",
+        "Decode your destiny, love, and career with AI-powered Tarot analysis.",
+      heroDescription2:
+        "Get accurate answers and soul-healing advice instantly.",
       heroDrawCard: "Draw a Card Today",
       heroUpgradePro: "Upgrade to PRO",
       heroLoginNow: "Login Now",
@@ -35,7 +44,7 @@ export const enPages = {
     tarot: {
       parentTitle: "Draw Tarot cards",
       title: "Draw 1 card",
-      intro:
+      subTitle:
         "Clear your mind, focus on your question, then choose a single card.",
       yourCard: "Your card",
       upright: "Upright",
@@ -47,6 +56,8 @@ export const enPages = {
     },
     aiTarot: {
       title: "AI Tarot",
+      subTitle:
+        "Get a personalized Tarot reading based on your question and the energy of the universe.",
       step2: {
         subtitle:
           "Clear your mind, focus on your question, then select {{count}} cards.",
@@ -54,6 +65,7 @@ export const enPages = {
       cardCount: "Number of cards",
       cardCountOption: "{{count}} cards",
       positions: "Spread positions",
+      noPositions: "No positions for this spread yet.",
       questionType: "Question topic",
       questionTypes: {
         energy: "Energy",
@@ -386,7 +398,7 @@ export const enPages = {
         "Buy red coins with PayOS to unlock more Tarot readings and AI spreads.",
       empty: "No packages available right now",
       packageRedCoins: "red coins",
-      packageWhiteCoins: "bonus white coins",
+      packageWhiteCoins: "white coins",
       discountBadge: "{{percent}}% OFF",
       oldPriceLabel: "Original price",
       buyButton: "Buy",
@@ -396,20 +408,23 @@ export const enPages = {
       waitingTitle: "Waiting for payment",
       waitingSubtitle:
         "Scan the QR code with your banking app, or open the PayOS checkout page to complete the payment.",
+      orderSummary: "Order summary",
+      autoRefreshing: "Auto-refreshing",
       amountLabel: "Amount",
       redCoinsLabel: "Red coins",
-      whiteCoinsLabel: "Bonus white coins",
+      whiteCoinsLabel: "White coins",
+      bonusCoinsLabel: "Bonus white coins",
       orderCodeLabel: "Order code",
       qrTitle: "Scan to pay",
-      qrAlt: "Payment QR code",
+      qrUnavailable:
+        "The QR code for this order is unavailable. Please return to the shop and create a new order.",
       openCheckout: "Open PayOS checkout",
       checkAgain: "Check again",
       backToShop: "Back to shop",
       pollHint:
         "Keep this tab open while paying \u2014 the order status refreshes automatically.",
       paidTitle: "Payment successful",
-      paidSubtitle:
-        "{{redCoins}} red coins have been added to your wallet.",
+      paidSubtitle: "{{redCoins}} red coins have been added to your wallet.",
       paidSubtitleBonus:
         "{{redCoins}} red coins and {{whiteCoins}} bonus white coins have been added to your wallet.",
       paidAt: "Paid at {{time}}",

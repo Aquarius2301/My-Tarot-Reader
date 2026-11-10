@@ -1,15 +1,32 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Tarot Reader</title>
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem("tarot-theme");
+          var mode = raw ? JSON.parse(raw).state.mode : "light";
+          var isDark = mode === "dark";
+          var background = isDark ? "#0f172a" : "#f8fafc";
+          var root = document.documentElement;
+          root.style.colorScheme = isDark ? "dark" : "light";
+          root.style.setProperty("--app-bg", background);
+          root.style.backgroundColor = background;
+        } catch (error) {
+          document.documentElement.style.backgroundColor = "#f8fafc";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

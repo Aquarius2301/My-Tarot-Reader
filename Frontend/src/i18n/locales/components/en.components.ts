@@ -3,6 +3,7 @@ export const enComponents = {
     mainLayout: {
       login: "Sign in",
       logout: "Sign out",
+      logoutConfirm: "Are you sure you want to log out?",
       theme: "Theme",
       language: "Language",
       darkMode: "Dark mode",
@@ -30,6 +31,10 @@ export const enComponents = {
       copy: "Copy",
       copied: "Copied",
       failed: "Copy failed",
+    },
+    coin: {
+      white: "White coins",
+      red: "Red coins",
     },
     error: {
       offlineTitle: "You're offline",

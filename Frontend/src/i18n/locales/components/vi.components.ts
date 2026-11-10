@@ -3,6 +3,7 @@ export const viComponents = {
     mainLayout: {
       login: "Đăng nhập",
       logout: "Đăng xuất",
+      logoutConfirm: "Bạn có chắc chắn muốn đăng xuất không?",
       theme: "Giao diện",
       language: "Ngôn ngữ",
       darkMode: "Chế độ tối",
@@ -10,8 +11,6 @@ export const viComponents = {
       guest: "Khách",
       vietnamese: "Tiếng Việt",
       english: "English",
-      whiteCoin: "Xu trắng",
-      redCoin: "Xu đỏ",
     },
     deck: {
       instruction: "Di chuột để xem, nhấn để chọn lá bài",
@@ -21,10 +20,19 @@ export const viComponents = {
       limitReached: "Bạn chỉ được chọn tối đa {{n}} lá",
       noEnoughCoin: "Bạn không có đủ xu để rút bài này",
     },
+    modal: {
+      ok: "OK",
+      cancel: "Hủy",
+      delete: "Xóa",
+    },
     copyButton: {
       copy: "Sao chép",
       copied: "Đã sao chép",
       failed: "Sao chép thất bại",
+    },
+    coin: {
+      white: "Xu trắng",
+      red: "Xu đỏ",
     },
     error: {
       offlineTitle: "Bạn đang ngoại tuyến",

@@ -9,6 +9,6 @@ export interface PaginatedResult<TItem> {
   items: TItem[];
   page: number;
   pageSize: number;
-  total: number;
+  totalItems: number;
   totalPages: number;
 }

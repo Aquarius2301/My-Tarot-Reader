@@ -1,24 +1,11 @@
 import { memo, type CSSProperties, type KeyboardEvent } from "react";
 import { Spin, theme } from "antd";
-import type { TarotCardCode } from "@/constants";
-import {
-  CARD_SIZE_WIDTH,
-  CARD_ASPECT,
-  type TarotCardSize,
-  cardImageUrl,
-} from "./tarotCardHelper";
+import type { TarotCardProps } from "./types";
+import { CARD_ASPECT, CARD_SIZE_WIDTH } from "./constants";
 import CardBackMotif from "./CardBackMotif";
+import { cardImageUrl } from "./utils";
 
-export interface TarotCardProps {
-  cardCode?: TarotCardCode; // present when face-up
-  isUpright?: boolean; // true = upright, false = reversed
-  isFlipped?: boolean; // true = face-up, false = face-down (card-back)
-  size?: TarotCardSize; // 'sm' | 'md' | 'lg'
-  onClick?: () => void;
-  loading?: boolean;
-}
-
-export default memo(function TarotCard({
+export const TarotCard = memo(function TarotCard({
   cardCode,
   isUpright = true,
   isFlipped = true,

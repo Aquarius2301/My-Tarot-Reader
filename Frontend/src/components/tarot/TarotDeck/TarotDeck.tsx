@@ -1,22 +1,25 @@
 import { useMemo, useState } from "react";
 import { Grid } from "antd";
-import { useTarotSpread } from "./useTarotSpread";
+
+import type { TarotDeckProps } from "./types";
 import {
-  useElementWidth,
   cardSizeToPx,
   computeFanLayout,
+  useElementWidth,
+  useTarotSpread,
+} from "./utils";
+import {
   DEAL_STAGGER_MS,
-  RAISE_SELECTED_PX,
   RAISE_HOVER_PX,
-} from "./tarotDeckHelper";
+  RAISE_SELECTED_PX,
+} from "./constants";
 import TarotCardSlot from "./TarotCardSlot";
 import TarotSpreadControls from "./TarotSpreadControls";
-import type { TarotDeckProps } from "./types";
 
 const { useBreakpoint } = Grid;
 
 /** Renders a face-down fan of 78 tarot cards the user can select and reshuffle. */
-export default function TarotDeck({
+export function TarotDeck({
   limit,
   onConfirm,
   cardSize = "sm",

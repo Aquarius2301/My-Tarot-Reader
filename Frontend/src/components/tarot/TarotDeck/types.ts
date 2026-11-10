@@ -1,5 +1,5 @@
 import type { TarotCardCode } from "@/constants";
-import type { TarotCardSize } from "../TarotCard/tarotCardHelper";
+import type { TarotCardSize } from "../TarotCard";
 
 /** State of a single card within the currently spread deck. */
 export interface SpreadCardState {

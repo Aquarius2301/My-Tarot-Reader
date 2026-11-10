@@ -3,8 +3,8 @@ import type { CreatePaymentResult } from "@/types";
 /**
  * Client-side helpers for the shop checkout flow: VND formatting and the
  * sessionStorage cache that keeps the PayOS payload (checkout url + QR) of a
- * pending order alive across reloads, since GET /orders/{id} does not return
- * those two fields.
+ * pending order around. The order status API returns those fields, so the
+ * cache only matters as a fallback for orders created before that change.
  */
 const CHECKOUT_STORAGE_PREFIX = "my-tarot-reader.shop.checkout.";
 

@@ -1,2 +1,3 @@
-export { default as TarotCard } from "./TarotCard";
-export type { TarotCardProps } from "./TarotCard";
+export { TarotCard } from "./TarotCard";
+export { CARD_ASPECT, CARD_SIZE_WIDTH } from "./constants";
+export type { TarotCardProps, TarotCardSize } from "./types";

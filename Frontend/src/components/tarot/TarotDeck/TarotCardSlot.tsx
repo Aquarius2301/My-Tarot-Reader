@@ -1,5 +1,4 @@
-import { TarotCard } from "../TarotCard";
-import type { TarotCardSize } from "../TarotCard/tarotCardHelper";
+import { TarotCard, type TarotCardSize } from "../TarotCard";
 import type { SpreadCardState } from "./types";
 
 export interface TarotCardSlotProps {

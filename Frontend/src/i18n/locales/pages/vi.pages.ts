@@ -1,11 +1,19 @@
 export const viPages = {
   page: {
+    notFound: {
+      title: "Không tìm thấy trang",
+      description: "Trang bạn tìm không tồn tại hoặc đã bị di chuyển.",
+      backHome: "Về trang chủ",
+      goBack: "Quay lại",
+    },
     home: {
       title: "Trang chủ",
-      heroTitle: "Lắng Nghe Thông Điệp Từ",
-      heroTitleHighlight: "Vũ Trụ & Những Lá Bài",
+      heroTitle: "Chào mừng bạn đến với My Tarot Reader",
+      heroTitleHighlight: "Lắng Nghe Thông Điệp Từ Vũ Trụ & Những Lá Bài",
       heroDescription:
-        "Giải mã vận mệnh, tình yêu, và sự nghiệp với công nghệ phân tích Tarot kết hợp AI. Nhận câu trả lời chính xác và lời khuyên chữa lành tâm hồn ngay lập tức.",
+        "Giải mã vận mệnh, tình yêu, và sự nghiệp với công nghệ phân tích Tarot kết hợp AI.",
+      heroDescription2:
+        "Nhận câu trả lời chính xác và lời khuyên chữa lành tâm hồn ngay lập tức.",
       heroDrawCard: "Rút Bài Hôm Nay",
       heroUpgradePro: "Nâng Cấp PRO",
       heroLoginNow: "Đăng nhập ngay",
@@ -36,7 +44,7 @@ export const viPages = {
     tarot: {
       parentTitle: "Rút bài Tarot",
       title: "Rút 1 lá",
-      intro:
+      subTitle:
         "Hãy để tâm trí thư thái, tập trung vào câu hỏi của bạn rồi chọn một lá bài.",
       yourCard: "Lá bài của bạn",
       upright: "Xuôi",
@@ -48,6 +56,8 @@ export const viPages = {
     },
     aiTarot: {
       title: "AI Tarot",
+      subTitle:
+        "Nhận trải bài Tarot cá nhân hóa dựa trên câu hỏi của bạn và năng lượng vũ trụ.",
       step2: {
         subtitle:
           "Hãy để tâm trí thư thái, tập trung vào câu hỏi rồi chọn {{count}} lá bài.",
@@ -55,6 +65,7 @@ export const viPages = {
       cardCount: "Số lá bài",
       cardCountOption: "{{count}} lá",
       positions: "Các vị trí của trải bài",
+      noPositions: "Chưa có vị trí cho trải bài này.",
       questionType: "Chủ đề câu hỏi",
       questionTypes: {
         energy: "Năng lượng",
@@ -386,7 +397,7 @@ export const viPages = {
         "Mua xu đỏ qua PayOS để mở khóa thêm các lượt trải bài Tarot và trải AI.",
       empty: "Hiện chưa có gói nào để mua",
       packageRedCoins: "xu đỏ",
-      packageWhiteCoins: "xu trắng thưởng",
+      packageWhiteCoins: "xu trắng",
       discountBadge: "GIẢM {{percent}}%",
       oldPriceLabel: "Giá gốc",
       buyButton: "Mua",
@@ -396,12 +407,16 @@ export const viPages = {
       waitingTitle: "Đang chờ thanh toán",
       waitingSubtitle:
         "Quét mã QR bằng ứng dụng ngân hàng, hoặc mở trang thanh toán PayOS để hoàn tất.",
+      orderSummary: "Chi tiết đơn hàng",
+      autoRefreshing: "Tự động cập nhật",
       amountLabel: "Số tiền",
       redCoinsLabel: "Xu đỏ",
-      whiteCoinsLabel: "Xu trắng thưởng",
+      whiteCoinsLabel: "Xu trắng",
+      bonusCoinsLabel: "Xu trắng thưởng",
       orderCodeLabel: "Mã đơn hàng",
       qrTitle: "Quét mã để thanh toán",
-      qrAlt: "Mã QR thanh toán",
+      qrUnavailable:
+        "Không tìm thấy mã QR cho đơn hàng này. Vui lòng quay lại cửa hàng và tạo đơn mới.",
       openCheckout: "Mở trang thanh toán PayOS",
       checkAgain: "Kiểm tra lại",
       backToShop: "Quay lại cửa hàng",
@@ -534,8 +549,7 @@ export const viPages = {
             cardCountPositive: "Số lá phải lớn hơn 0",
             nonNegative: "Giá trị không được âm",
             minWordsPositive: "Số từ phải lớn hơn 0",
-            maxWordsMin:
-              "Số từ tối đa phải lớn hơn hoặc bằng số từ tối thiểu",
+            maxWordsMin: "Số từ tối đa phải lớn hơn hoặc bằng số từ tối thiểu",
           },
           delete: {
             title: "Xóa trải bài",

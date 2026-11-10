@@ -12,7 +12,14 @@ export default function CardBackMotif({ color }: { color: string }) {
           return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />;
         })}
       </g>
-      <circle cx="50" cy="50" r="16" fill="none" stroke={color} strokeWidth="1.5" />
+      <circle
+        cx="50"
+        cy="50"
+        r="16"
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+      />
       <circle cx="50" cy="50" r="6" fill={color} />
     </svg>
   );
