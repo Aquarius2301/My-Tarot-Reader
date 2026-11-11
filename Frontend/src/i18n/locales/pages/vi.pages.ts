@@ -333,6 +333,7 @@ export const viPages = {
         "Bài giải AI này sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa không?",
       deleteConfirm: "Xóa bài giải",
       deleteSuccess: "Đã xóa bài giải AI",
+      emptyButton: "Đi tới AI Tarot",
     },
     historyAiDeepTarot: {
       title: "Lịch sử Tarot chuyên sâu",

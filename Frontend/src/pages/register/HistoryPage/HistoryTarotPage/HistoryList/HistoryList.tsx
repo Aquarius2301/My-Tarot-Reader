@@ -22,7 +22,7 @@ export function HistoryList({
       <Row gutter={[16, 16]}>
         {Array.from({ length: skeletonCount }).map((_, index) => (
           <Col xs={24} sm={12} md={8} lg={6} key={index}>
-            <TarotCardItem isLoading={true} />
+            <TarotCardItem />
           </Col>
         ))}
       </Row>
@@ -35,7 +35,6 @@ export function HistoryList({
         <Col xs={24} sm={12} md={8} lg={6}>
           <TarotCardItem
             key={item.id}
-            isLoading={isLoading}
             data={item ?? {}}
             onView={onView}
             onDelete={onDelete}

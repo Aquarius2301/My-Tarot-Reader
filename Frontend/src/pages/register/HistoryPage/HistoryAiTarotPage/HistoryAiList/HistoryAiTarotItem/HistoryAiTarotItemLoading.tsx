@@ -1,14 +1,12 @@
 import { CARD_ASPECT, CARD_SIZE_WIDTH } from "@/components";
 import { Card, Divider, Flex, Skeleton } from "antd";
 
-export function HistoryAiTarotItemLoading({
-  cardCount = 3,
-}: {
-  cardCount?: number;
-}) {
+export function HistoryAiTarotItemLoading() {
   const width = CARD_SIZE_WIDTH.sm;
   const height = Math.round(width * CARD_ASPECT);
   const radius = Math.max(6, width * 0.06);
+
+  const cardCount = Math.floor(Math.random() * 8) + 3; // Random number between 3 and 10
 
   return (
     <Card
@@ -16,7 +14,7 @@ export function HistoryAiTarotItemLoading({
       aria-busy
       aria-label="Loading AI tarot reading"
       title={<Skeleton.Input active size="small" style={{ width: 220 }} />}
-      extra={<Skeleton.Button active size="small" shape="circle" />}
+      extra={<Skeleton.Button active size="small" />}
     >
       <Flex vertical gap={16}>
         <Flex gap={8} style={{ overflowX: "hidden" }}>

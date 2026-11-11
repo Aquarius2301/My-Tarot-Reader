@@ -1,60 +1,51 @@
 import { TarotCard } from "@/components";
-import { WEB_URL } from "@/routes";
 import type { GetAllAiTarotReadingItem } from "@/types";
 import { convertISOToDate } from "@/utils";
 import { Button, Card, Divider, Flex, Tag } from "antd";
 import Text from "antd/es/typography/Text";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import {
   CalendarOutlined,
   ClockCircleOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
 import Paragraph from "antd/es/typography/Paragraph";
+import { HistoryAiTarotItemLoading } from "./HistoryAiTarotItemLoading";
+
+export interface HistoryAiTarotItemProps {
+  item?: GetAllAiTarotReadingItem;
+  onDelete?: () => void;
+  onView?: () => void;
+  isLoading?: boolean;
+}
 
 export function HistoryAiTarotItem({
   item,
   onDelete,
-}: {
-  item: GetAllAiTarotReadingItem;
-  onDelete: () => void;
-}) {
+  onView,
+}: HistoryAiTarotItemProps) {
   const { t, i18n } = useTranslation();
 
-  const navigate = useNavigate();
+  if (!item) {
+    return <HistoryAiTarotItemLoading />;
+  }
 
   const { date, time } = convertISOToDate(item.createdAt, i18n.language);
   const typeLabel = t(`page.aiTarot.questionTypes.${item.type}`);
   const cardCount = item.cardCount;
-
-  const openReading = () => navigate(`${WEB_URL.aiTarotResult}/${item.id}`);
 
   return (
     <Card
       hoverable
       role="button"
       tabIndex={0}
-      onClick={openReading}
+      onClick={() => onView?.()}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          openReading();
+          onView?.();
         }
       }}
-      // style={
-      //   {
-
-      //   }
-      // }
-      // styles={{
-      //   body: {
-      //     display: "flex",
-      //     flexDirection: "column",
-      //     gap: token.marginSM,
-      //     padding: token.paddingLG,
-      //   },
-      // }}
       extra={
         <Button
           type="text"
@@ -65,7 +56,7 @@ export function HistoryAiTarotItem({
             // Prevent the click from bubbling up to the Card's onClick,
             // which would otherwise open the full reading page.
             e.stopPropagation();
-            onDelete();
+            onDelete?.();
           }}
         />
       }

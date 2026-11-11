@@ -332,6 +332,7 @@ export const enPages = {
         "This AI reading will be permanently deleted. Are you sure you want to delete it?",
       deleteConfirm: "Delete reading",
       deleteSuccess: "AI reading deleted",
+      emptyButton: "Go to AI Tarot",
     },
     historyAiDeepTarot: {
       title: "Deep tarot history",

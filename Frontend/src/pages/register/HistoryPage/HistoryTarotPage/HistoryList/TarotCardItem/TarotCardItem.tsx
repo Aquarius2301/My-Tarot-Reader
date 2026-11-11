@@ -15,18 +15,12 @@ interface TarotCardItemProps {
   data?: GetAllReadingItem;
   onView?: (card: CardData) => void;
   onDelete?: (id: string) => void;
-  isLoading?: boolean;
 }
 
-export function TarotCardItem({
-  data,
-  onView,
-  onDelete,
-  isLoading = false,
-}: TarotCardItemProps) {
+export function TarotCardItem({ data, onView, onDelete }: TarotCardItemProps) {
   const { t, i18n } = useTranslation();
 
-  if (isLoading || !data) {
+  if (!data) {
     return <TarotCardItemLoading />;
   }
 
