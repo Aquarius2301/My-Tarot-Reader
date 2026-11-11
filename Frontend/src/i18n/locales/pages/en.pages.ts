@@ -321,6 +321,7 @@ export const enPages = {
       deleteTitle: "Delete this reading?",
       deleteConfirm: "Delete reading",
       deleteSuccess: "Reading deleted",
+      emptyButton: "Draw a card",
     },
     historyAiTarot: {
       title: "AI Tarot history",

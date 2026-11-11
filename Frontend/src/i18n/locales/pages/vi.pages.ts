@@ -50,6 +50,7 @@ export const viPages = {
       upright: "Xuôi",
       reversed: "Ngược",
       drawAgain: "Rút lại",
+
       saving: "Đang lưu lá bài của bạn…",
       cooldown:
         "<strong>Lượt rút tiếp theo sẽ mở sau {{hours}} giờ {{minutes}} phút. <btn>Đăng nhập ngay</btn> để rút thêm bài.</strong>",
@@ -316,6 +317,7 @@ export const viPages = {
       title: "Lịch sử 1 lá",
       subtitle: "Xem lại các suy nghĩ và góc nhìn vũ trụ đã qua",
       empty: "Chưa có lượt trải bài nào",
+      emptyButton: "Rút 1 lá bài",
       deleteDescription:
         "Trải bài này sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa không?",
       deleteTitle: "Xóa lượt trải bài này?",

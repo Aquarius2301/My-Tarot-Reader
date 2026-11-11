@@ -2,6 +2,7 @@ export * from "./AppLoading";
 export * from "./AppTitle";
 export * from "./Coin";
 export * from "./CopyButton";
+export * from "./EmptyView";
 export * from "./ErrorView";
 export * from "./PaginationBar";
 export * from "./ResponsiveModal";

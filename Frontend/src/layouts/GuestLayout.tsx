@@ -1,4 +1,4 @@
-import { HomeOutlined, StarOutlined } from "@ant-design/icons";
+import { GoogleOutlined, HomeOutlined, StarOutlined } from "@ant-design/icons";
 import type { LayoutMenuItem } from "@/constants/theme.constants";
 import { BaseLayout } from "@/layouts/BaseLayout";
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,11 @@ export function GuestLayout({ title }: GuestLayoutProps) {
       key: WEB_URL.guestTarot,
       label: t("page.tarot.title"),
       icon: <StarOutlined />,
+    },
+    {
+      key: WEB_URL.login,
+      label: t("page.login.title"),
+      icon: <GoogleOutlined />,
     },
   ];
 

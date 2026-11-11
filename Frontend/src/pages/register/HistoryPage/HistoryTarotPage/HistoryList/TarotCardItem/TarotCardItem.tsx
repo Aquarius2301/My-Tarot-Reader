@@ -1,4 +1,3 @@
-import { convertISOToDate } from "@/utils";
 import { Button, Card, Divider, Flex } from "antd";
 import { useTranslation } from "react-i18next";
 import {
@@ -9,15 +8,27 @@ import {
 import { TarotCard } from "@/components";
 import Text from "antd/es/typography/Text";
 import type { CardData, GetAllReadingItem } from "@/types";
+import { convertISOToDate } from "@/utils";
+import { TarotCardItemLoading } from "./TarotCardItemLoading";
 
 interface TarotCardItemProps {
-  data: GetAllReadingItem;
-  onView: (card: CardData) => void;
-  onDelete: (id: string) => void;
+  data?: GetAllReadingItem;
+  onView?: (card: CardData) => void;
+  onDelete?: (id: string) => void;
+  isLoading?: boolean;
 }
 
-export function TarotCardItem({ data, onView, onDelete }: TarotCardItemProps) {
+export function TarotCardItem({
+  data,
+  onView,
+  onDelete,
+  isLoading = false,
+}: TarotCardItemProps) {
   const { t, i18n } = useTranslation();
+
+  if (isLoading || !data) {
+    return <TarotCardItemLoading />;
+  }
 
   const { date, time } = convertISOToDate(data.createdAt, i18n.language);
   const cardName = t(`tarot.meaning.${data.cardCode}.name`);
@@ -26,7 +37,7 @@ export function TarotCardItem({ data, onView, onDelete }: TarotCardItemProps) {
     : t("tarot.position.upright");
 
   const handleView = () => {
-    onView({
+    onView?.({
       cardCode: data.cardCode,
       isReversed: data.isReversed,
     });
@@ -47,7 +58,7 @@ export function TarotCardItem({ data, onView, onDelete }: TarotCardItemProps) {
             // Prevent the click from bubbling up to the Card's onClick,
             // which would otherwise also open the "view" modal.
             e.stopPropagation();
-            onDelete(data.id);
+            onDelete?.(data.id);
           }}
         />
       }
