@@ -14,6 +14,8 @@ public record GetOrderStatusQuery(Guid Id, Guid UserId) : IRequest<GetOrderStatu
 /// <param name="RedCoins">The number of red coins granted on payment.</param>
 /// <param name="WhiteCoins">The number of bonus white coins granted on payment.</param>
 /// <param name="PaidAt">The time the payment was confirmed, or <c>null</c> while unpaid.</param>
+/// <param name="CheckoutUrl">The PayOS checkout url while the order is pending, otherwise <c>null</c>.</param>
+/// <param name="QrCode">The PayOS QR payload while the order is pending, otherwise <c>null</c>.</param>
 public record GetOrderStatusResult(
     Guid Id,
     long OrderCode,
@@ -21,5 +23,7 @@ public record GetOrderStatusResult(
     int AmountVnd,
     int RedCoins,
     int WhiteCoins,
-    DateTimeOffset? PaidAt
+    DateTimeOffset? PaidAt,
+    string? CheckoutUrl,
+    string? QrCode
 );

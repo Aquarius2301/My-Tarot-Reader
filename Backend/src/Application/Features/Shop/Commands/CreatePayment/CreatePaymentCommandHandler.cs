@@ -84,6 +84,10 @@ public class CreatePaymentCommandHandler(
         paymentOrder.PayOsPaymentLinkId = string.IsNullOrEmpty(response.PaymentLinkId)
             ? null
             : response.PaymentLinkId;
+        paymentOrder.CheckoutUrl = string.IsNullOrEmpty(response.CheckoutUrl)
+            ? null
+            : response.CheckoutUrl;
+        paymentOrder.QrCode = string.IsNullOrEmpty(response.QrCode) ? null : response.QrCode;
         await context.SaveChangesAsync(cancellationToken);
 
         return new CreatePaymentResult(

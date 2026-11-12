@@ -134,6 +134,8 @@ public class CreatePaymentCommandHandlerTests
         order.RedCoins.Should().Be(PackageRedCoins);
         order.WhiteCoins.Should().Be(PackageWhiteCoins);
         order.Status.Should().Be(PaymentOrderStatus.Pending);
+        order.CheckoutUrl.Should().Be(CheckoutUrl);
+        order.QrCode.Should().Be(QrCode);
         result.AmountVnd.Should().Be(PackagePrice);
         result.RedCoins.Should().Be(PackageRedCoins);
         result.WhiteCoins.Should().Be(PackageWhiteCoins);

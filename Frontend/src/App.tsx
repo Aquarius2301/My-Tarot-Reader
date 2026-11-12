@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AppRouter } from "./routes";
 import { lazy } from "react";
+import AppRouter from "./routes/AppRouter";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,7 +17,7 @@ const ReactQueryDevtools = lazy(() =>
   })),
 );
 
-export default function App() {
+export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppRouter />

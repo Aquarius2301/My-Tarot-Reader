@@ -1,0 +1,1 @@
+export { AiTarotResultItem } from "./AiTarotResultItem";

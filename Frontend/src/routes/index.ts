@@ -1,3 +1,2 @@
-export { WEB_URL } from "./url.routes";
-
-export { default as AppRouter } from "./AppRouter";
+export { WEB_URL, type AppRoute } from "./AppGate";
+export * from "./AppRouter";

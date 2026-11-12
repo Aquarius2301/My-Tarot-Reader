@@ -28,6 +28,12 @@ public class PaymentOrder : BaseEntity
     /// <summary> The PayOS payment link id, set after the payment link is created. </summary>
     public string? PayOsPaymentLinkId { get; set; }
 
+    /// <summary> The PayOS checkout url, stored so it can be returned on later polls. </summary>
+    public string? CheckoutUrl { get; set; }
+
+    /// <summary> The PayOS EMVCo QR payload, stored so it can be returned on later polls. </summary>
+    public string? QrCode { get; set; }
+
     /// <summary> The bank transaction reference reported by PayOS when the order was paid. </summary>
     public string? PayOsTransactionReference { get; set; }
 

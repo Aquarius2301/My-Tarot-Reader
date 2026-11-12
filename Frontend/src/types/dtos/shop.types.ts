@@ -39,4 +39,6 @@ export interface GetOrderStatusResult {
   redCoins: number;
   whiteCoins: number;
   paidAt: string | null;
+  checkoutUrl?: string | null;
+  qrCode?: string | null;
 }

@@ -1,0 +1,1 @@
+export { TarotCardItem } from "./TarotCardItem";

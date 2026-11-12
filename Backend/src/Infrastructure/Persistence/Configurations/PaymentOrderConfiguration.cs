@@ -20,6 +20,8 @@ public class PaymentOrderConfiguration : IEntityTypeConfiguration<PaymentOrder>
         builder.Property(x => x.WhiteCoins).IsRequired();
         builder.Property(x => x.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.PayOsPaymentLinkId).HasMaxLength(100);
+        builder.Property(x => x.CheckoutUrl).HasMaxLength(1000);
+        builder.Property(x => x.QrCode).HasColumnType("text");
         builder.Property(x => x.PayOsTransactionReference).HasMaxLength(100);
 
         builder.ToTable(t =>

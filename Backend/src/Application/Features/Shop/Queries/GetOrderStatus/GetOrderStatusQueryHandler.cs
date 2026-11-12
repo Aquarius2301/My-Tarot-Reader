@@ -31,6 +31,8 @@ public class GetOrderStatusQueryHandler(
             order = await GetOwnedOrderAsync(request.UserId, request.Id, cancellationToken);
         }
 
+        var isPending = order.Status == PaymentOrderStatus.Pending;
+
         return new GetOrderStatusResult(
             order.Id,
             order.OrderCode,
@@ -38,7 +40,9 @@ public class GetOrderStatusQueryHandler(
             order.AmountVnd,
             order.RedCoins,
             order.WhiteCoins,
-            order.PaidAt
+            order.PaidAt,
+            isPending ? order.CheckoutUrl : null,
+            isPending ? order.QrCode : null
         );
     }
 
@@ -63,6 +67,8 @@ public class GetOrderStatusQueryHandler(
                 WhiteCoins = o.WhiteCoins,
                 Status = o.Status,
                 PaidAt = o.PaidAt,
+                CheckoutUrl = o.CheckoutUrl,
+                QrCode = o.QrCode,
             })
             .FirstOrDefaultAsync(cancellationToken)
         ?? throw new NotFoundException(ShopErrorCode.OrderNotFound);

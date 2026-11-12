@@ -353,6 +353,10 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.Property<int>("AmountVnd")
                         .HasColumnType("integer");
 
+                    b.Property<string>("CheckoutUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -377,6 +381,9 @@ namespace MyTarotReader.Infrastructure.Persistence.Migrations
                     b.Property<string>("PayOsTransactionReference")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("QrCode")
+                        .HasColumnType("text");
 
                     b.Property<int>("RedCoins")
                         .HasColumnType("integer");

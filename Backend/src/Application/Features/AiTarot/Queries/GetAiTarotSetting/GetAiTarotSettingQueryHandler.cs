@@ -16,6 +16,7 @@ public class GetAiTarotSettingQueryHandler(IAppDbContext context)
         var count = await context
             .AITarotReadingCounts.Where(s => s.IsEnabled)
             .AsNoTracking()
+            .OrderBy(s => s.CardCount)
             .Select(s => new AiTarotReadingCountItem(
                 s.CardCount,
                 s.WhiteCoins,

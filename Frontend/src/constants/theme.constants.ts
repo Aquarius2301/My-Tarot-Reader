@@ -1,192 +1,119 @@
-import { type ThemeConfig, theme } from "antd";
-import type { UserRole } from "@/types";
+import type { ReactNode } from "react";
+import { theme as antdTheme, type ThemeConfig } from "antd";
 
-/**
- * The available theme modes for the application.
- */
-export const THEME_MODE = ["dark", "light"] as const;
+export type ThemeMode = "light" | "dark";
 
-/**
- * The type representing the theme modes in the application.
- * It is derived from the `THEME_MODE` constant and can be used for type checking and ensuring that only valid theme modes are assigned.
- */
-export type ThemeMode = (typeof THEME_MODE)[number];
+export const DEFAULT_THEME_MODE: ThemeMode = "light" as const;
 
-/**
- * The default theme mode for the application.
- */
-export const DEFAULT_THEME_MODE = "dark";
+export type LayoutVariant = "guest" | "register" | "admin";
 
-// Color palettes for each user role and mode, including primary, hover, active, glow, textOnPrimary, and surface colors.
-export const COLOR_PALETTES = {
+export type LayoutMenuItem = {
+  key: string;
+  label: string;
+  icon?: ReactNode;
+  children?: LayoutMenuItem[];
+};
+
+export type Palette = {
+  primary: string;
+  bgBase: string;
+  siderBg: string;
+  accentGlow: string;
+};
+
+export const layoutPalettes: Record<
+  LayoutVariant,
+  Record<ThemeMode, Palette>
+> = {
   guest: {
-    primary: "#6B5CA5",
-    hover: "#8574C4",
-    active: "#574A8A",
-    glow: "#B8A9E8",
-    textOnPrimary: "#F5F0FF",
-    surface: {
-      dark: { bg: "#0F0B1E", border: "#2A2145" },
-      light: { bg: "#F1EDF9", border: "#D9CFF0" },
+    light: {
+      primary: "#0284c7",
+      bgBase: "#f8fafc",
+      siderBg: "#ffffff",
+      accentGlow: "rgba(56, 189, 248, 0.25)",
+    },
+    dark: {
+      primary: "#38bdf8",
+      bgBase: "#0f172a",
+      siderBg: "#090d16",
+      accentGlow: "rgba(56, 189, 248, 0.25)",
     },
   },
-  registered: {
-    primary: "#9D5CE0",
-    hover: "#B47AF0",
-    active: "#7C3FBF",
-    glow: "#D4B8FF",
-    textOnPrimary: "#FBF6FF",
-    surface: {
-      dark: { bg: "#150F28", border: "#3A2A5C" },
-      light: { bg: "#F5EEFC", border: "#DFCCF5" },
+  register: {
+    light: {
+      primary: "#7e22ce",
+      bgBase: "#faf5ff",
+      siderBg: "#ffffff",
+      accentGlow: "rgba(168, 85, 247, 0.25)",
     },
-  },
-  pro: {
-    primary: "#D4AF37",
-    hover: "#E8C766",
-    active: "#B8942C",
-    glow: "#F5DFA0",
-    textOnPrimary: "#241C08",
-    surface: {
-      dark: { bg: "#1A1509", border: "#4A3D1A" },
-      light: { bg: "#FBF6E8", border: "#E8D9A8" },
+    dark: {
+      primary: "#a855f7",
+      bgBase: "#0b0f19",
+      siderBg: "#070a12",
+      accentGlow: "rgba(168, 85, 247, 0.25)",
     },
   },
   admin: {
-    primary: "#14B8A6",
-    hover: "#2DD4BF",
-    active: "#0D9488",
-    glow: "#5EEAD4",
-    textOnPrimary: "#042F2A",
-    surface: {
-      dark: { bg: "#07201E", border: "#134E4A" },
-      light: { bg: "#EFFBFA", border: "#B2F0EA" },
+    light: {
+      primary: "#059669",
+      bgBase: "#ecfdf5",
+      siderBg: "#ffffff",
+      accentGlow: "rgba(16, 185, 129, 0.25)",
     },
-  },
-} as const;
-
-// Base surface colors for each mode
-const BASE_SURFACE: Record<
-  ThemeMode,
-  {
-    bgContainer: string;
-    bgElevated: string;
-    text: string;
-    textSecondary: string;
-  }
-> = {
-  dark: {
-    bgContainer: "#17122B",
-    bgElevated: "#1C1735",
-    text: "#EDE6FF",
-    textSecondary: "#B3A6D9",
-  },
-  light: {
-    bgContainer: "#FFFDF8",
-    bgElevated: "#FFFFFF",
-    text: "#2A2145",
-    textSecondary: "#7A6B9E",
+    dark: {
+      primary: "#10b981",
+      bgBase: "#022c22",
+      siderBg: "#011c15",
+      accentGlow: "rgba(16, 185, 129, 0.25)",
+    },
   },
 };
 
-/**
- * The display colors for the coin badges (white coin and red coin) shown in
- * the header for authenticated users. These tint the coin icons so the two
- * wallet balances are visually distinct in both light and dark mode.
- */
-export const COIN_COLORS = {
+export const coinColors = {
   /** White coin on dark surfaces: bright, near-white. */
   white: "#F2EFFF",
   /** White coin on light surfaces: silver-grey so it stays visible against a light header. */
   whiteLight: "#6E6A85",
-  red: "#E5484D",
+  red: "#e84f54",
+  redDark: "#dd2026",
 } as const;
 
-/** Body font */
-const FONT_BODY = "'Cormorant Garamond', 'EB Garamond', Georgia, serif";
+export function getPalette(variant: LayoutVariant, mode: ThemeMode): Palette {
+  return layoutPalettes[variant][mode];
+}
 
-const buildTheme = (
-  role: keyof typeof COLOR_PALETTES,
-  mode: ThemeMode,
-): ThemeConfig => {
-  const p = COLOR_PALETTES[role];
-  const surface = p.surface[mode];
-  const base = BASE_SURFACE[mode];
+export const getTheme = (isDark: boolean, palette: Palette): ThemeConfig => {
   return {
-    algorithm: mode === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
+    algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
     token: {
-      colorPrimary: p.primary,
-      colorPrimaryHover: p.hover,
-      colorPrimaryActive: p.active,
-      colorBgBase: surface.bg,
-      colorBgContainer: base.bgContainer,
-      colorBgElevated: base.bgElevated,
-      colorBorder: surface.border,
-      colorBorderSecondary: surface.border,
-      colorText: base.text,
-      colorTextSecondary: base.textSecondary,
-      fontFamily: FONT_BODY,
+      colorPrimary: palette.primary,
+      colorBgLayout: palette.bgBase,
+      colorBgContainer: palette.siderBg,
+      colorTextBase: isDark ? "#f8fafc" : "#0f172a",
       borderRadius: 10,
-      borderRadiusLG: 16,
+      fontFamily:
+        "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     components: {
-      Button: {
-        colorPrimary: p.primary,
-        algorithm: true,
-        borderRadius: 8,
+      Layout: {
+        siderBg: palette.siderBg,
+        headerBg: palette.siderBg,
+        bodyBg: palette.bgBase,
+        triggerBg: palette.siderBg,
+      },
+      Menu: {
+        itemBg: "transparent",
+        itemSelectedBg: palette.accentGlow,
+        itemSelectedColor: palette.primary,
+        itemHoverBg: palette.accentGlow,
+        itemBorderRadius: 10,
       },
       Card: {
-        colorBorderSecondary: surface.border,
-        colorBgContainer: surface.bg,
+        colorBorderSecondary: palette.accentGlow,
       },
-      Tag: {
-        colorBgContainer: surface.bg,
-      },
-      Table: {
-        colorBgContainer: surface.bg,
+      Divider: {
+        colorSplit: palette.accentGlow,
       },
     },
-  };
-};
-
-/**
- * Returns the Ant Design theme configuration for the given user role and mode.
- * If the role is not provided or unrecognized, it defaults to "guest".
- * If the mode is not provided, it defaults to "dark".
- */
-export const getThemeByRole = (
-  role?: UserRole,
-  mode: ThemeMode = "dark",
-): ThemeConfig => {
-  const r = role ?? "guest";
-  const key =
-    r in COLOR_PALETTES ? (r as keyof typeof COLOR_PALETTES) : "guest";
-  return buildTheme(key, mode);
-};
-
-/**
- * Returns a palette of colors for the given user role and mode.
- * If the role is not provided or unrecognized, it defaults to "guest".
- * If the mode is not provided, it defaults to "dark".
- * The returned palette includes primary, hover, active, glow, textOnPrimary,
- * bgLight, border, text, and textSecondary colors.
- */
-export const getPaletteByRole = (role?: UserRole, mode: ThemeMode = "dark") => {
-  const r = role ?? "guest";
-  const key =
-    r in COLOR_PALETTES ? (r as keyof typeof COLOR_PALETTES) : "guest";
-  const p = COLOR_PALETTES[key];
-  const surface = p.surface[mode];
-  const base = BASE_SURFACE[mode];
-  return {
-    primary: p.primary,
-    hover: p.hover,
-    active: p.active,
-    glow: p.glow,
-    textOnPrimary: p.textOnPrimary,
-    bgLight: surface.bg,
-    border: surface.border,
-    text: base.text,
-    textSecondary: base.textSecondary,
   };
 };

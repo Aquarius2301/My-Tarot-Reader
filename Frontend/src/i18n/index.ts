@@ -1,13 +1,13 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import { viPages } from "./locales/pages/vi.pages";
-import { enPages } from "./locales/pages/en.pages";
-import { viComponents } from "./locales/components/vi.components";
-import { enComponents } from "./locales/components/en.components";
-import { viTarot } from "./locales/tarot/vi.tarot";
-import { enTarot } from "./locales/tarot/en.tarot";
-import { viErrors } from "./locales/errors/vi.errors";
-import { enErrors } from "./locales/errors/en.errors";
+import { viPages } from "@/i18n/locales/pages/vi.pages";
+import { enPages } from "@/i18n/locales/pages/en.pages";
+import { viComponents } from "@/i18n/locales/components/vi.components";
+import { enComponents } from "@/i18n/locales/components/en.components";
+import { viTarot } from "@/i18n/locales/tarot/vi.tarot";
+import { enTarot } from "@/i18n/locales/tarot/en.tarot";
+import { viErrors } from "@/i18n/locales/errors/vi.errors";
+import { enErrors } from "@/i18n/locales/errors/en.errors";
 
 /**
  * Merge tarot meanings data into i18n resources under tarot.meanings

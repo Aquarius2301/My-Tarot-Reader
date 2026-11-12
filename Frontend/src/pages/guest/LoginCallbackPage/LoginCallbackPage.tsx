@@ -1,4 +1,5 @@
-import { App, Spin } from "antd";
+import { App } from "antd";
+import { AppLoading } from "@/components";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -31,7 +32,7 @@ function decodeJwtPayload(token: string): { nonce?: string } | null {
  * The credential is forwarded to the backend, which sets the HttpOnly session
  * cookies, and then we move on to the home page.
  */
-export default function LoginCallbackPage() {
+export default function GuestLoginCallbackPage() {
   const { message } = App.useApp();
   const { i18n } = useTranslation();
   const navigate = useNavigate();
@@ -93,5 +94,5 @@ export default function LoginCallbackPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i18n, message, mutate, navigate]);
 
-  return <Spin fullscreen />;
+  return <AppLoading />;
 }
