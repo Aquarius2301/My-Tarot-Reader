@@ -14,7 +14,8 @@ public class GetAllShopPackagesQueryHandler(IAppDbContext context)
     {
         var items = await context
             .ShopPackages.AsNoTracking()
-            .OrderBy(p => p.Price)
+            .OrderBy(p => p.RedCoins)
+            .ThenBy(p => p.Price)
             .Select(p => new GetAllShopPackagesItem(
                 p.Id,
                 p.Code,
