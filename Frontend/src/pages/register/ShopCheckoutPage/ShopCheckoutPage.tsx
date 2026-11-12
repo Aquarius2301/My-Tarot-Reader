@@ -1,16 +1,14 @@
 import { useEffect, useMemo } from "react";
-import { Spin } from "antd";
 import { useTranslation } from "react-i18next";
 import { Navigate, useLocation, useParams } from "react-router-dom";
 import { AppTitle, ErrorView } from "@/components";
 import { useGetOrderStatus, useRefreshBalancesAfterPaid } from "@/hooks/api";
 import { WEB_URL } from "@/routes";
-import type { CheckoutPayload } from "@/utils";
 import {
   clearCheckoutPayload,
   isGuid,
-  readCheckoutPayload,
   readOrderState,
+  resolveCheckoutPayload,
 } from "@/utils";
 import { CheckoutCard } from "./components";
 
@@ -34,22 +32,11 @@ export default function ShopCheckoutPage() {
 
   const { data, isLoading, refetch } = useGetOrderStatus(validOrderId);
 
-  // The order API is the source of truth once it responds; router state and the
-  // storage cache are only fallbacks for old orders created before the backend
-  // started returning the PayOS payload.
-  const payment = useMemo<CheckoutPayload | null>(() => {
-    const cached = validOrderId === "" ? null : readCheckoutPayload(validOrderId);
-    const checkoutUrl =
-      data?.checkoutUrl ||
-      stateOrder?.checkoutUrl ||
-      cached?.checkoutUrl ||
-      "";
-    const qrCode = data?.qrCode || stateOrder?.qrCode || cached?.qrCode || "";
+  const payment = useMemo(
+    () => resolveCheckoutPayload(validOrderId, data, stateOrder),
+    [validOrderId, data, stateOrder],
+  );
 
-    return checkoutUrl === "" && qrCode === ""
-      ? null
-      : { checkoutUrl, qrCode };
-  }, [data?.checkoutUrl, data?.qrCode, stateOrder, validOrderId]);
   useRefreshBalancesAfterPaid(data?.status);
 
   // The cached PayOS payload is only needed while the order is pending.
@@ -63,24 +50,21 @@ export default function ShopCheckoutPage() {
     return <Navigate to={WEB_URL.shop} replace />;
   }
 
-  if (isLoading) {
-    return <Spin fullscreen />;
-  }
-
-  if (data === undefined) {
+  if (data === undefined && !isLoading) {
     return <ErrorView type="server" onRetry={refetch} />;
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      {data.status === "pending" && (
+    <div>
+      {(isLoading || data?.status === "pending") && (
         <AppTitle
           title={t("page.shop.checkoutTitle")}
           subtitle={t("page.shop.checkoutSubtitle")}
+          isLoading={isLoading}
         />
       )}
 
-      <CheckoutCard order={data} payment={payment} />
+      <CheckoutCard order={data} payment={payment} isLoading={isLoading} />
     </div>
   );
 }

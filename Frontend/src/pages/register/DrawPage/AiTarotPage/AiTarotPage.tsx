@@ -1,12 +1,13 @@
 import { useGetAiTarotSettings } from "@/hooks/api";
+
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { AppTitle, ErrorView } from "@/components";
 import {
   DrawCardsStep,
   SelectReadingStep,
   SelectReadingStepLoading,
 } from "./components";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { AppTitle, ErrorView } from "@/components";
 
 interface AiTarotConfig {
   cardCount: number;
