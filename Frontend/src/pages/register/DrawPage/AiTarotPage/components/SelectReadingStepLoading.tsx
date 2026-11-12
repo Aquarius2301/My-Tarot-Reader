@@ -5,7 +5,7 @@ export function SelectReadingStepLoading() {
   const { token } = theme.useToken();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
-  const cardSize = isMobile ? "small" : "default";
+  const cardSize = isMobile ? "small" : "medium";
 
   const renderOptions = (count: number) => (
     <Flex vertical gap={token.marginXS}>

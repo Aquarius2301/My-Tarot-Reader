@@ -1,4 +1,4 @@
-import type { CreatePaymentResult } from "@/types";
+import type { CreatePaymentResult, GetOrderStatusResult } from "@/types";
 
 /**
  * Client-side helpers for the shop checkout flow: VND formatting and the
@@ -73,4 +73,27 @@ export function readOrderState(
   }
   const order = state as CreatePaymentResult;
   return order.orderId === orderId ? order : null;
+}
+
+/**
+ * Resolves the PayOS payload for a checkout, preferring the order API (source
+ * of truth), then the router state, then the sessionStorage cache kept for
+ * orders created before the backend returned the payload. Returns null when
+ * neither a checkout url nor a QR code is available.
+ */
+export function resolveCheckoutPayload(
+  orderId: string,
+  order: GetOrderStatusResult | undefined,
+  stateOrder: CreatePaymentResult | null,
+): CheckoutPayload | null {
+  if (orderId === "") {
+    return null;
+  }
+
+  const cached = readCheckoutPayload(orderId);
+  const checkoutUrl =
+    order?.checkoutUrl || stateOrder?.checkoutUrl || cached?.checkoutUrl || "";
+  const qrCode = order?.qrCode || stateOrder?.qrCode || cached?.qrCode || "";
+
+  return checkoutUrl === "" && qrCode === "" ? null : { checkoutUrl, qrCode };
 }

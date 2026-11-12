@@ -1,18 +1,41 @@
 import type { GetOrderStatusResult } from "@/types";
 import type { CheckoutPayload } from "@/utils";
-import CheckoutResult from "./CheckoutResult";
-import PendingCheckoutCard from "./PendingCheckoutCard";
+import { CheckoutCardLoading } from "./CheckoutCardLoading";
+import { CheckoutFailedResult } from "./CheckoutFailedResult";
+import { CheckoutPaidResult } from "./CheckoutPaidResult";
+import { PendingCheckoutCard } from "./PendingCheckoutCard";
 
 export interface CheckoutCardProps {
-  order: GetOrderStatusResult;
+  order?: GetOrderStatusResult;
   payment: CheckoutPayload | null;
+  isLoading?: boolean;
 }
 
-/** Renders a payment order according to its status. */
-export default function CheckoutCard({ order, payment }: CheckoutCardProps) {
+/**
+ * Renders the checkout for one order according to its lifecycle: a skeleton
+ * while the order loads, the PayOS QR + summary while pending, then the paid or
+ * failed result once it settles.
+ */
+export function CheckoutCard({
+  order,
+  payment,
+  isLoading = false,
+}: CheckoutCardProps) {
+  if (isLoading) {
+    return <CheckoutCardLoading />;
+  }
+
+  if (order === undefined) {
+    return null;
+  }
+
   if (order.status === "pending") {
     return <PendingCheckoutCard order={order} payment={payment} />;
   }
 
-  return <CheckoutResult order={order} />;
+  if (order.status === "paid") {
+    return <CheckoutPaidResult order={order} />;
+  }
+
+  return <CheckoutFailedResult status={order.status} />;
 }

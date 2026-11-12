@@ -17,7 +17,7 @@ export interface DrawCardsStepProps {
 }
 
 /** Step 2: draw the spread on the TarotDeck and create the AI reading. */
-export default function DrawCardsStep({
+export function DrawCardsStep({
   cardCount,
   questionType,
   onBack,

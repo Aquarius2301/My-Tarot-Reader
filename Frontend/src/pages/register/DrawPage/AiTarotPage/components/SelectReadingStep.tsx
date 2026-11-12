@@ -26,7 +26,7 @@ export interface SelectReadingStepProps {
 }
 
 /** Step 1: pick the spread size and question topic before drawing cards. */
-export default function SelectReadingStep({
+export function SelectReadingStep({
   settings,
   onNext,
 }: SelectReadingStepProps) {
@@ -55,7 +55,7 @@ export default function SelectReadingStep({
       ? countSetting?.positionsVi
       : countSetting?.positionsEn) ?? [];
 
-  const cardSize = isMobile ? "small" : "default";
+  const cardSize = isMobile ? "small" : "medium";
 
   const optionStyle = (isSelected: boolean): CSSProperties => ({
     width: "100%",
