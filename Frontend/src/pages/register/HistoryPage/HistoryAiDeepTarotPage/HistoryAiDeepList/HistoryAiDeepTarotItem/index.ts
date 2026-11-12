@@ -1,0 +1,1 @@
+export { HistoryAiDeepTarotItem } from "./HistoryAiDeepTarotItem";

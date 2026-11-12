@@ -17,10 +17,7 @@ export interface CardLibraryGridProps {
  * inner TarotCard is presentational so focus never gets trapped on a nested
  * interactive element.
  */
-export default function CardLibraryGrid({
-  codes,
-  onSelectCard,
-}: CardLibraryGridProps) {
+export function CardLibraryGrid({ codes, onSelectCard }: CardLibraryGridProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
 

@@ -19,6 +19,7 @@ import {
 } from "@ant-design/icons";
 import Paragraph from "antd/es/typography/Paragraph";
 import type { ReactNode } from "react";
+import { HistoryAiDeepTarotItemLoading } from "./HistoryAiDeepTarotItemLoading";
 
 /** Badge icon in front of each reading, so the spread is recognisable. */
 const TOPIC_ICONS = {
@@ -27,16 +28,23 @@ const TOPIC_ICONS = {
   crossroads: <BranchesOutlined />,
 } as const satisfies Record<AiDeepTarotTopic, ReactNode>;
 
+export interface HistoryAiDeepTarotItemProps {
+  item?: GetAllAiDeepTarotReadingItem;
+  onDelete?: () => void;
+  isLoading?: boolean;
+}
+
 export function HistoryAiDeepTarotItem({
   item,
   onDelete,
-}: {
-  item: GetAllAiDeepTarotReadingItem;
-  onDelete: () => void;
-}) {
+}: HistoryAiDeepTarotItemProps) {
   const { t, i18n } = useTranslation();
   const { token } = theme.useToken();
   const navigate = useNavigate();
+
+  if (!item) {
+    return <HistoryAiDeepTarotItemLoading />;
+  }
 
   const { date, time } = convertISOToDate(item.createdAt, i18n.language);
   const topicLabel = t(AI_DEEP_TAROT_TOPIC_LABEL_KEYS[item.topic]);
@@ -65,7 +73,7 @@ export function HistoryAiDeepTarotItem({
             // Prevent the click from bubbling up to the Card's onClick,
             // which would otherwise open the full reading page.
             e.stopPropagation();
-            onDelete();
+            onDelete?.();
           }}
         />
       }

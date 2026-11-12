@@ -1,17 +1,16 @@
-import { ResponsiveModal, TarotCard } from "@/components";
+import { ResponsiveModal, TarotCard, TarotMeaningCard } from "@/components";
 import { Button, Flex } from "antd";
 import { RetweetOutlined } from "@ant-design/icons";
 import { type TarotCardCode } from "@/constants";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import TarotMeaningCard from "./TarotMeaningCard";
 
-interface MeaningModalProps {
+export interface MeaningModalProps {
   selectedCard: TarotCardCode | null;
   onSelectedCard: (card: TarotCardCode | null) => void;
 }
 
-export default function MeaningModal({
+export function MeaningModal({
   selectedCard,
   onSelectedCard,
 }: MeaningModalProps) {

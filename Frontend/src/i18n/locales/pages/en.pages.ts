@@ -343,6 +343,7 @@ export const enPages = {
         "This deep tarot reading will be permanently deleted. Are you sure you want to delete it?",
       deleteConfirm: "Delete reading",
       deleteSuccess: "Deep tarot reading deleted",
+      emptyButton: "Go to Deep Tarot",
     },
     login: {
       title: "Sign in",

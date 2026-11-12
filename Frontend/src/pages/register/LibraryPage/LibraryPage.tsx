@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Tabs, Typography, theme } from "antd";
+import { Tabs, theme } from "antd";
 import { useTranslation } from "react-i18next";
 import {
   MAJOR_ARCANA,
@@ -7,10 +7,9 @@ import {
   MINOR_SUITS,
   type TarotCardCode,
 } from "@/constants";
-import CardLibraryGrid from "./components/CardLibraryGrid";
-import { MeaningModal } from "./components";
-
-const { Title, Text } = Typography;
+import { AppTitle } from "@/components";
+import { CardLibraryGrid } from "./CardLibraryGrid";
+import { MeaningModal } from "./MeaningModal";
 
 /** Returns the codes of a given minor-arcana suit (e.g. "min-wands-1"). */
 function codesOfSuit(suit: string): readonly TarotCardCode[] {
@@ -42,12 +41,10 @@ export default function LibraryPage() {
       }}
     >
       {/* Header Section */}
-      <div style={{ textAlign: "center", marginBottom: token.marginXL }}>
-        <Title level={2} style={{ margin: 0 }}>
-          {t("page.library.title")}
-        </Title>
-        <Text type="secondary">{t("page.library.subtitle")}</Text>
-      </div>
+      <AppTitle
+        title={t("page.library.title")}
+        subtitle={t("page.library.subtitle")}
+      />
 
       {/* Two top-level tabs: Major Arcana + Minor Arcana (whose 4 suits are
       nested tabs underneath). */}

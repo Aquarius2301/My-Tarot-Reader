@@ -344,6 +344,7 @@ export const viPages = {
         "Trải bài chuyên sâu này sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa không?",
       deleteConfirm: "Xóa trải bài",
       deleteSuccess: "Đã xóa trải bài chuyên sâu",
+      emptyButton: "Đi tới Tarot chuyên sâu",
     },
     login: {
       title: "Đăng nhập",
