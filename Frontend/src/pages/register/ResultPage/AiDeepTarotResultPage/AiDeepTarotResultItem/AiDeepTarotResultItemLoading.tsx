@@ -1,11 +1,13 @@
 import { CARD_ASPECT, CARD_SIZE_WIDTH } from "@/components";
 import { Card, Flex, Skeleton, theme } from "antd";
 
+export interface AiDeepTarotResultItemLoadingProps {
+  cardCount?: number;
+}
+
 export function AiDeepTarotResultItemLoading({
   cardCount = 6,
-}: {
-  cardCount?: number;
-}) {
+}: AiDeepTarotResultItemLoadingProps) {
   const { token } = theme.useToken();
   const width = CARD_SIZE_WIDTH.sm;
   const height = Math.round(width * CARD_ASPECT);
@@ -14,10 +16,7 @@ export function AiDeepTarotResultItemLoading({
   return (
     <Flex vertical gap={token.marginLG} role="status" aria-busy>
       {/* Crossroads info card (optional) */}
-      <Card
-        title={<Skeleton.Input active style={{ width: 120 }} />}
-        extra={<Skeleton.Input active style={{ width: 60 }} />}
-      >
+      <Card extra={<Skeleton.Input active style={{ width: 60 }} />}>
         <Skeleton active title={false} paragraph={{ rows: 2 }} />
       </Card>
 

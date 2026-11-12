@@ -6,7 +6,7 @@ export function HistoryAiTarotItemLoading() {
   const height = Math.round(width * CARD_ASPECT);
   const radius = Math.max(6, width * 0.06);
 
-  const cardCount = Math.floor(Math.random() * 8) + 3; // Random number between 3 and 10
+  const cardCount = 6;
 
   return (
     <Card

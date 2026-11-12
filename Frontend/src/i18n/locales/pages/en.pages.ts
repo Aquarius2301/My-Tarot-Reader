@@ -400,6 +400,7 @@ export const enPages = {
       subtitle:
         "Buy red coins with PayOS to unlock more Tarot readings and AI spreads.",
       empty: "No packages available right now",
+      loadingPackages: "Loading shop packages",
       packageRedCoins: "red coins",
       packageWhiteCoins: "white coins",
       discountBadge: "{{percent}}% OFF",

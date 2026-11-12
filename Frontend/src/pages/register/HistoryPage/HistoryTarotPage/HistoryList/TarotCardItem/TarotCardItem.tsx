@@ -42,6 +42,7 @@ export function TarotCardItem({ data, onView, onDelete }: TarotCardItemProps) {
       hoverable
       onClick={handleView}
       title={cardName + " · " + orientation}
+      style={{ height: "100%" }}
       extra={
         <Button
           type="text"

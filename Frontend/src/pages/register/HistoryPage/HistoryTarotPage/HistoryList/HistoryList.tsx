@@ -32,9 +32,8 @@ export function HistoryList({
   return (
     <Row gutter={[16, 16]}>
       {reading.map((item) => (
-        <Col xs={24} sm={12} md={8} lg={6}>
+        <Col key={item.id} xs={24} sm={12} md={8} lg={6}>
           <TarotCardItem
-            key={item.id}
             data={item ?? {}}
             onView={onView}
             onDelete={onDelete}

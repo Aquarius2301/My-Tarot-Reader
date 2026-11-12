@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Tabs, theme } from "antd";
+import { Tabs } from "antd";
 import { useTranslation } from "react-i18next";
 import {
   MAJOR_ARCANA,
@@ -18,7 +18,7 @@ function codesOfSuit(suit: string): readonly TarotCardCode[] {
 
 export default function LibraryPage() {
   const { t } = useTranslation();
-  const { token } = theme.useToken();
+
   const [selectedCard, setSelectedCard] = useState<TarotCardCode | null>(null);
 
   const suitTabs = MINOR_SUITS.map((suit) => ({
@@ -33,17 +33,11 @@ export default function LibraryPage() {
   }));
 
   return (
-    <div
-      style={{
-        maxWidth: 1080,
-        margin: "0 auto",
-        padding: `${token.paddingLG}px ${token.paddingMD}px`,
-      }}
-    >
+    <div>
       {/* Header Section */}
       <AppTitle
-        title={t("page.library.title")}
-        subtitle={t("page.library.subtitle")}
+        title={t("page.library.subtitle")}
+        // subtitle={t("page.library.subtitle")}
       />
 
       {/* Two top-level tabs: Major Arcana + Minor Arcana (whose 4 suits are

@@ -15,7 +15,7 @@ export interface PositionSectionCardProps {
 }
 
 /** One position of the spread: the drawn card plus its AI interpretation. */
-export default function PositionSectionCard({
+export function PositionSectionCard({
   label,
   section,
   cardCode,

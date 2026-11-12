@@ -1,30 +1,28 @@
-import { CopyButton, ErrorView, TarotCard } from "@/components";
-import { useGetAiTarotReadingById } from "@/hooks/api";
+import { CopyButton } from "@/components";
+import type { GetAiTarotReadingResult } from "@/types";
 import { matchAnswerCards, parseAiTarotAnswer } from "@/utils";
-import { Card, Flex, Space, theme } from "antd";
-import Paragraph from "antd/es/typography/Paragraph";
-import Text from "antd/es/typography/Text";
-import Title from "antd/es/typography/Title";
+import { Card, Flex, Typography, theme } from "antd";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { InterpretationCard } from "./InterpretationCard";
 import { AiTarotResultItemLoading } from "./AiTarotResultItemLoading";
 
-export function AiTarotResultItem() {
+const { Title, Text, Paragraph } = Typography;
+
+export interface AiTarotResultItemProps {
+  data?: GetAiTarotReadingResult;
+  isLoading?: boolean;
+}
+
+/** Overview, per-card interpretations and overall advice of an AI reading. */
+export function AiTarotResultItem({
+  data,
+  isLoading = false,
+}: AiTarotResultItemProps) {
   const { token } = theme.useToken();
   const { t } = useTranslation();
-  const { readingId } = useParams<{ readingId: string }>();
 
-  const { data, isLoading, refetch } = useGetAiTarotReadingById(
-    readingId ?? "",
-    !!readingId,
-  );
-
-  if (isLoading) {
+  if (isLoading || !data) {
     return <AiTarotResultItemLoading />;
-  }
-
-  if (!data) {
-    return <ErrorView type="server" onRetry={refetch} />;
   }
 
   const answer = parseAiTarotAnswer(data.answer);
@@ -67,14 +65,7 @@ export function AiTarotResultItem() {
     <Flex vertical gap={token.marginLG}>
       {/* Overview section */}
       {answer.overview && (
-        <Card
-          title={
-            <Title level={4} style={{ margin: 0 }}>
-              {data.title}
-            </Title>
-          }
-          extra={answer && <CopyButton text={buildCopyText()} size="small" />}
-        >
+        <Card extra={<CopyButton text={buildCopyText()} size="small" />}>
           <Title level={4} style={{ margin: 0 }}>
             {t("page.aiTarot.result.overview")}
           </Title>
@@ -85,34 +76,18 @@ export function AiTarotResultItem() {
       {/* Cards section */}
       {data.cards.map((card, index) => {
         const answerCard = matchedAnswerCards[index];
-        const positionLabel = answerCard?.position;
-        const name = t(`tarot.meaning.${card.cardCode}.name`);
-        const orientation = orientationLabel(card.isReversed);
 
         return (
-          <Card key={`${card.cardCode}-meaning-${index}`}>
-            <Flex align="center" gap={token.marginSM} wrap>
-              <TarotCard
-                cardCode={card.cardCode}
-                isUpright={!card.isReversed}
-                isFlipped
-                size="sm"
-              />
-              <Space vertical>
-                <Text strong>{positionLabel || name}</Text>
-                <Text type="secondary">
-                  {name} · {orientation}
-                </Text>
-              </Space>
-            </Flex>
-            {answerCard?.interpretation && (
-              <Paragraph style={{ marginTop: token.marginSM }}>
-                {answerCard.interpretation}
-              </Paragraph>
-            )}
-          </Card>
+          <InterpretationCard
+            key={`${card.cardCode}-meaning-${index}`}
+            position={answerCard?.position}
+            interpretation={answerCard?.interpretation}
+            cardCode={card.cardCode}
+            isReversed={card.isReversed}
+          />
         );
       })}
+
       {/* Overall advice section */}
       {answer.overallAdvice && (
         <Card>

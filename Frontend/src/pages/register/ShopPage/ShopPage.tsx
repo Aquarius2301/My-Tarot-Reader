@@ -1,12 +1,12 @@
-import { App, Col, Empty, Row } from "antd";
+import { App } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { AppTitle, ErrorView } from "@/components";
+import { AppTitle, EmptyView, ErrorView } from "@/components";
 import { useCreateOrder, useGetPackages } from "@/hooks/api";
 import { WEB_URL } from "@/routes";
 import type { GetPackagesItem } from "@/types";
 import { getErrorMessage, saveCheckoutPayload } from "@/utils";
-import { PackageCard, ShopPageLoading } from "./components";
+import { ShopPackageList } from "./ShopPackageList";
 
 /**
  * Shop page: lists the purchasable red-coin packages as cards. Buying one
@@ -17,7 +17,7 @@ export default function ShopPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { message } = App.useApp();
-  const { data, isLoading, refetch } = useGetPackages();
+  const { data, isLoading, isError, refetch } = useGetPackages();
   const { mutate, isPending, variables } = useCreateOrder();
 
   const handleBuy = (pkg: GetPackagesItem) => {
@@ -38,33 +38,29 @@ export default function ShopPage() {
     );
   };
 
+  if (isError) {
+    return <ErrorView type="server" onRetry={refetch} />;
+  }
+
+  if (data?.packages.length === 0) {
+    return <EmptyView description={t("page.shop.empty")} />;
+  }
+
   return (
     <div>
       <AppTitle
         title={t("page.shop.title")}
         subtitle={t("page.shop.subtitle")}
+        isLoading={isLoading}
       />
 
-      {isLoading ? (
-        <ShopPageLoading />
-      ) : data === undefined ? (
-        <ErrorView type="server" onRetry={refetch} />
-      ) : data.packages.length === 0 ? (
-        <Empty description={t("page.shop.empty")} />
-      ) : (
-        <Row gutter={[16, 16]}>
-          {data.packages.map((pkg) => (
-            <Col xs={24} sm={12} lg={8} key={pkg.code}>
-              <PackageCard
-                pkg={pkg}
-                loading={isPending && variables?.packageCode === pkg.code}
-                disabled={isPending}
-                onBuy={() => handleBuy(pkg)}
-              />
-            </Col>
-          ))}
-        </Row>
-      )}
+      <ShopPackageList
+        packages={data?.packages ?? []}
+        isLoading={isLoading}
+        isPending={isPending}
+        pendingPackageCode={variables?.packageCode}
+        onBuy={handleBuy}
+      />
     </div>
   );
 }

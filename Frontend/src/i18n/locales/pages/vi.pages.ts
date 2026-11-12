@@ -400,6 +400,7 @@ export const viPages = {
       subtitle:
         "Mua xu đỏ qua PayOS để mở khóa thêm các lượt trải bài Tarot và trải AI.",
       empty: "Hiện chưa có gói nào để mua",
+      loadingPackages: "Đang tải các gói",
       packageRedCoins: "xu đỏ",
       packageWhiteCoins: "xu trắng",
       discountBadge: "GIẢM {{percent}}%",

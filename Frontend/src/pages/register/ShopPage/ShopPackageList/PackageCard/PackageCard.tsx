@@ -17,7 +17,7 @@ export interface PackageCardProps {
  * coins (and bonus white coins) on the top left, the discount badge on the top
  * right, then the prices and a full-width buy button at the bottom.
  */
-export default function PackageCard({
+export function PackageCard({
   pkg,
   loading,
   disabled,
@@ -32,7 +32,7 @@ export default function PackageCard({
     : 0;
 
   return (
-    <Card>
+    <Card style={{ height: "100%" }}>
       <Flex vertical gap={token.marginMD} style={{ height: "100%" }}>
         <Flex justify="space-between" align="flex-start" gap={token.marginSM}>
           <Flex align="baseline" gap={token.marginXS}>

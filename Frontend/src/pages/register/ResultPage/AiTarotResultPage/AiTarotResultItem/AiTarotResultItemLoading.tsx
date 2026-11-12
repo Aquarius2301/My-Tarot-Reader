@@ -1,11 +1,13 @@
 import { CARD_ASPECT, CARD_SIZE_WIDTH } from "@/components";
 import { Card, Flex, Skeleton, Space, theme } from "antd";
 
+export interface AiTarotResultItemLoadingProps {
+  cardCount?: number;
+}
+
 export function AiTarotResultItemLoading({
   cardCount = 3,
-}: {
-  cardCount?: number;
-}) {
+}: AiTarotResultItemLoadingProps) {
   const { token } = theme.useToken();
   const width = CARD_SIZE_WIDTH.sm;
   const height = Math.round(width * CARD_ASPECT);
@@ -14,10 +16,7 @@ export function AiTarotResultItemLoading({
   return (
     <Flex vertical gap={token.marginLG} role="status" aria-busy>
       {/* Overview */}
-      <Card
-        title={<Skeleton.Input active size="small" style={{ width: 240 }} />}
-        extra={<Skeleton.Button active size="small" shape="round" />}
-      >
+      <Card extra={<Skeleton.Button active size="small" shape="round" />}>
         <Skeleton.Input
           active
           size="small"

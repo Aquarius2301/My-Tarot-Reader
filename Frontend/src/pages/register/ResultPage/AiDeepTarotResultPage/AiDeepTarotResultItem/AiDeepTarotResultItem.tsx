@@ -1,7 +1,5 @@
-import { CopyButton, ErrorView } from "@/components";
-import type { AiDeepTarotTopic } from "@/constants";
-import { useGetAiDeepTarotReadingById } from "@/hooks/api";
-import { WEB_URL } from "@/routes";
+import { CopyButton } from "@/components";
+import type { GetAiDeepTarotReadingResult } from "@/types";
 import {
   getCrossroadsTimeFrameLabelKey,
   getDeepTarotPositionKeys,
@@ -9,43 +7,33 @@ import {
   matchDeepAnswerSections,
   parseAiDeepTarotAnswer,
 } from "@/utils";
-import { Button, Card, Flex, Tag, Typography, theme } from "antd";
+import { Card, Flex, Tag, Typography, theme } from "antd";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
-import { PositionSectionCard } from "../components";
 import { AiDeepTarotResultItemLoading } from "./AiDeepTarotResultItemLoading";
+import { PositionSectionCard } from "./PositionSectionCard";
 
 const { Title, Text, Paragraph } = Typography;
 
+export interface AiDeepTarotResultItemProps {
+  data?: GetAiDeepTarotReadingResult;
+  isLoading?: boolean;
+}
+
 /**
- * Shows a created deep tarot reading, whichever spread it belongs to: the
- * title, then one card per position (a house name, a calendar month, or one
- * aspect of one of the options the user compared).
+ * Shows a created deep tarot reading, whichever spread it belongs to: one card
+ * per position (a house name, a calendar month, or one aspect of one of the
+ * options the user compared).
  */
-export function AiDeepTarotResultItem() {
-  const { readingId } = useParams<{ readingId: string }>();
-  const navigate = useNavigate();
+export function AiDeepTarotResultItem({
+  data,
+  isLoading = false,
+}: AiDeepTarotResultItemProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
 
-  const { data, isLoading, refetch } = useGetAiDeepTarotReadingById(
-    readingId ?? "",
-    !!readingId,
-  );
-
-  if (isLoading) {
+  if (isLoading || !data) {
     return <AiDeepTarotResultItemLoading />;
   }
-
-  if (!data) {
-    return <ErrorView type="server" onRetry={refetch} />;
-  }
-
-  const drawUrlByTopic: Record<AiDeepTarotTopic, string> = {
-    twelveHouses: WEB_URL.aiDeepTarotTwelveHouses,
-    twelveMonths: WEB_URL.aiDeepTarotTwelveMonths,
-    crossroads: WEB_URL.aiDeepTarotCrossroads,
-  };
 
   const isCrossroads = data.topic === "crossroads";
   const options = data.options ?? [];
@@ -103,11 +91,6 @@ export function AiDeepTarotResultItem() {
     <div>
       {isCrossroads && (data.question || options.length > 0) && (
         <Card
-          title={
-            <Title level={5} style={{ margin: 0 }}>
-              {data.title}
-            </Title>
-          }
           extra={answer && <CopyButton text={buildCopyText()} size="small" />}
           style={{ marginBottom: token.marginLG }}
         >
@@ -177,16 +160,6 @@ export function AiDeepTarotResultItem() {
       ) : (
         <Text type="secondary">{t("page.aiDeepTarot.result.noAnswer")}</Text>
       )}
-
-      <Flex justify="center" style={{ marginTop: token.marginXL }}>
-        <Button
-          type="primary"
-          size="large"
-          onClick={() => navigate(drawUrlByTopic[data.topic])}
-        >
-          {t("page.aiDeepTarot.result.drawAgain")}
-        </Button>
-      </Flex>
     </div>
   );
 }

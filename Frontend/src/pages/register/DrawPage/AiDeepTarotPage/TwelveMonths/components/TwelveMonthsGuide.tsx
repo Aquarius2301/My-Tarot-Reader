@@ -1,7 +1,7 @@
 import { AI_DEEP_TAROT_POSITIONS } from "@/constants";
 import { getDeepTarotMonthLabel } from "@/utils";
 import { Card, Flex, List, Tag, Typography, theme } from "antd";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const { Text, Paragraph } = Typography;
@@ -19,7 +19,7 @@ export default function TwelveMonthsGuide() {
   // The 12 months start after the current one, so resolve the labels once on
   // mount: re-computing on every render would shift the whole spread if the
   // user leaves the page open across a month boundary.
-  const now = useMemo(() => new Date().toISOString(), []);
+  const [now] = useState(() => new Date().toISOString());
   const monthLabels = useMemo(
     () => positions.map((_, index) => getDeepTarotMonthLabel(now, index + 1)),
     [positions, now],
