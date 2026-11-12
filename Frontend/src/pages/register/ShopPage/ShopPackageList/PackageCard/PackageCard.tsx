@@ -32,7 +32,10 @@ export function PackageCard({
     : 0;
 
   return (
-    <Card style={{ height: "100%" }}>
+    <Card
+      style={{ height: "100%" }}
+      styles={{ body: { height: "100%" } }}
+    >
       <Flex vertical gap={token.marginMD} style={{ height: "100%" }}>
         <Flex justify="space-between" align="flex-start" gap={token.marginSM}>
           <Flex align="baseline" gap={token.marginXS}>
