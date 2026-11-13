@@ -3,22 +3,29 @@ import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
 import type { WhiteCoinBatchItem } from "@/types";
 import { convertISOToDate } from "@/utils";
+import { WhiteCoinBatchesCardLoading } from "./WhiteCoinBatchesCardLoading";
 
 const { Title, Text } = Typography;
 
 export interface WhiteCoinBatchesCardProps {
   batches: WhiteCoinBatchItem[];
+  isLoading?: boolean;
 }
 
 /**
  * Lists the user's active white coin batches in the backend-provided order
  * (expiry ascending), highlighting the deadline of each batch with a tag.
  */
-export default function WhiteCoinBatchesCard({
+export function WhiteCoinBatchesCard({
   batches,
+  isLoading = false,
 }: WhiteCoinBatchesCardProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
+
+  if (isLoading) {
+    return <WhiteCoinBatchesCardLoading />;
+  }
 
   const renderExpiry = (expiredAt: string) => {
     const { date, time } = convertISOToDate(expiredAt, i18n.language);

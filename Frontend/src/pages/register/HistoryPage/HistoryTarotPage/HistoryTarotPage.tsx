@@ -1,19 +1,17 @@
 import { AppTitle, EmptyView, ErrorView, PaginationBar } from "@/components";
 import { useTranslation } from "react-i18next";
-import { HistoryList } from "./HistoryList";
 import { App } from "antd";
 import { useState } from "react";
 import { useDeleteHistory, useGetAllReading } from "@/hooks/api";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "@/routes";
 import type { CardData } from "@/types";
-import { TarotCardModal } from "./TarotCardModal";
-import { DeleteReadingModal } from "./DeleteReadingModal";
 import { getErrorMessage } from "@/utils";
+import { DeleteReadingModal, HistoryList, TarotCardModal } from "./components";
 
-export const PAGE_SIZE = 12; // Choose 12 per page because it fits nicely for 1 - 4 columns
+const PAGE_SIZE = 12; // Choose 12 per page because it fits nicely for 1 - 4 columns
 
-export type ModalType = "view" | "delete" | null;
+type ModalType = "view" | "delete" | null;
 
 export default function HistoryTarotPage() {
   const { t } = useTranslation();

@@ -1,6 +1,6 @@
 import { Col, Row } from "antd";
 import type { CardData, GetAllReadingItem } from "@/types";
-import { TarotCardItem } from "./TarotCardItem/TarotCardItem";
+import { TarotCardItem } from "./TarotCardItem";
 
 export interface HistoryListProps {
   reading: GetAllReadingItem[];

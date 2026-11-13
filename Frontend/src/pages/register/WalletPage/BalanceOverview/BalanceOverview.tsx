@@ -1,24 +1,31 @@
 import { Card, Divider, Typography, theme } from "antd";
 import { useTranslation } from "react-i18next";
 import { Coin } from "@/components";
+import { BalanceOverviewLoading } from "./BalanceOverviewLoading";
 
 const { Text } = Typography;
 
 export interface BalanceOverviewProps {
   whiteCoin: number;
   redCoin: number;
+  isLoading?: boolean;
 }
 
 /**
  * Shows the total white and red coin balances as two centered coin stats.
  * Mirrors the header CoinBadge styling but larger for the wallet page.
  */
-export default function BalanceOverview({
+export function BalanceOverview({
   whiteCoin,
   redCoin,
+  isLoading = false,
 }: BalanceOverviewProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
+
+  if (isLoading) {
+    return <BalanceOverviewLoading />;
+  }
 
   // const formatCoins = (value: number) => value.toLocaleString("vi-VN");
 

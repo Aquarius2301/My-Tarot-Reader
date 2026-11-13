@@ -6,11 +6,13 @@ import { Coin } from "@/components";
 import { RED_TO_WHITE_RATE } from "@/constants";
 import { useConvertRedToWhite } from "@/hooks/api";
 import { getErrorMessage } from "@/utils";
+import { ConvertCardLoading } from "./ConvertCardLoading";
 
 const { Title, Text } = Typography;
 
 export interface ConvertCardProps {
   redCoin: number;
+  isLoading?: boolean;
 }
 
 /**
@@ -18,12 +20,19 @@ export interface ConvertCardProps {
  * The granted white coins arrive as a new dated batch and are handled by the
  * backend; success refreshes the wallet and header balance caches.
  */
-export default function ConvertCard({ redCoin }: ConvertCardProps) {
+export function ConvertCard({
+  redCoin,
+  isLoading = false,
+}: ConvertCardProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
   const { message } = App.useApp();
   const { mutate, isPending } = useConvertRedToWhite();
   const [redCoins, setRedCoins] = useState<number | null>(null);
+
+  if (isLoading) {
+    return <ConvertCardLoading />;
+  }
 
   const whiteCoins = redCoins === null ? null : redCoins * RED_TO_WHITE_RATE;
   const exceedsBalance = redCoins !== null && redCoins > redCoin;
