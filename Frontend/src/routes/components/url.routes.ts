@@ -102,17 +102,17 @@ export const registerRoutes: AppRoute[] = [
     component: AiTarotPage,
   },
   {
-    titleKey: "page.aiDeepTarot.title",
+    titleKey: "page.aiDeepTarot.spreads.twelveHouses.title",
     path: WEB_URL.aiDeepTarotTwelveHouses,
     component: TwelveHousesPage,
   },
   {
-    titleKey: "page.aiDeepTarot.title",
+    titleKey: "page.aiDeepTarot.spreads.twelveMonths.title",
     path: WEB_URL.aiDeepTarotTwelveMonths,
     component: TwelveMonthsPage,
   },
   {
-    titleKey: "page.aiDeepTarot.title",
+    titleKey: "page.aiDeepTarot.spreads.crossroads.title",
     path: WEB_URL.aiDeepTarotCrossroads,
     component: CrossroadsPage,
   },

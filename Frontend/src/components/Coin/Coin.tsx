@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useThemeStore } from "@/hooks/stores";
 import type { CoinProps } from "./types";
 import { getColor } from "./utils";
+import Text from "antd/es/typography/Text";
 
 export function Coin({ type, number = 0, isTooltip = true }: CoinProps) {
   const { t } = useTranslation();
@@ -15,7 +16,9 @@ export function Coin({ type, number = 0, isTooltip = true }: CoinProps) {
       placement="bottom"
       open={isTooltip ? undefined : false}
     >
-      {number} <DollarOutlined style={{ color: getColor(type, mode) }} />
+      <Text style={{ whiteSpace: "nowrap" }}>
+        {number} <DollarOutlined style={{ color: getColor(type, mode) }} />
+      </Text>
     </Tooltip>
   );
 }
