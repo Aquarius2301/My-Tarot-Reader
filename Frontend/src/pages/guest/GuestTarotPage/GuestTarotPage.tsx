@@ -6,13 +6,12 @@ import {
 } from "@/components";
 import { App } from "antd";
 import { useTranslation } from "react-i18next";
-import { GuestTarotResult } from "./GuestTarotResult";
 import {
   useCreateDrawForGuest,
   useGetLastDrawnCardForGuest,
 } from "@/hooks/api";
-import { GuestTarotPageLoading } from "./GuestTarotPageLoading";
 import { getErrorMessage } from "@/utils";
+import { GuestTarotResult } from "./components";
 
 export default function GuestTarotPage() {
   const { t } = useTranslation();
@@ -34,23 +33,26 @@ export default function GuestTarotPage() {
     );
   };
 
-  const { data, isLoading, refetch } = useGetLastDrawnCardForGuest();
+  const { data, isLoading, refetch, isError } = useGetLastDrawnCardForGuest();
 
-  if (isLoading || isPending) {
-    return <GuestTarotPageLoading />;
-  }
+  if (isError) return <ErrorView type="server" onRetry={refetch} />;
 
-  if (data === undefined) return <ErrorView type="server" onRetry={refetch} />;
+  const isPageLoading = isLoading || isPending;
+  const isDraw = !(isPageLoading || data); // = !isPageLoading && !data
 
-  return data ? (
-    <GuestTarotResult data={data} />
-  ) : (
+  return (
     <>
-      <AppTitle
-        title={t("page.tarot.title")}
-        subtitle={t("page.tarot.subTitle")}
-      />
-      <TarotDeck limit={1} onConfirm={handleConfirm} />
+      {isDraw ? (
+        <>
+          <AppTitle
+            title={t("page.tarot.title")}
+            subtitle={t("page.tarot.subTitle")}
+          />
+          <TarotDeck limit={1} onConfirm={handleConfirm} />
+        </>
+      ) : (
+        <GuestTarotResult data={data} isLoading={isPageLoading} />
+      )}
     </>
   );
 }

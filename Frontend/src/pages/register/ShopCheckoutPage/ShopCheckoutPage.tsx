@@ -10,7 +10,7 @@ import {
   readOrderState,
   resolveCheckoutPayload,
 } from "@/utils";
-import { CheckoutCard } from "./CheckoutCard";
+import { CheckoutCard } from "./components";
 
 /**
  * PayOS checkout page for one order. Keeps polling the order status until it

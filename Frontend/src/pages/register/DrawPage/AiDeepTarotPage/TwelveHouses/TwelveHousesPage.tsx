@@ -2,6 +2,7 @@ import {
   TwelveHousesDrawCardsStep,
   TwelveHousesIntroStep,
 } from "./components";
+import { useGetCurrentUser } from "@/hooks/api";
 import { Typography } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,6 +12,7 @@ const { Title } = Typography;
 /** Two-step 12 houses deep tarot reading: introduce the spread, then draw the cards. */
 export default function TwelveHousesPage() {
   const { t } = useTranslation();
+  const { data: user } = useGetCurrentUser();
   const [step, setStep] = useState<"intro" | "draw">("intro");
 
   return (
@@ -20,7 +22,10 @@ export default function TwelveHousesPage() {
       </Title>
 
       {step === "intro" ? (
-        <TwelveHousesIntroStep onNext={() => setStep("draw")} />
+        <TwelveHousesIntroStep
+          balance={user?.redCoin ?? 0}
+          onNext={() => setStep("draw")}
+        />
       ) : (
         <TwelveHousesDrawCardsStep onBack={() => setStep("intro")} />
       )}

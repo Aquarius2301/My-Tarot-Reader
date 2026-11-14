@@ -1,14 +1,13 @@
 import { AppTitle, EmptyView, ErrorView, PaginationBar } from "@/components";
 import { useTranslation } from "react-i18next";
-import { HistoryAiList } from "./HistoryAiList";
 import { useState } from "react";
 import { PAGINATION_PAGE_SIZE } from "@/constants";
 import { useDeleteAiTarotReading, useGetAllAiTarotReadings } from "@/hooks/api";
 import { App } from "antd";
 import { getErrorMessage } from "@/utils";
-import { DeleteAiTarotModal } from "./DeleteAiTarotModal";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "@/routes";
+import { DeleteAiTarotModal, HistoryAiList } from "./components";
 
 /** Lists all of the user's AI tarot readings; clicking one opens the full result. */
 export default function HistoryAiTarotPage() {

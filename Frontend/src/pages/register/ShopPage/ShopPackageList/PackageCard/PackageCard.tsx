@@ -7,7 +7,7 @@ const { Text } = Typography;
 
 export interface PackageCardProps {
   pkg: GetPackagesItem;
-  loading: boolean;
+  isPending: boolean;
   disabled: boolean;
   onBuy: () => void;
 }
@@ -19,7 +19,8 @@ export interface PackageCardProps {
  */
 export function PackageCard({
   pkg,
-  loading,
+
+  isPending,
   disabled,
   onBuy,
 }: PackageCardProps) {
@@ -32,10 +33,7 @@ export function PackageCard({
     : 0;
 
   return (
-    <Card
-      style={{ height: "100%" }}
-      styles={{ body: { height: "100%" } }}
-    >
+    <Card style={{ height: "100%" }} styles={{ body: { height: "100%" } }}>
       <Flex vertical gap={token.marginMD} style={{ height: "100%" }}>
         <Flex justify="space-between" align="flex-start" gap={token.marginSM}>
           <Flex align="baseline" gap={token.marginXS}>
@@ -86,7 +84,7 @@ export function PackageCard({
           type="primary"
           size="large"
           block
-          loading={loading}
+          loading={isPending}
           disabled={disabled}
           onClick={onBuy}
         >

@@ -1,9 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { AppTitle, ErrorView } from "@/components";
 import { useGetWallet } from "@/hooks/api";
-import { BalanceOverview } from "./BalanceOverview";
-import { WhiteCoinBatchesCard } from "./WhiteCoinBatchesCard";
-import { ConvertCard } from "./ConvertCard";
+import {
+  BalanceOverview,
+  ConvertCard,
+  WhiteCoinBatchesCard,
+} from "./components";
 
 /**
  * Wallet page: current white/red balances, the active white coin batches
@@ -26,15 +28,15 @@ export default function WalletPage() {
       />
 
       <BalanceOverview
-        whiteCoin={data?.whiteCoin ?? 0}
-        redCoin={data?.redCoin ?? 0}
+        whiteCoin={data?.whiteCoin}
+        redCoin={data?.redCoin}
         isLoading={isLoading}
       />
       <WhiteCoinBatchesCard
-        batches={data?.whiteCoinBatches ?? []}
+        batches={data?.whiteCoinBatches}
         isLoading={isLoading}
       />
-      <ConvertCard redCoin={data?.redCoin ?? 0} isLoading={isLoading} />
+      <ConvertCard redCoin={data?.redCoin} isLoading={isLoading} />
     </div>
   );
 }

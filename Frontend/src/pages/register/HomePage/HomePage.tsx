@@ -1,5 +1,4 @@
-import { HomeHero } from "./HomeHero";
-import { StreakCard } from "./StreakCard";
+import { HomeHero, StreakCard } from "./components";
 
 export default function HomePage() {
   return (

@@ -1,0 +1,1 @@
+export { TarotResult } from "./TarotResult";

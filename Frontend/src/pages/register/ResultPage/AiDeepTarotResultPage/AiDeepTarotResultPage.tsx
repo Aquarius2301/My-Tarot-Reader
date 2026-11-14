@@ -5,7 +5,7 @@ import { WEB_URL } from "@/routes";
 import { Button, Flex, theme } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { AiDeepTarotResultItem } from "./AiDeepTarotResultItem";
+import { AiDeepTarotResultItem } from "./components";
 
 const DRAW_URL_BY_TOPIC: Record<AiDeepTarotTopic, string> = {
   twelveHouses: WEB_URL.aiDeepTarotTwelveHouses,

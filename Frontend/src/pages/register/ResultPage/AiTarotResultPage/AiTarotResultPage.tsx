@@ -4,7 +4,7 @@ import { WEB_URL } from "@/routes";
 import { Button, Flex, theme } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { AiTarotResultItem } from "./AiTarotResultItem";
+import { AiTarotResultItem } from "./components";
 
 /** Shows a created AI tarot reading: title, drawn cards and its meanings. */
 export default function AiTarotResultPage() {

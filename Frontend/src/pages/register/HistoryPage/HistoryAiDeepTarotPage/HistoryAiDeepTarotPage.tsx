@@ -1,6 +1,6 @@
 import { AppTitle, EmptyView, ErrorView, PaginationBar } from "@/components";
 import { useTranslation } from "react-i18next";
-import { HistoryAiDeepList } from "./HistoryAiDeepList";
+import { HistoryAiDeepList, DeleteAiDeepTarotModal } from "./components";
 import { useState } from "react";
 import { PAGINATION_PAGE_SIZE } from "@/constants";
 import {
@@ -9,7 +9,6 @@ import {
 } from "@/hooks/api";
 import { App } from "antd";
 import { getErrorMessage } from "@/utils";
-import { DeleteAiDeepTarotModal } from "./DeleteAiDeepTarotModal";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "@/routes";
 
