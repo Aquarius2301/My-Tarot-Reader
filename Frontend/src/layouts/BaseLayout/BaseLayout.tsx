@@ -49,7 +49,8 @@ export function BaseLayout({
   const palette = getPalette(variant, mode);
 
   const screens = Grid.useBreakpoint();
-  const isMobile = screens.xl === false;
+  const isMobile = screens.lg === false;
+  const isSmallScreen = screens.sm === false;
 
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -99,6 +100,11 @@ export function BaseLayout({
       pathname={location.pathname}
       isDark={isDark}
       onNavigate={handleNavigate}
+      isButtonShow={isSmallScreen}
+      palette={palette}
+      language={language}
+      onToggleLanguage={toggleLanguage}
+      onToggleTheme={toggleTheme}
     />
   );
 
@@ -140,6 +146,7 @@ export function BaseLayout({
           <Layout style={{ background: palette.bgBase }}>
             <LayoutHeader
               isMobile={isMobile}
+              isButtonShow={!isSmallScreen}
               collapsed={collapsed}
               title={title}
               variant={variant}

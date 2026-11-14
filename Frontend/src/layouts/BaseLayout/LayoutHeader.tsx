@@ -14,6 +14,7 @@ const { Header } = Layout;
 
 type LayoutHeaderProps = {
   isMobile: boolean;
+  isButtonShow: boolean;
   collapsed: boolean;
   title: string;
   variant: LayoutVariant;
@@ -30,6 +31,7 @@ type LayoutHeaderProps = {
 
 export function LayoutHeader({
   isMobile,
+  isButtonShow,
   collapsed,
   title,
   variant,
@@ -87,34 +89,38 @@ export function LayoutHeader({
         </Button>
       )}
 
-      <Button
-        type="text"
-        aria-label={t("component.mainLayout.language")}
-        title={t("component.mainLayout.language")}
-        onClick={onToggleLanguage}
-        style={{
-          minWidth: 44,
-          color: palette.primary,
-          background: palette.accentGlow,
-        }}
-      >
-        {language === "vi" ? "VI" : "EN"}
-      </Button>
-      <Button
-        type="text"
-        shape="circle"
-        aria-label={
-          isDark
-            ? t("component.mainLayout.darkMode")
-            : t("component.mainLayout.lightMode")
-        }
-        icon={isDark ? <SunOutlined /> : <MoonOutlined />}
-        onClick={onToggleTheme}
-        style={{
-          color: palette.primary,
-          background: palette.accentGlow,
-        }}
-      />
+      {isButtonShow && (
+        <>
+          <Button
+            type="text"
+            aria-label={t("component.mainLayout.language")}
+            title={t("component.mainLayout.language")}
+            onClick={onToggleLanguage}
+            style={{
+              minWidth: 44,
+              color: palette.primary,
+              background: palette.accentGlow,
+            }}
+          >
+            {language === "vi" ? "VI" : "EN"}
+          </Button>
+          <Button
+            type="text"
+            shape="circle"
+            aria-label={
+              isDark
+                ? t("component.mainLayout.darkMode")
+                : t("component.mainLayout.lightMode")
+            }
+            icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+            onClick={onToggleTheme}
+            style={{
+              color: palette.primary,
+              background: palette.accentGlow,
+            }}
+          />
+        </>
+      )}
     </Header>
   );
 }
