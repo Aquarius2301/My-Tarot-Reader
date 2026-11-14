@@ -1,5 +1,5 @@
 import { DEFAULT_LANGUAGE_MODE, type LanguageMode } from "@/constants";
-import i18n from "@/i18n";
+import { setLanguage } from "@/i18n";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -16,11 +16,13 @@ export const useLanguageStore = create<LanguageState>()(
       toggle: () =>
         set((s) => {
           const next: LanguageMode = s.mode === "en" ? "vi" : "en";
-          i18n.changeLanguage(String(next));
+          // i18n.changeLanguage(String(next));
+          setLanguage(next);
           return { mode: next };
         }),
       setMode: (mode) => {
-        i18n.changeLanguage(String(mode));
+        // i18n.changeLanguage(String(mode));
+        setLanguage(mode);
         set({ mode });
       },
     }),
@@ -30,4 +32,5 @@ export const useLanguageStore = create<LanguageState>()(
 
 // Sync i18n with the persisted language on load so a previously chosen
 // language (e.g. "en") is reflected before the first render.
-i18n.changeLanguage(String(useLanguageStore.getState().mode));
+// i18n.changeLanguage(String(useLanguageStore.getState().mode));
+setLanguage(useLanguageStore.getState().mode);
