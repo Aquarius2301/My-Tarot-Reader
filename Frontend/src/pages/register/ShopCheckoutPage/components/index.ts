@@ -1,1 +1,1 @@
-export { CheckoutCard } from "./CheckoutCard";
+export { CheckoutCard } from "./CheckoutCard/CheckoutCard";

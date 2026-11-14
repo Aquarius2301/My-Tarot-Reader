@@ -3,7 +3,7 @@ import { Col, Row } from "antd";
 import { PackageCard, PackageCardLoading } from "./PackageCard";
 
 export interface ShopPackageListProps {
-  packages: GetPackagesItem[];
+  packages?: GetPackagesItem[];
   isLoading?: boolean;
   isPending?: boolean;
   pendingPackageCode?: string;
@@ -35,13 +35,15 @@ export function ShopPackageList({
     );
   }
 
+  if (!packages) return null;
+
   return (
     <Row gutter={[16, 16]}>
       {packages.map((pkg) => (
         <Col xs={24} sm={12} lg={8} key={pkg.code}>
           <PackageCard
             pkg={pkg}
-            loading={isPending && pendingPackageCode === pkg.code}
+            isPending={isPending && pendingPackageCode === pkg.code}
             disabled={isPending}
             onBuy={() => onBuy(pkg)}
           />

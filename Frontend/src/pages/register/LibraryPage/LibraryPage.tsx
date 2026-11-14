@@ -8,8 +8,7 @@ import {
   type TarotCardCode,
 } from "@/constants";
 import { AppTitle } from "@/components";
-import { CardLibraryGrid } from "./CardLibraryGrid";
-import { MeaningModal } from "./MeaningModal";
+import { CardLibraryGrid, MeaningModal } from "./components";
 
 /** Returns the codes of a given minor-arcana suit (e.g. "min-wands-1"). */
 function codesOfSuit(suit: string): readonly TarotCardCode[] {

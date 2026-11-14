@@ -55,7 +55,7 @@ export default function ShopPage() {
       />
 
       <ShopPackageList
-        packages={data?.packages ?? []}
+        packages={data?.packages}
         isLoading={isLoading}
         isPending={isPending}
         pendingPackageCode={variables?.packageCode}

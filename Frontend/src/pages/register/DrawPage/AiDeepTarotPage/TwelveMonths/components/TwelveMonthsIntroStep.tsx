@@ -1,5 +1,4 @@
 import { AI_DEEP_TAROT_CARD_COUNTS, AI_DEEP_TAROT_COSTS } from "@/constants";
-import { useGetCurrentUser } from "@/hooks/api";
 import { Card, Button, Flex, Typography, theme } from "antd";
 import { ThunderboltFilled, WalletFilled } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -8,20 +7,20 @@ import TwelveMonthsGuide from "./TwelveMonthsGuide";
 const { Text } = Typography;
 
 export interface TwelveMonthsIntroStepProps {
+  balance: number;
   onNext: () => void;
 }
 
 /** Step 1: explain the 12 months spread, then check the red coin balance. */
 export default function TwelveMonthsIntroStep({
+  balance,
   onNext,
 }: TwelveMonthsIntroStepProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
-  const { data: user } = useGetCurrentUser();
 
   const cardCount = AI_DEEP_TAROT_CARD_COUNTS.twelveMonths;
   const cost = AI_DEEP_TAROT_COSTS.twelveMonths;
-  const balance = user?.redCoin ?? 0;
   const canAfford = balance >= cost;
 
   return (

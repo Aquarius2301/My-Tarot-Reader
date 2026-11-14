@@ -1,4 +1,5 @@
 import type { CrossroadsTimeFrame } from "@/constants";
+import { useGetCurrentUser } from "@/hooks/api";
 import { useState } from "react";
 import { Typography } from "antd";
 import { useTranslation } from "react-i18next";
@@ -22,6 +23,7 @@ const EMPTY_INPUT: CrossroadsReadingInput = {
  */
 export default function CrossroadsPage() {
   const { t } = useTranslation();
+  const { data: user } = useGetCurrentUser();
   const [step, setStep] = useState<"question" | "draw">("question");
   const [input, setInput] = useState<CrossroadsReadingInput>(EMPTY_INPUT);
 
@@ -41,7 +43,10 @@ export default function CrossroadsPage() {
       </Title>
 
       {step === "question" ? (
-        <CrossroadsQuestionStep onNext={handleQuestionSubmit} />
+        <CrossroadsQuestionStep
+          balance={user?.redCoin ?? 0}
+          onNext={handleQuestionSubmit}
+        />
       ) : (
         <CrossroadsDrawCardsStep
           input={input}

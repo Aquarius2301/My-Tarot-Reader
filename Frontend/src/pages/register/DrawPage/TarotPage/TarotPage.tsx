@@ -9,13 +9,12 @@ import { getErrorMessage } from "@/utils";
 import { App } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TarotPageLoading } from "./TarotPageLoading";
-import { TarotResult } from "./TarotResult";
+import { TarotResult } from "./components";
 
 export default function TarotPage() {
   const { t } = useTranslation();
   const { message } = App.useApp();
-  const { data, isLoading, refetch } = useGetLastDrawnCardForAuth();
+  const { data, isLoading, refetch, isError } = useGetLastDrawnCardForAuth();
   const { mutate, isPending } = useCreateDrawForAuth();
   const [reDraw, setReDraw] = useState(false);
 
@@ -35,21 +34,29 @@ export default function TarotPage() {
     );
   };
 
-  if (isLoading || isPending) {
-    return <TarotPageLoading />;
-  }
+  if (isError) return <ErrorView type="server" onRetry={refetch} />;
 
-  if (data === undefined) return <ErrorView type="server" onRetry={refetch} />;
+  const isPageLoading = isLoading || isPending;
 
-  return data == null || reDraw ? (
+  const isDraw = !(isPageLoading || data) || reDraw;
+
+  return (
     <>
-      <AppTitle
-        title={t("page.tarot.title")}
-        subtitle={t("page.tarot.subTitle")}
-      />
-      <TarotDeck limit={1} onConfirm={handleConfirm} />
+      {isDraw ? (
+        <>
+          <AppTitle
+            title={t("page.tarot.title")}
+            subtitle={t("page.tarot.subTitle")}
+          />
+          <TarotDeck limit={1} onConfirm={handleConfirm} />
+        </>
+      ) : (
+        <TarotResult
+          data={data}
+          isLoading={isPageLoading}
+          onReDraw={() => setReDraw(true)}
+        />
+      )}
     </>
-  ) : (
-    <TarotResult data={data} onReDraw={() => setReDraw(true)} />
   );
 }

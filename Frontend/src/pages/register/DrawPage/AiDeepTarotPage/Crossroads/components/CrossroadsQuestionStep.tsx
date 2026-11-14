@@ -8,7 +8,6 @@ import {
   getCrossroadsCost,
   type CrossroadsTimeFrame,
 } from "@/constants";
-import { useGetCurrentUser } from "@/hooks/api";
 import {
   Button,
   Card,
@@ -32,6 +31,7 @@ export interface CrossroadsQuestionStepValues {
 }
 
 export interface CrossroadsQuestionStepProps {
+  balance: number;
   onNext: (values: CrossroadsQuestionStepValues) => void;
 }
 
@@ -43,11 +43,11 @@ export interface CrossroadsQuestionStepProps {
  * option, so it is shown live as the user adds and removes options.
  */
 export default function CrossroadsQuestionStep({
+  balance,
   onNext,
 }: CrossroadsQuestionStepProps) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
-  const { data: user } = useGetCurrentUser();
   const [form] = Form.useForm<CrossroadsQuestionStepValues>();
 
   const optionCount = Form.useWatch("options", form)?.length ?? CROSSROADS_MIN_OPTIONS;
@@ -56,7 +56,6 @@ export default function CrossroadsQuestionStep({
 
   const cardCount = getCrossroadsCardCount(optionCount);
   const cost = getCrossroadsCost(optionCount);
-  const balance = user?.redCoin ?? 0;
   const canAfford = balance >= cost;
 
   const handleFinish = (values: CrossroadsQuestionStepValues) => {

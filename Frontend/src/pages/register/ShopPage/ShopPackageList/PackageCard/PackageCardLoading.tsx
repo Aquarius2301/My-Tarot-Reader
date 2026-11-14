@@ -35,7 +35,11 @@ export function PackageCardLoading() {
           />
         </Flex>
 
-        <Skeleton.Button active size="small" style={{ width: 110, height: 22 }} />
+        <Skeleton.Button
+          active
+          size="small"
+          style={{ width: 110, height: 22 }}
+        />
 
         <div style={{ flex: 1 }} />
 

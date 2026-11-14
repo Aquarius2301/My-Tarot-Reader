@@ -5,8 +5,11 @@ import {
   HistoryOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { BenefitsPanel, type BenefitItem } from "./BenefitsPanel";
-import { GoogleLoginPanel } from "./GoogleLoginPanel";
+import {
+  BenefitsPanel,
+  type BenefitItem,
+  GoogleLoginPanel,
+} from "./components";
 
 export default function GuestLoginPage() {
   const { t } = useTranslation();

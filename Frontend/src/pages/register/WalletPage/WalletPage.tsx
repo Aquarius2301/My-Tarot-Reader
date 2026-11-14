@@ -1,14 +1,11 @@
-import { Spin, Typography } from "antd";
 import { useTranslation } from "react-i18next";
-import { ErrorView } from "@/components";
+import { AppTitle, ErrorView } from "@/components";
 import { useGetWallet } from "@/hooks/api";
 import {
   BalanceOverview,
   ConvertCard,
   WhiteCoinBatchesCard,
 } from "./components";
-
-const { Title, Text } = Typography;
 
 /**
  * Wallet page: current white/red balances, the active white coin batches
@@ -18,29 +15,28 @@ export default function WalletPage() {
   const { t } = useTranslation();
   const { data, isLoading, refetch } = useGetWallet();
 
-  if (isLoading) {
-    return <Spin fullscreen />;
-  }
-
-  if (data === undefined) {
+  if (!isLoading && data === undefined) {
     return <ErrorView type="server" onRetry={refetch} />;
   }
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto" }}>
-      <Title level={2} style={{ textAlign: "center", marginBottom: 4 }}>
-        {t("page.wallet.title")}
-      </Title>
-      <Text
-        type="secondary"
-        style={{ display: "block", textAlign: "center", marginBottom: 24 }}
-      >
-        {t("page.wallet.subtitle")}
-      </Text>
+    <div>
+      <AppTitle
+        title={t("page.wallet.title")}
+        subtitle={t("page.wallet.subtitle")}
+        isLoading={isLoading}
+      />
 
-      <BalanceOverview whiteCoin={data.whiteCoin} redCoin={data.redCoin} />
-      <WhiteCoinBatchesCard batches={data.whiteCoinBatches} />
-      <ConvertCard redCoin={data.redCoin} />
+      <BalanceOverview
+        whiteCoin={data?.whiteCoin}
+        redCoin={data?.redCoin}
+        isLoading={isLoading}
+      />
+      <WhiteCoinBatchesCard
+        batches={data?.whiteCoinBatches}
+        isLoading={isLoading}
+      />
+      <ConvertCard redCoin={data?.redCoin} isLoading={isLoading} />
     </div>
   );
 }
